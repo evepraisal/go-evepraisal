@@ -1,11 +1,19 @@
 package parsers
 
-import "strconv"
+import (
+	"regexp"
+	"strconv"
+)
 
-type IResult interface {
-}
+var cleanIntegers = regexp.MustCompile(`[,\'\. ]`)
 
 func ToInt(s string) int64 {
+	if s == "" {
+		return 0
+	}
+
+	s = cleanIntegers.ReplaceAllString(s, "")
+
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return int64(ToFloat64(s))

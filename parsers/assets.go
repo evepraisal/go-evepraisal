@@ -7,15 +7,27 @@ import (
 )
 
 type AssetRow struct {
-	Name      string
-	Quantity  int64
-	Group     string
-	Category  string
-	Size      string
-	Slot      string
-	Volume    float64
-	MetaLevel string
-	TechLevel string
+	name      string
+	quantity  int64
+	volume    float64
+	group     string
+	category  string
+	size      string
+	slot      string
+	metaLevel string
+	techLevel string
+}
+
+func (r AssetRow) Name() string {
+	return r.name
+}
+
+func (r AssetRow) Quantity() int64 {
+	return r.quantity
+}
+
+func (r AssetRow) Volume() float64 {
+	return r.volume
 }
 
 var assetList = regexp.MustCompile(strings.Join([]string{
@@ -30,8 +42,8 @@ var assetList = regexp.MustCompile(strings.Join([]string{
 	`(\t([\d]+|))?$`,                     // tech level
 }, ""))
 
-func ParseAssets(lines []string) ([]IResult, []string) {
-	var matches []IResult
+func ParseAssets(lines []string) ([]ParserResult, []string) {
+	var matches []ParserResult
 	var rest []string
 	for _, line := range lines {
 		match := assetList.FindStringSubmatch(line)
@@ -43,11 +55,11 @@ func ParseAssets(lines []string) ([]IResult, []string) {
 				AssetRow{
 					match[1],
 					ToInt(match[2]),
+					ToFloat64(match[12]),
 					match[4],
 					match[6],
 					match[8],
 					match[10],
-					ToFloat64(match[12]),
 					match[14],
 					match[16],
 				})
