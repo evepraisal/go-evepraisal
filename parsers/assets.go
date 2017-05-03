@@ -1,7 +1,6 @@
 package parsers
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
@@ -30,7 +29,7 @@ func (r AssetRow) Volume() float64 {
 	return r.volume
 }
 
-var assetList = regexp.MustCompile(strings.Join([]string{
+var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`^([\S\ ]*)`,                         // name
 	`\t([\d,'\.]*)`,                      // quantity
 	`(\t([\S ]*))?`,                      // group
@@ -43,27 +42,21 @@ var assetList = regexp.MustCompile(strings.Join([]string{
 }, ""))
 
 func ParseAssets(lines []string) ([]ParserResult, []string) {
-	var matches []ParserResult
-	var rest []string
-	for _, line := range lines {
-		match := assetList.FindStringSubmatch(line)
-		log.Printf("%#v", match)
-		if len(match) == 0 {
-			rest = append(rest, line)
-		} else {
-			matches = append(matches,
-				AssetRow{
-					match[1],
-					ToInt(match[2]),
-					ToFloat64(match[12]),
-					match[4],
-					match[6],
-					match[8],
-					match[10],
-					match[14],
-					match[16],
-				})
-		}
+	var results []ParserResult
+	matches, rest := regexParseLines(reAssetList, lines)
+	for _, match := range matches {
+		results = append(results,
+			AssetRow{
+				name:      match[1],
+				quantity:  ToInt(match[2]),
+				volume:    ToFloat64(match[12]),
+				group:     match[4],
+				category:  match[6],
+				size:      match[8],
+				slot:      match[10],
+				metaLevel: match[14],
+				techLevel: match[16],
+			})
 	}
-	return matches, rest
+	return results, rest
 }
