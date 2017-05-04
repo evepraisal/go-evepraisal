@@ -40,7 +40,7 @@ func NewMultiParser(parsers []Parser) Parser {
 			for _, parser := range parsers {
 				var result ParserResult
 				result, left = parser(left)
-				if result != nil {
+				if len(result.Raw()) > 0 {
 					multiParserResult.results = append(multiParserResult.results, result)
 				}
 				if len(left) == 0 {
