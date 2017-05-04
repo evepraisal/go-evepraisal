@@ -53,6 +53,7 @@ func ParseContract(lines []string) (ParserResult, []string) {
 				_type:    match[3],
 				category: match[4],
 				details:  match[5],
+				fitted:   strings.HasPrefix(match[5], "Fitted"),
 			})
 	}
 

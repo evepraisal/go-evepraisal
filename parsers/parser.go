@@ -1,5 +1,7 @@
 package parsers
 
+import "strings"
+
 type ParserResult interface {
 	Name() string
 	Raw() string
@@ -27,15 +29,17 @@ func (r *MultiParserResult) Name() string {
 
 func (r *MultiParserResult) Raw() string {
 	// TODO: append the Raw() of every parser result
-	return ""
+	raw := make([]string, 0)
+	for _, result := range r.results {
+		raw = append(raw, result.Raw())
+	}
+	return strings.Join(raw, "")
 }
 
 func NewMultiParser(parsers []Parser) Parser {
 	return Parser(
 		func(lines []string) (ParserResult, []string) {
-			multiParserResult := &MultiParserResult{
-				results: make([]ParserResult, 0),
-			}
+			multiParserResult := &MultiParserResult{}
 			left := lines
 			for _, parser := range parsers {
 				var result ParserResult
