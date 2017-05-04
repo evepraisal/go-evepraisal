@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-var cleanIntegers = regexp.MustCompile(`[,\'\. ]`)
+var cleanIntegers = regexp.MustCompile(`[,\'\.` + "\xc2\xa0" + `]`)
 
 func ToInt(s string) int64 {
 	if s == "" {
@@ -29,8 +29,9 @@ func ToFloat64(s string) float64 {
 	return f
 }
 
-func regexParseLines(re *regexp.Regexp, lines []string) ([][]string, []string) {
+func regexParseLines(re *regexp.Regexp, lines []string) ([][]string, []string, []string) {
 	var matches [][]string
+	var raw []string
 	var rest []string
 	for _, line := range lines {
 		match := re.FindStringSubmatch(line)
@@ -38,7 +39,8 @@ func regexParseLines(re *regexp.Regexp, lines []string) ([][]string, []string) {
 			rest = append(rest, line)
 		} else {
 			matches = append(matches, match)
+			raw = append(raw, line)
 		}
 	}
-	return matches, rest
+	return matches, raw, rest
 }

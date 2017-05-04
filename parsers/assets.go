@@ -5,7 +5,20 @@ import (
 	"strings"
 )
 
-type AssetRow struct {
+type AssetList struct {
+	items []AssetItem
+	raw   []string
+}
+
+func (r *AssetList) Name() string {
+	return "assets"
+}
+
+func (r *AssetList) Raw() string {
+	return strings.Join(r.raw, "\n")
+}
+
+type AssetItem struct {
 	name      string
 	quantity  int64
 	volume    float64
@@ -15,18 +28,6 @@ type AssetRow struct {
 	slot      string
 	metaLevel string
 	techLevel string
-}
-
-func (r AssetRow) Name() string {
-	return r.name
-}
-
-func (r AssetRow) Quantity() int64 {
-	return r.quantity
-}
-
-func (r AssetRow) Volume() float64 {
-	return r.volume
 }
 
 var reAssetList = regexp.MustCompile(strings.Join([]string{
@@ -41,12 +42,13 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`(\t([\d]+|))?$`,                     // tech level
 }, ""))
 
-func ParseAssets(lines []string) ([]ParserResult, []string) {
-	var results []ParserResult
-	matches, rest := regexParseLines(reAssetList, lines)
+func ParseAssets(lines []string) (ParserResult, []string) {
+	assetList := &AssetList{}
+	matches, raw, rest := regexParseLines(reAssetList, lines)
+	assetList.raw = raw
 	for _, match := range matches {
-		results = append(results,
-			AssetRow{
+		assetList.items = append(assetList.items,
+			AssetItem{
 				name:      match[1],
 				quantity:  ToInt(match[2]),
 				volume:    ToFloat64(match[12]),
@@ -58,5 +60,5 @@ func ParseAssets(lines []string) ([]ParserResult, []string) {
 				techLevel: match[16],
 			})
 	}
-	return results, rest
+	return assetList, rest
 }

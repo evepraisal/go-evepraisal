@@ -5,7 +5,20 @@ import (
 	"strings"
 )
 
-type ContractRow struct {
+type Contract struct {
+	items []ContractItem
+	raw   []string
+}
+
+func (r *Contract) Name() string {
+	return "contract"
+}
+
+func (r *Contract) Raw() string {
+	return strings.Join(r.raw, "\n")
+}
+
+type ContractItem struct {
 	name     string
 	quantity int64
 	_type    string
@@ -28,24 +41,13 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 	`([\S ]*)$`,     // type
 }, ""))
 
-func (r ContractRow) Name() string {
-	return r.name
-}
-
-func (r ContractRow) Quantity() int64 {
-	return r.quantity
-}
-
-func (r ContractRow) Volume() float64 {
-	return 0
-}
-
-func ParseContract(lines []string) ([]ParserResult, []string) {
-	var results []ParserResult
-	matches, rest := regexParseLines(reContract, lines)
+func ParseContract(lines []string) (ParserResult, []string) {
+	contract := &Contract{}
+	matches, raw, rest := regexParseLines(reContract, lines)
+	contract.raw = raw
 	for _, match := range matches {
-		results = append(results,
-			ContractRow{
+		contract.items = append(contract.items,
+			ContractItem{
 				name:     match[1],
 				quantity: ToInt(match[2]),
 				_type:    match[3],
@@ -54,15 +56,16 @@ func ParseContract(lines []string) ([]ParserResult, []string) {
 			})
 	}
 
-	matches2, rest := regexParseLines(reContractShort, rest)
+	matches2, raw2, rest := regexParseLines(reContractShort, rest)
+	contract.raw = append(contract.raw, raw2...)
 	for _, match := range matches2 {
-		results = append(results,
-			ContractRow{
+		contract.items = append(contract.items,
+			ContractItem{
 				name:     match[1],
 				quantity: ToInt(match[2]),
 				_type:    match[3],
 			})
 	}
 
-	return results, rest
+	return contract, rest
 }
