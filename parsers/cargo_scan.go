@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -26,10 +27,10 @@ type CargoScanItem struct {
 
 var reCargoScan = regexp.MustCompile(`^([\d,'\.]+) ([\S ]+)$`)
 
-func ParseCargoScan(lines []string) (ParserResult, []string) {
+func ParseCargoScan(input Input) (ParserResult, Input) {
 	scan := &CargoScan{}
-	matches, matchedLines, rest := regexParseLines(reCargoScan, lines)
-	scan.lines = matchedLines
+	matches, rest := regexParseLines(reCargoScan, input)
+	scan.lines = regexMatchedLines(matches)
 	for _, match := range matches {
 		item := CargoScanItem{name: match[2], quantity: ToInt(match[1])}
 
@@ -44,5 +45,6 @@ func ParseCargoScan(lines []string) (ParserResult, []string) {
 		}
 		scan.items = append(scan.items, item)
 	}
+	sort.Slice(scan.items, func(i, j int) bool { return scan.items[i].name < scan.items[j].name })
 	return scan, rest
 }

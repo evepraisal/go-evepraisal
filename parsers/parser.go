@@ -1,11 +1,13 @@
 package parsers
 
+import "sort"
+
 type ParserResult interface {
 	Name() string
 	Lines() []int
 }
 
-type Parser func(lines []string) (ParserResult, []string)
+type Parser func(input Input) (ParserResult, Input)
 
 var AllParser = NewMultiParser(
 	[]Parser{
@@ -13,9 +15,8 @@ var AllParser = NewMultiParser(
 		ParseAssets,
 		ParseCargoScan,
 		ParseDScan,
+		ParseListing,
 	})
-
-// ParseAssets (type func([]string) (ParserResult, []string)) as type func([]string) ([]ParserResult, []string) in field value
 
 type MultiParserResult struct {
 	results []ParserResult
@@ -27,17 +28,18 @@ func (r *MultiParserResult) Name() string {
 
 func (r *MultiParserResult) Lines() []int {
 	lines := make([]int, 0)
-	for _, result := range r.results {
-		lines = append(lines, result.Lines()...)
+	for _, r := range r.results {
+		lines = append(lines, r.Lines()...)
 	}
+	sort.Ints(lines)
 	return lines
 }
 
 func NewMultiParser(parsers []Parser) Parser {
 	return Parser(
-		func(lines []string) (ParserResult, []string) {
+		func(input Input) (ParserResult, Input) {
 			multiParserResult := &MultiParserResult{}
-			left := lines
+			left := input
 			for _, parser := range parsers {
 				var result ParserResult
 				result, left = parser(left)

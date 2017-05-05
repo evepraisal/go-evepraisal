@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -42,10 +43,10 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`(\t([\d]+|))?$`,                     // tech level
 }, ""))
 
-func ParseAssets(lines []string) (ParserResult, []string) {
+func ParseAssets(input Input) (ParserResult, Input) {
 	assetList := &AssetList{}
-	matches, matchedLines, rest := regexParseLines(reAssetList, lines)
-	assetList.lines = matchedLines
+	matches, rest := regexParseLines(reAssetList, input)
+	assetList.lines = regexMatchedLines(matches)
 	for _, match := range matches {
 		assetList.items = append(assetList.items,
 			AssetItem{
@@ -60,5 +61,6 @@ func ParseAssets(lines []string) (ParserResult, []string) {
 				techLevel: match[16],
 			})
 	}
+	sort.Slice(assetList.items, func(i, j int) bool { return assetList.items[i].name < assetList.items[j].name })
 	return assetList, rest
 }

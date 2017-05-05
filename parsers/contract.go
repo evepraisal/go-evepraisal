@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -41,32 +42,40 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 	`([\S ]*)$`,     // type
 }, ""))
 
-func ParseContract(lines []string) (ParserResult, []string) {
+func ParseContract(input Input) (ParserResult, Input) {
 	contract := &Contract{}
-	matches, matchedLines, rest := regexParseLines(reContract, lines)
-	contract.lines = matchedLines
+	matches, rest := regexParseLines(reContract, input)
+	matches2, rest := regexParseLines(reContractShort, rest)
+	contract.lines = append(regexMatchedLines(matches), regexMatchedLines(matches2)...)
+
+	// collect items
+	matchgroup := make(map[ContractItem]int64)
 	for _, match := range matches {
-		contract.items = append(contract.items,
-			ContractItem{
-				name:     match[1],
-				quantity: ToInt(match[2]),
-				_type:    match[3],
-				category: match[4],
-				details:  match[5],
-				fitted:   strings.HasPrefix(match[5], "Fitted"),
-			})
+		item := ContractItem{
+			name:     match[1],
+			_type:    match[3],
+			category: match[4],
+			details:  match[5],
+			fitted:   strings.HasPrefix(match[5], "Fitted"),
+		}
+
+		matchgroup[item] += ToInt(match[2])
 	}
 
-	matches2, matchedLines2, rest := regexParseLines(reContractShort, rest)
-	contract.lines = append(contract.lines, matchedLines2...)
 	for _, match := range matches2 {
-		contract.items = append(contract.items,
-			ContractItem{
-				name:     match[1],
-				quantity: ToInt(match[2]),
-				_type:    match[3],
-			})
+		item := ContractItem{
+			name:  match[1],
+			_type: match[3],
+		}
+		matchgroup[item] += ToInt(match[2])
 	}
 
+	// add items w/totals
+	for item, quantity := range matchgroup {
+		item.quantity = quantity
+		contract.items = append(contract.items, item)
+	}
+
+	sort.Slice(contract.items, func(i, j int) bool { return contract.items[i].name < contract.items[j].name })
 	return contract, rest
 }

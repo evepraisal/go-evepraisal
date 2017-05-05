@@ -7,12 +7,12 @@ var cargoScanTestCases = []Case{
 2 Gallente Shuttle`,
 		&CargoScan{
 			items: []CargoScanItem{
-				CargoScanItem{name: "Minmatar Shuttle", quantity: 1},
 				CargoScanItem{name: "Gallente Shuttle", quantity: 2},
+				CargoScanItem{name: "Minmatar Shuttle", quantity: 1},
 			},
 			lines: []int{0, 1},
 		},
-		nil,
+		Input{},
 		true,
 	}, {
 		"Prefixed with new line",
@@ -25,7 +25,7 @@ var cargoScanTestCases = []Case{
 			items: []CargoScanItem{CargoScanItem{name: "Minmatar Shuttle", quantity: 1}},
 			lines: []int{2},
 		},
-		[]string{"", "", "", ""},
+		Input{0: "", 1: "", 3: "", 4: ""},
 		true,
 	}, {
 		"BPO",
@@ -34,7 +34,7 @@ var cargoScanTestCases = []Case{
 			items: []CargoScanItem{CargoScanItem{name: "Plagioclase Mining Crystal I Blueprint", quantity: 10, details: "BLUEPRINT ORIGINAL"}},
 			lines: []int{0},
 		},
-		nil,
+		Input{},
 		true,
 	}, {
 		"BPC",
@@ -43,7 +43,7 @@ var cargoScanTestCases = []Case{
 			items: []CargoScanItem{CargoScanItem{name: "Plagioclase Mining Crystal I Blueprint", quantity: 10, details: "BLUEPRINT COPY"}},
 			lines: []int{0},
 		},
-		nil,
+		Input{},
 		true,
 	}, {
 		"Single quote for thousands separators",
@@ -52,7 +52,7 @@ var cargoScanTestCases = []Case{
 			items: []CargoScanItem{CargoScanItem{name: "Tengu", quantity: 12000}},
 			lines: []int{0},
 		},
-		nil,
+		Input{},
 		true,
 	},
 }

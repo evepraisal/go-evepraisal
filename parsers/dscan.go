@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -30,12 +31,13 @@ var reDScan = regexp.MustCompile(strings.Join([]string{
 	`((?:([\d,'\.` + "\xc2\xa0" + `]*) (m|km|AU))|-)`, // distance
 }, ""))
 
-func ParseDScan(lines []string) (ParserResult, []string) {
+func ParseDScan(input Input) (ParserResult, Input) {
 	dscan := &DScan{}
-	matches, matchedLines, rest := regexParseLines(reDScan, lines)
-	dscan.lines = matchedLines
+	matches, rest := regexParseLines(reDScan, input)
+	dscan.lines = regexMatchedLines(matches)
 	for _, match := range matches {
 		dscan.items = append(dscan.items, DScanItem{name: match[2], distance: ToInt(match[4]), distanceUnit: match[5]})
 	}
+	sort.Slice(dscan.items, func(i, j int) bool { return dscan.items[i].name < dscan.items[j].name })
 	return dscan, rest
 }

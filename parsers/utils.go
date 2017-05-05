@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"regexp"
+	"sort"
 	"strconv"
 )
 
@@ -29,18 +30,27 @@ func ToFloat64(s string) float64 {
 	return f
 }
 
-func regexParseLines(re *regexp.Regexp, lines []string) ([][]string, []int, []string) {
-	var matches [][]string
-	var matchedLines []int
-	var rest []string
-	for i, line := range lines {
+func regexMatchedLines(matches map[int][]string) []int {
+	keys := make([]int, len(matches))
+	i := 0
+	for k := range matches {
+		keys[i] = k
+		i++
+	}
+	sort.Ints(keys)
+	return keys
+}
+
+func regexParseLines(re *regexp.Regexp, input Input) (map[int][]string, Input) {
+	matches := make(map[int][]string)
+	rest := make(Input)
+	for i, line := range input {
 		match := re.FindStringSubmatch(line)
 		if len(match) == 0 {
-			rest = append(rest, line)
+			rest[i] = line
 		} else {
-			matches = append(matches, match)
-			matchedLines = append(matchedLines, i)
+			matches[i] = match
 		}
 	}
-	return matches, matchedLines, rest
+	return matches, rest
 }
