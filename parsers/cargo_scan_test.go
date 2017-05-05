@@ -10,7 +10,7 @@ var cargoScanTestCases = []Case{
 				CargoScanItem{name: "Minmatar Shuttle", quantity: 1},
 				CargoScanItem{name: "Gallente Shuttle", quantity: 2},
 			},
-			raw: []string{"1 Minmatar Shuttle", "2 Gallente Shuttle"},
+			lines: []int{0, 1},
 		},
 		nil,
 		true,
@@ -23,7 +23,7 @@ var cargoScanTestCases = []Case{
 `,
 		&CargoScan{
 			items: []CargoScanItem{CargoScanItem{name: "Minmatar Shuttle", quantity: 1}},
-			raw:   []string{"1 Minmatar Shuttle"},
+			lines: []int{2},
 		},
 		[]string{"", "", "", ""},
 		true,
@@ -32,7 +32,7 @@ var cargoScanTestCases = []Case{
 		`10 Plagioclase Mining Crystal I Blueprint (Original)`,
 		&CargoScan{
 			items: []CargoScanItem{CargoScanItem{name: "Plagioclase Mining Crystal I Blueprint", quantity: 10, details: "BLUEPRINT ORIGINAL"}},
-			raw:   []string{"10 Plagioclase Mining Crystal I Blueprint (Original)"},
+			lines: []int{0},
 		},
 		nil,
 		true,
@@ -41,7 +41,7 @@ var cargoScanTestCases = []Case{
 		`10 Plagioclase Mining Crystal I Blueprint (Copy)`,
 		&CargoScan{
 			items: []CargoScanItem{CargoScanItem{name: "Plagioclase Mining Crystal I Blueprint", quantity: 10, details: "BLUEPRINT COPY"}},
-			raw:   []string{"10 Plagioclase Mining Crystal I Blueprint (Copy)"},
+			lines: []int{0},
 		},
 		nil,
 		true,
@@ -50,7 +50,7 @@ var cargoScanTestCases = []Case{
 		`12'000 Tengu`,
 		&CargoScan{
 			items: []CargoScanItem{CargoScanItem{name: "Tengu", quantity: 12000}},
-			raw:   []string{"12'000 Tengu"},
+			lines: []int{0},
 		},
 		nil,
 		true,

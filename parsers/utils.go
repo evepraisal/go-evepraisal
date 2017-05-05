@@ -29,18 +29,18 @@ func ToFloat64(s string) float64 {
 	return f
 }
 
-func regexParseLines(re *regexp.Regexp, lines []string) ([][]string, []string, []string) {
+func regexParseLines(re *regexp.Regexp, lines []string) ([][]string, []int, []string) {
 	var matches [][]string
-	var raw []string
+	var matchedLines []int
 	var rest []string
-	for _, line := range lines {
+	for i, line := range lines {
 		match := re.FindStringSubmatch(line)
 		if len(match) == 0 {
 			rest = append(rest, line)
 		} else {
 			matches = append(matches, match)
-			raw = append(raw, line)
+			matchedLines = append(matchedLines, i)
 		}
 	}
-	return matches, raw, rest
+	return matches, matchedLines, rest
 }

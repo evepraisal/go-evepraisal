@@ -7,15 +7,15 @@ import (
 
 type CargoScan struct {
 	items []CargoScanItem
-	raw   []string
+	lines []int
 }
 
 func (r CargoScan) Name() string {
 	return "cargo_scan"
 }
 
-func (r CargoScan) Raw() string {
-	return strings.Join(r.raw, "\n")
+func (r CargoScan) Lines() []int {
+	return r.lines
 }
 
 type CargoScanItem struct {
@@ -28,8 +28,8 @@ var reCargoScan = regexp.MustCompile(`^([\d,'\.]+) ([\S ]+)$`)
 
 func ParseCargoScan(lines []string) (ParserResult, []string) {
 	scan := &CargoScan{}
-	matches, raw, rest := regexParseLines(reCargoScan, lines)
-	scan.raw = raw
+	matches, matchedLines, rest := regexParseLines(reCargoScan, lines)
+	scan.lines = matchedLines
 	for _, match := range matches {
 		item := CargoScanItem{name: match[2], quantity: ToInt(match[1])}
 

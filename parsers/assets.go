@@ -7,15 +7,15 @@ import (
 
 type AssetList struct {
 	items []AssetItem
-	raw   []string
+	lines []int
 }
 
 func (r *AssetList) Name() string {
 	return "assets"
 }
 
-func (r *AssetList) Raw() string {
-	return strings.Join(r.raw, "\n")
+func (r *AssetList) Lines() []int {
+	return r.lines
 }
 
 type AssetItem struct {
@@ -44,8 +44,8 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 
 func ParseAssets(lines []string) (ParserResult, []string) {
 	assetList := &AssetList{}
-	matches, raw, rest := regexParseLines(reAssetList, lines)
-	assetList.raw = raw
+	matches, matchedLines, rest := regexParseLines(reAssetList, lines)
+	assetList.lines = matchedLines
 	for _, match := range matches {
 		assetList.items = append(assetList.items,
 			AssetItem{

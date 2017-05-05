@@ -7,15 +7,15 @@ import (
 
 type Contract struct {
 	items []ContractItem
-	raw   []string
+	lines []int
 }
 
 func (r *Contract) Name() string {
 	return "contract"
 }
 
-func (r *Contract) Raw() string {
-	return strings.Join(r.raw, "\n")
+func (r *Contract) Lines() []int {
+	return r.lines
 }
 
 type ContractItem struct {
@@ -43,8 +43,8 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 
 func ParseContract(lines []string) (ParserResult, []string) {
 	contract := &Contract{}
-	matches, raw, rest := regexParseLines(reContract, lines)
-	contract.raw = raw
+	matches, matchedLines, rest := regexParseLines(reContract, lines)
+	contract.lines = matchedLines
 	for _, match := range matches {
 		contract.items = append(contract.items,
 			ContractItem{
@@ -57,8 +57,8 @@ func ParseContract(lines []string) (ParserResult, []string) {
 			})
 	}
 
-	matches2, raw2, rest := regexParseLines(reContractShort, rest)
-	contract.raw = append(contract.raw, raw2...)
+	matches2, matchedLines2, rest := regexParseLines(reContractShort, rest)
+	contract.lines = append(contract.lines, matchedLines2...)
 	for _, match := range matches2 {
 		contract.items = append(contract.items,
 			ContractItem{
