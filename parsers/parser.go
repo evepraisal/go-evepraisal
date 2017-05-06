@@ -12,8 +12,11 @@ type Parser func(input Input) (ParserResult, Input)
 var AllParser = NewMultiParser(
 	[]Parser{
 		ParseEFT,
+		ParseFitting,
+		ParseLootHistory,
 		ParseContract,
 		ParseAssets,
+		ParseIndustry,
 		ParseCargoScan,
 		ParseDScan,
 		ParseListing,

@@ -23,7 +23,7 @@ func (r *EFT) Lines() []int {
 }
 
 var reEFTHeader = regexp.MustCompile(`^\[([\S ]+), ?([\S ]+)\]$`)
-var blacklist = map[string]bool{
+var eftBlacklist = map[string]bool{
 	"[empty high slot]":      true,
 	"[empty low slot]":       true,
 	"[empty medium slot]":    true,
@@ -58,7 +58,7 @@ func ParseEFT(input Input) (ParserResult, Input) {
 
 	// remove blacklisted lines
 	for i, line := range itemsInput {
-		_, blacklisted := blacklist[line]
+		_, blacklisted := eftBlacklist[line]
 		if blacklisted {
 			eft.lines = append(eft.lines, i)
 			delete(itemsInput, i)
