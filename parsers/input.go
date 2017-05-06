@@ -7,12 +7,16 @@ import (
 
 type Input map[int]string
 
-func StringToInput(input string) Input {
+func StringsToInput(lines []string) Input {
 	m := make(Input)
-	for i, line := range strings.Split(input, "\n") {
+	for i, line := range lines {
 		m[i] = line
 	}
 	return m
+}
+
+func StringToInput(s string) Input {
+	return StringsToInput(strings.Split(s, "\n"))
 }
 
 func (m Input) Strings() []string {

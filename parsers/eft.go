@@ -1,34 +1,79 @@
 package parsers
 
-// import (
-// 	"regexp"
-// 	"strings"
-// )
+import (
+	"log"
+	"regexp"
+	"sort"
+	"strings"
+)
 
-// type EFT struct {
-// 	ship    EFTItem
-// 	modules []EFTItem
-// 	lines   []int
-// }
+type EFT struct {
+	name  string
+	ship  string
+	items []ListingItem
+	lines []int
+}
 
-// func (r *EFT) Name() string {
-// 	return "dscan"
-// }
+func (r *EFT) Name() string {
+	return "eft"
+}
 
-// func (r *EFT) Lines() []int {
-// 	return r.lines
-// }
+func (r *EFT) Lines() []int {
+	return r.lines
+}
 
-// type EFTItem struct {
-// 	name     string
-// 	ammo     string
-// 	quantity int64
-// }
+var reEFTHeader = regexp.MustCompile(`^\[([\S ]+), ?([\S ]+)\]$`)
+var blacklist = map[string]bool{
+	"[empty high slot]":      true,
+	"[empty low slot]":       true,
+	"[empty medium slot]":    true,
+	"[empty rig slot]":       true,
+	"[empty subsystem slot]": true,
+}
 
-// var reEFT = regexp.MustCompile(strings.Join([]string{}, ""))
+func ParseEFT(input Input) (ParserResult, Input) {
+	inputLines := input.Strings()
+	if len(inputLines) == 0 {
+		return nil, input
+	}
 
-// func ParseEFT(lines []string) (ParserResult, []string) {
-// 	dscan := &EFT{}
-//  TODO: All of this once the listing parser exists
-// 	return dscan, nil
-// }
+	line0 := inputLines[0]
+	if !strings.Contains(line0, "[") || !strings.Contains(line0, "]") {
+		return nil, input
+	}
+
+	headerParts := reEFTHeader.FindStringSubmatch(line0)
+	if len(headerParts) == 0 {
+		return nil, input
+	}
+
+	eft := &EFT{}
+	eft.lines = []int{0}
+	eft.ship = headerParts[1]
+	eft.name = headerParts[2]
+
+	itemsInput := StringsToInput(inputLines)
+	// remove the header line (it was done this way to maintain the correct line numbers)
+	delete(itemsInput, 0)
+
+	// remove blacklisted lines
+	for i, line := range itemsInput {
+		_, blacklisted := blacklist[line]
+		if blacklisted {
+			eft.lines = append(eft.lines, i)
+			delete(itemsInput, i)
+		}
+	}
+
+	result, rest := ParseListing(itemsInput)
+	listingResult, ok := result.(*Listing)
+	if !ok {
+		log.Fatal("ParseListing returned something other than parsers.Listing")
+	}
+	eft.items = listingResult.items
+	eft.lines = append(eft.lines, listingResult.Lines()...)
+
+	sort.Slice(eft.items, func(i, j int) bool { return eft.items[i].name < eft.items[j].name })
+	sort.Ints(eft.lines)
+	return eft, rest
+}

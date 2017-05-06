@@ -11,6 +11,7 @@ type Parser func(input Input) (ParserResult, Input)
 
 var AllParser = NewMultiParser(
 	[]Parser{
+		ParseEFT,
 		ParseContract,
 		ParseAssets,
 		ParseCargoScan,
@@ -43,7 +44,7 @@ func NewMultiParser(parsers []Parser) Parser {
 			for _, parser := range parsers {
 				var result ParserResult
 				result, left = parser(left)
-				if len(result.Lines()) > 0 {
+				if result != nil && len(result.Lines()) > 0 {
 					multiParserResult.results = append(multiParserResult.results, result)
 				}
 				if len(left) == 0 {

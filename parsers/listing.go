@@ -26,15 +26,19 @@ type ListingItem struct {
 var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?x? ([\S ]+)$`)
 var reListing2 = regexp.MustCompile(`^([\S ]+?) x? ?([\d,'\.]+)$`)
 var reListing3 = regexp.MustCompile(`^([\S ]+)$`)
+var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ([\S ]+)$`)
 
 func ParseListing(input Input) (ParserResult, Input) {
 	listing := &Listing{}
-	matches, rest := regexParseLines(reListing, input)
+
+	matchesWithAmmo, rest := regexParseLines(reListingWithAmmo, input)
+	matches, rest := regexParseLines(reListing, rest)
 	matches2, rest := regexParseLines(reListing2, rest)
 	matches3, rest := regexParseLines(reListing3, rest)
 	listing.lines = append(listing.lines, regexMatchedLines(matches)...)
 	listing.lines = append(listing.lines, regexMatchedLines(matches2)...)
 	listing.lines = append(listing.lines, regexMatchedLines(matches3)...)
+	listing.lines = append(listing.lines, regexMatchedLines(matchesWithAmmo)...)
 
 	// collect items
 	matchgroup := make(map[ListingItem]int64)
@@ -48,6 +52,11 @@ func ParseListing(input Input) (ParserResult, Input) {
 
 	for _, match := range matches3 {
 		matchgroup[ListingItem{name: match[1]}] += 1
+	}
+
+	for _, match := range matchesWithAmmo {
+		matchgroup[ListingItem{name: match[1]}] += 1
+		matchgroup[ListingItem{name: match[2]}] += 1
 	}
 
 	// add items w/totals
