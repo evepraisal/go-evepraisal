@@ -33,6 +33,7 @@ var ParserTests = []CaseGroup{
 	CaseGroup{"pi", ParsePI, piTestCases},
 	CaseGroup{"survey_scanner", ParseSurveyScan, surveyScannerTestCases},
 	CaseGroup{"view_contents", ParseViewContents, viewContentsTestCases},
+	CaseGroup{"wallet", ParseWallet, walletTestCases},
 }
 
 func TestParsers(rt *testing.T) {
