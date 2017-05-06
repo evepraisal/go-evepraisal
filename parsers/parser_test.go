@@ -30,6 +30,7 @@ var ParserTests = []CaseGroup{
 	CaseGroup{"fitting", ParseFitting, fittingTestCases},
 	CaseGroup{"industry", ParseIndustry, industryTestCases},
 	CaseGroup{"loot_history", ParseLootHistory, lootHistoryTestCases},
+	CaseGroup{"pi", ParsePI, piTestCases},
 }
 
 func TestParsers(rt *testing.T) {
