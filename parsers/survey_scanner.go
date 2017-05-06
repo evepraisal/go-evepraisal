@@ -44,8 +44,12 @@ func ParseSurveyScan(input Input) (ParserResult, Input) {
 				distance: match[3],
 			})
 	}
+
 	sort.Slice(surveyScan.items, func(i, j int) bool {
 		return fmt.Sprintf("%v", surveyScan.items[i]) < fmt.Sprintf("%v", surveyScan.items[j])
 	})
+	if len(matches) > 0 {
+		return surveyScan, Input{}
+	}
 	return surveyScan, rest
 }

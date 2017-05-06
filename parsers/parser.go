@@ -15,6 +15,8 @@ var AllParser = NewMultiParser(
 		ParseFitting,
 		ParseLootHistory,
 		ParsePI,
+		ParseViewContents,
+		ParseSurveyScan,
 		ParseContract,
 		ParseAssets,
 		ParseIndustry,
