@@ -21,13 +21,9 @@ func (r *LootHistory) Lines() []int {
 
 type LootItem struct {
 	time       string
+	name       string
 	playerName string
 	quantity   int64
-	name       string
-}
-
-func (i LootItem) String() string {
-	return fmt.Sprintf("LootItem(player=%q, name=%q, quantity=%d, time=%q)", i.playerName, i.name, i.quantity, i.time)
 }
 
 var reLootHistory = regexp.MustCompile(`(\d\d:\d\d:\d\d) ([\S ]+) has looted ([\d,'\.]+) x ([\S ]+)$`)
@@ -45,6 +41,9 @@ func ParseLootHistory(input Input) (ParserResult, Input) {
 				name:       match[4],
 			})
 	}
-	sort.Slice(lootHistory.items, func(i, j int) bool { return lootHistory.items[i].String() < lootHistory.items[j].String() })
+
+	sort.Slice(lootHistory.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", lootHistory.items[i]) < fmt.Sprintf("%v", lootHistory.items[j])
+	})
 	return lootHistory, rest
 }

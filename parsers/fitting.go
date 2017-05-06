@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"log"
 	"sort"
 )
@@ -54,7 +55,9 @@ func ParseFitting(input Input) (ParserResult, Input) {
 	fitting.items = listingResult.items
 	fitting.lines = append(fitting.lines, listingResult.Lines()...)
 
-	sort.Slice(fitting.items, func(i, j int) bool { return fitting.items[i].name < fitting.items[j].name })
+	sort.Slice(fitting.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", fitting.items[i]) < fmt.Sprintf("%v", fitting.items[j])
+	})
 	sort.Ints(fitting.lines)
 	return fitting, rest
 }

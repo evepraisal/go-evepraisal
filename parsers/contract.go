@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -76,6 +77,8 @@ func ParseContract(input Input) (ParserResult, Input) {
 		contract.items = append(contract.items, item)
 	}
 
-	sort.Slice(contract.items, func(i, j int) bool { return contract.items[i].name < contract.items[j].name })
+	sort.Slice(contract.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", contract.items[i]) < fmt.Sprintf("%v", contract.items[j])
+	})
 	return contract, rest
 }

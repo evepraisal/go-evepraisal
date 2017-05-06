@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -38,6 +39,9 @@ func ParseDScan(input Input) (ParserResult, Input) {
 	for _, match := range matches {
 		dscan.items = append(dscan.items, DScanItem{name: match[2], distance: ToInt(match[4]), distanceUnit: match[5]})
 	}
-	sort.Slice(dscan.items, func(i, j int) bool { return dscan.items[i].name < dscan.items[j].name })
+
+	sort.Slice(dscan.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", dscan.items[i]) < fmt.Sprintf("%v", dscan.items[j])
+	})
 	return dscan, rest
 }

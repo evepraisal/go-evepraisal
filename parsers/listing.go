@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 )
@@ -65,7 +66,9 @@ func ParseListing(input Input) (ParserResult, Input) {
 		listing.items = append(listing.items, item)
 	}
 
-	sort.Slice(listing.items, func(i, j int) bool { return listing.items[i].name < listing.items[j].name })
+	sort.Slice(listing.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", listing.items[i]) < fmt.Sprintf("%v", listing.items[j])
+	})
 	sort.Ints(listing.lines)
 	return listing, rest
 }

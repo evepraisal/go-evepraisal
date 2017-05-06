@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -61,6 +62,8 @@ func ParseAssets(input Input) (ParserResult, Input) {
 				techLevel: match[16],
 			})
 	}
-	sort.Slice(assetList.items, func(i, j int) bool { return assetList.items[i].name < assetList.items[j].name })
+	sort.Slice(assetList.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", assetList.items[i]) < fmt.Sprintf("%v", assetList.items[j])
+	})
 	return assetList, rest
 }

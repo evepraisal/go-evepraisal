@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -45,6 +46,9 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 		}
 		scan.items = append(scan.items, item)
 	}
-	sort.Slice(scan.items, func(i, j int) bool { return scan.items[i].name < scan.items[j].name })
+
+	sort.Slice(scan.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", scan.items[i]) < fmt.Sprintf("%v", scan.items[j])
+	})
 	return scan, rest
 }

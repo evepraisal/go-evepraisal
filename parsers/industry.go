@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 )
@@ -42,6 +43,8 @@ func ParseIndustry(input Input) (ParserResult, Input) {
 		industry.items = append(industry.items, item)
 	}
 
-	sort.Slice(industry.items, func(i, j int) bool { return industry.items[i].name < industry.items[j].name })
+	sort.Slice(industry.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", industry.items[i]) < fmt.Sprintf("%v", industry.items[j])
+	})
 	return industry, rest
 }

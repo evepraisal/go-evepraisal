@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"log"
 	"regexp"
 	"sort"
@@ -73,7 +74,9 @@ func ParseEFT(input Input) (ParserResult, Input) {
 	eft.items = listingResult.items
 	eft.lines = append(eft.lines, listingResult.Lines()...)
 
-	sort.Slice(eft.items, func(i, j int) bool { return eft.items[i].name < eft.items[j].name })
+	sort.Slice(eft.items, func(i, j int) bool {
+		return fmt.Sprintf("%v", eft.items[i]) < fmt.Sprintf("%v", eft.items[j])
+	})
 	sort.Ints(eft.lines)
 	return eft, rest
 }
