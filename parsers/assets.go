@@ -33,15 +33,15 @@ type AssetItem struct {
 }
 
 var reAssetList = regexp.MustCompile(strings.Join([]string{
-	`^([\S\ ]*)`,                         // name
-	`\t([\d,'\.]*)`,                      // quantity
-	`(\t([\S ]*))?`,                      // group
-	`(\t([\S ]*))?`,                      // category
-	`(\t(XLarge|Large|Medium|Small|))?`,  // size
-	`(\t(High|Medium|Low|Rigs|[\d ]*))?`, // slot
-	`(\t([\d ,\.]*) m3)?`,                // volume
-	`(\t([\d]+|))?`,                      // meta level
-	`(\t([\d]+|))?$`,                     // tech level
+	`^([\S\ ]*)`,                           // name
+	`\t([\d,'\.]*)`,                        // quantity
+	`(?:\t([\S ]*))?`,                      // group
+	`(?:\t([\S ]*))?`,                      // category
+	`(?:\t(XLarge|Large|Medium|Small|))?`,  // size
+	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`, // slot
+	`(?:\t([\d ,\.]*) m3)?`,                // volume
+	`(?:\t([\d]+|))?`,                      // meta level
+	`(?:\t([\d]+|))?$`,                     // tech level
 }, ""))
 
 func ParseAssets(input Input) (ParserResult, Input) {
@@ -53,13 +53,13 @@ func ParseAssets(input Input) (ParserResult, Input) {
 			AssetItem{
 				name:      match[1],
 				quantity:  ToInt(match[2]),
-				volume:    ToFloat64(match[12]),
-				group:     match[4],
-				category:  match[6],
-				size:      match[8],
-				slot:      match[10],
-				metaLevel: match[14],
-				techLevel: match[16],
+				volume:    ToFloat64(match[7]),
+				group:     match[3],
+				category:  match[4],
+				size:      match[5],
+				slot:      match[6],
+				metaLevel: match[8],
+				techLevel: match[9],
 			})
 	}
 	sort.Slice(assetList.items, func(i, j int) bool {

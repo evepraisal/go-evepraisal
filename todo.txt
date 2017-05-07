@@ -1,26 +1,12 @@
 TODO:
 
-Phase 1
-	EFT parser
-	Fitting parser
-	Industry parser
-	Killmail parser
-	Listing parser
-	Loot history parser
-	pi parser
-	survey scanner parser
-	view contents parser
-	wallet parser
-
-	Run historic parse input and results through the new parser to discover differences (ignore heuristic parser for now)
-
 Phase 2
 	Market scanner
 	 - Major regions (using market buy/sell order data)
 	 - Universe (using eve's prices)
 
 Phase 3
-	Basic interface/web server
+	Basic interface/web server w/SSL certs
 	Item iteration based on the parser type
 	item type id lookup
 	price lookup

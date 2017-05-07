@@ -11,6 +11,7 @@ type Parser func(input Input) (ParserResult, Input)
 
 var AllParser = NewMultiParser(
 	[]Parser{
+		ParseKillmail,
 		ParseEFT,
 		ParseFitting,
 		ParseLootHistory,
@@ -49,13 +50,13 @@ func NewMultiParser(parsers []Parser) Parser {
 			multiParserResult := &MultiParserResult{}
 			left := input
 			for _, parser := range parsers {
+				if len(left) == 0 {
+					break
+				}
 				var result ParserResult
 				result, left = parser(left)
 				if result != nil && len(result.Lines()) > 0 {
 					multiParserResult.results = append(multiParserResult.results, result)
-				}
-				if len(left) == 0 {
-					break
 				}
 			}
 			return multiParserResult, left

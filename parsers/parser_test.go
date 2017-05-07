@@ -34,6 +34,7 @@ var ParserTests = []CaseGroup{
 	CaseGroup{"survey_scanner", ParseSurveyScan, surveyScannerTestCases},
 	CaseGroup{"view_contents", ParseViewContents, viewContentsTestCases},
 	CaseGroup{"wallet", ParseWallet, walletTestCases},
+	CaseGroup{"killmail", ParseKillmail, killmailTestCases},
 }
 
 func TestParsers(rt *testing.T) {
@@ -55,7 +56,12 @@ func TestParsers(rt *testing.T) {
 
 			rt.Run("AllParser_"+group.name+":"+c.Description, func(t *testing.T) {
 				result, rest := AllParser(StringToInput(c.Input))
-				assert.Equal(t, &MultiParserResult{results: []ParserResult{c.Expected}}, result, "results should be the same")
+
+				expectedResult := &MultiParserResult{results: []ParserResult{c.Expected}}
+				if c.Expected == nil {
+					expectedResult = &MultiParserResult{results: nil}
+				}
+				assert.Equal(t, expectedResult, result, "results should be the same")
 				assert.Equal(t, c.ExpectedRest, rest, "the rest should be the same")
 			})
 		}
