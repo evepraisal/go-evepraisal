@@ -37,10 +37,6 @@ func MustLoadTemplateFiles() *template.Template {
 	return t
 }
 
-type AppraisalPage struct {
-	r parsers.ParserResult
-}
-
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "main.html", struct{}{})
 	if err != nil {
@@ -50,10 +46,13 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
 	body := r.FormValue("body")
-	log.Printf("%#v", body)
 	result, _ := parsers.AllParser(parsers.StringToInput(body))
-	log.Printf("%#v", result)
-	json.NewEncoder(w).Encode(result)
+	// json.NewEncoder(w).Encode(result)
+	appraisal, err := ParserResultToAppraisal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	json.NewEncoder(w).Encode(appraisal)
 }
 
 func main() {
