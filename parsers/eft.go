@@ -9,10 +9,10 @@ import (
 )
 
 type EFT struct {
-	name  string
-	ship  string
-	items []ListingItem
-	lines []int
+	FittingName string
+	Ship        string
+	Items       []ListingItem
+	lines       []int
 }
 
 func (r *EFT) Name() string {
@@ -50,8 +50,8 @@ func ParseEFT(input Input) (ParserResult, Input) {
 
 	eft := &EFT{}
 	eft.lines = []int{0}
-	eft.ship = headerParts[1]
-	eft.name = headerParts[2]
+	eft.Ship = headerParts[1]
+	eft.FittingName = headerParts[2]
 
 	itemsInput := StringsToInput(inputLines)
 	// remove the header line (it was done this way to maintain the correct line numbers)
@@ -71,11 +71,11 @@ func ParseEFT(input Input) (ParserResult, Input) {
 	if !ok {
 		log.Fatal("ParseListing returned something other than parsers.Listing")
 	}
-	eft.items = listingResult.items
+	eft.Items = listingResult.Items
 	eft.lines = append(eft.lines, listingResult.Lines()...)
 
-	sort.Slice(eft.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", eft.items[i]) < fmt.Sprintf("%v", eft.items[j])
+	sort.Slice(eft.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", eft.Items[i]) < fmt.Sprintf("%v", eft.Items[j])
 	})
 	sort.Ints(eft.lines)
 	return eft, rest

@@ -5,7 +5,7 @@ var assetListTestCases = []Case{
 		"Simple",
 		`Hurricane	1	Combat Battlecruiser`,
 		&AssetList{
-			items: []AssetItem{AssetItem{name: "Hurricane", group: "Combat Battlecruiser", quantity: 1}},
+			Items: []AssetItem{AssetItem{Name: "Hurricane", Group: "Combat Battlecruiser", Quantity: 1}},
 			lines: []int{0},
 		},
 		Input{},
@@ -16,10 +16,10 @@ var assetListTestCases = []Case{
 Damage Control II	1	Damage Control		Low	5 m3
 Experimental 10MN Microwarpdrive I	1	Propulsion Module		Medium	10 m3`,
 		&AssetList{
-			items: []AssetItem{
-				AssetItem{name: "720mm Gallium Cannon", quantity: 1, group: "Projectile Weapon", category: "Medium", slot: "High", volume: 10},
-				AssetItem{name: "Damage Control II", quantity: 1, group: "Damage Control", slot: "Low", volume: 5},
-				AssetItem{name: "Experimental 10MN Microwarpdrive I", quantity: 1, group: "Propulsion Module", size: "Medium", volume: 10},
+			Items: []AssetItem{
+				AssetItem{Name: "720mm Gallium Cannon", Quantity: 1, Group: "Projectile Weapon", Category: "Medium", Slot: "High", Volume: 10},
+				AssetItem{Name: "Damage Control II", Quantity: 1, Group: "Damage Control", Slot: "Low", Volume: 5},
+				AssetItem{Name: "Experimental 10MN Microwarpdrive I", Quantity: 1, Group: "Propulsion Module", Size: "Medium", Volume: 10},
 			},
 			lines: []int{0, 1, 2}},
 		Input{},
@@ -30,20 +30,20 @@ Experimental 10MN Microwarpdrive I	1	Propulsion Module		Medium	10 m3`,
 10MN Afterburner II	1	Propulsion Module	Module	Medium	5 m3	5	2
 Warrior II	9`,
 		&AssetList{
-			items: []AssetItem{
-				AssetItem{name: "10MN Afterburner II", quantity: 1, group: "Propulsion Module", category: "Module", size: "Medium", metaLevel: "5", techLevel: "2", volume: 5},
-				AssetItem{name: "200mm AutoCannon I", quantity: 1, group: "Projectile Weapon", category: "Module", size: "Small", slot: "High", metaLevel: "1", volume: 5},
-				AssetItem{name: "Warrior II", quantity: 9},
+			Items: []AssetItem{
+				AssetItem{Name: "10MN Afterburner II", Quantity: 1, Group: "Propulsion Module", Category: "Module", Size: "Medium", MetaLevel: "5", TechLevel: "2", Volume: 5},
+				AssetItem{Name: "200mm AutoCannon I", Quantity: 1, Group: "Projectile Weapon", Category: "Module", Size: "Small", Slot: "High", MetaLevel: "1", Volume: 5},
+				AssetItem{Name: "Warrior II", Quantity: 9},
 			},
 			lines: []int{0, 1, 2},
 		},
 		Input{},
 		true,
 	}, {
-		"With volumes",
+		"With Volumes",
 		`Sleeper Data Library	1080	Sleeper Components			10.82 m3`,
 		&AssetList{
-			items: []AssetItem{AssetItem{name: "Sleeper Data Library", quantity: 1080, group: "Sleeper Components", volume: 10.82}},
+			Items: []AssetItem{AssetItem{Name: "Sleeper Data Library", Quantity: 1080, Group: "Sleeper Components", Volume: 10.82}},
 			lines: []int{0},
 		},
 		Input{},
@@ -54,10 +54,10 @@ Warrior II	9`,
 Sleeper Data Library	1'080
 Sleeper Data Library	1.080`,
 		&AssetList{
-			items: []AssetItem{
-				AssetItem{name: "Sleeper Data Library", quantity: 1080},
-				AssetItem{name: "Sleeper Data Library", quantity: 1080},
-				AssetItem{name: "Sleeper Data Library", quantity: 1080},
+			Items: []AssetItem{
+				AssetItem{Name: "Sleeper Data Library", Quantity: 1080},
+				AssetItem{Name: "Sleeper Data Library", Quantity: 1080},
+				AssetItem{Name: "Sleeper Data Library", Quantity: 1080},
 			},
 			lines: []int{0, 1, 2},
 		},

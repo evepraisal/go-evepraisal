@@ -44,8 +44,8 @@ Dropped items:
 
 Warrior II (Drone Bay)`,
 		&Killmail{
-			datetime: "2013.06.15 17:28:00",
-			victim: map[string]interface{}{
+			Datetime: "2013.06.15 17:28:00",
+			Victim: map[string]interface{}{
 				"faction":      "Unknown",
 				"destroyed":    "Scimitar",
 				"system":       "Jita",
@@ -54,7 +54,7 @@ Warrior II (Drone Bay)`,
 				"victim":       "Some poor victim",
 				"corp":         "Victim's Corp Name",
 				"alliance":     "Victim's Alliance Name"},
-			involved: []map[string]interface{}{
+			Involved: []map[string]interface{}{
 				map[string]interface{}{
 					"killing_blow": true,
 					"corp":         "Ganker Corp",
@@ -74,12 +74,12 @@ Warrior II (Drone Bay)`,
 					"alliance":    "Ganker Alliance",
 					"faction":     "Unknown",
 					"ship":        "Rifter"}},
-			destroyed: []KillmailItem{
-				KillmailItem{name: "Medium Armor Maintenance Bot I", quantity: 3, location: "Drone Bay"},
-				KillmailItem{name: "Tengu Engineering - Capacitor Regeneration Matrix", quantity: 1, location: ""},
-				KillmailItem{name: "Power Diagnostic System II", quantity: 1, location: "Cargo"},
+			Destroyed: []KillmailItem{
+				KillmailItem{Name: "Medium Armor Maintenance Bot I", Quantity: 3, Location: "Drone Bay"},
+				KillmailItem{Name: "Tengu Engineering - Capacitor Regeneration Matrix", Quantity: 1, Location: ""},
+				KillmailItem{Name: "Power Diagnostic System II", Quantity: 1, Location: "Cargo"},
 			},
-			dropped:   []KillmailItem{KillmailItem{name: "Warrior II", quantity: 1, location: "Drone Bay"}},
+			Dropped:   []KillmailItem{KillmailItem{Name: "Warrior II", Quantity: 1, Location: "Drone Bay"}},
 			lineCount: 40,
 		},
 		nil,
@@ -101,8 +101,8 @@ Damage Taken`,
 
 Victim: Some poor victim`,
 		&Killmail{
-			datetime:  "2013.06.15 17:28:00",
-			victim:    map[string]interface{}{"victim": "Some poor victim"},
+			Datetime:  "2013.06.15 17:28:00",
+			Victim:    map[string]interface{}{"victim": "Some poor victim"},
 			lineCount: 3,
 		},
 		nil,

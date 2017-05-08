@@ -7,7 +7,7 @@ import (
 )
 
 type Fitting struct {
-	items []ListingItem
+	Items []ListingItem
 	lines []int
 }
 
@@ -52,11 +52,11 @@ func ParseFitting(input Input) (ParserResult, Input) {
 	if !ok {
 		log.Fatal("ParseListing returned something other than parsers.Listing")
 	}
-	fitting.items = listingResult.items
+	fitting.Items = listingResult.Items
 	fitting.lines = append(fitting.lines, listingResult.Lines()...)
 
-	sort.Slice(fitting.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", fitting.items[i]) < fmt.Sprintf("%v", fitting.items[j])
+	sort.Slice(fitting.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", fitting.Items[i]) < fmt.Sprintf("%v", fitting.Items[j])
 	})
 	sort.Ints(fitting.lines)
 	return fitting, rest

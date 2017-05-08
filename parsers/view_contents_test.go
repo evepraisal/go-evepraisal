@@ -15,17 +15,17 @@ Large Trimark Armor Pump I	Rig Armor	Rig Slot	1
 Medium Electrochemical Capacitor Booster I	Capacitor Booster	Medium Slot	1
 Giant Secure Container	Secure Cargo Container		1`,
 		&ViewContents{
-			items: []ViewContentsItem{
-				ViewContentsItem{name: "100MN Microwarpdrive II", group: "Propulsion Module", location: "Medium Slot", quantity: 1},
-				ViewContentsItem{name: "1600mm Reinforced Steel Plates II", group: "Armor Reinforcer", location: "Low Slot", quantity: 1},
-				ViewContentsItem{name: "Bouncer II", group: "Combat Drone", location: "Drone Bay", quantity: 2},
-				ViewContentsItem{name: "Drone Link Augmentor II", group: "Drone Control Range Module", location: "High Slot", quantity: 1},
-				ViewContentsItem{name: "Giant Secure Container", group: "Secure Cargo Container", location: "", quantity: 1},
-				ViewContentsItem{name: "Large Micro Jump Drive", group: "Micro Jump Drive", location: "Cargo Hold", quantity: 1},
-				ViewContentsItem{name: "Large Trimark Armor Pump I", group: "Rig Armor", location: "Rig Slot", quantity: 1},
-				ViewContentsItem{name: "Medium Electrochemical Capacitor Booster I", group: "Capacitor Booster", location: "Medium Slot", quantity: 1},
-				ViewContentsItem{name: "Nitrogen Isotopes", group: "Ice Product", location: "Fuel Bay", quantity: 20000},
-				ViewContentsItem{name: "Tengu Defensive - Adaptive Shielding", group: "Defensive Systems", location: "Subsystem", quantity: 1}},
+			Items: []ViewContentsItem{
+				ViewContentsItem{Name: "100MN Microwarpdrive II", Group: "Propulsion Module", Location: "Medium Slot", Quantity: 1},
+				ViewContentsItem{Name: "1600mm Reinforced Steel Plates II", Group: "Armor Reinforcer", Location: "Low Slot", Quantity: 1},
+				ViewContentsItem{Name: "Bouncer II", Group: "Combat Drone", Location: "Drone Bay", Quantity: 2},
+				ViewContentsItem{Name: "Drone Link Augmentor II", Group: "Drone Control Range Module", Location: "High Slot", Quantity: 1},
+				ViewContentsItem{Name: "Giant Secure Container", Group: "Secure Cargo Container", Location: "", Quantity: 1},
+				ViewContentsItem{Name: "Large Micro Jump Drive", Group: "Micro Jump Drive", Location: "Cargo Hold", Quantity: 1},
+				ViewContentsItem{Name: "Large Trimark Armor Pump I", Group: "Rig Armor", Location: "Rig Slot", Quantity: 1},
+				ViewContentsItem{Name: "Medium Electrochemical Capacitor Booster I", Group: "Capacitor Booster", Location: "Medium Slot", Quantity: 1},
+				ViewContentsItem{Name: "Nitrogen Isotopes", Group: "Ice Product", Location: "Fuel Bay", Quantity: 20000},
+				ViewContentsItem{Name: "Tengu Defensive - Adaptive Shielding", Group: "Defensive Systems", Location: "Subsystem", Quantity: 1}},
 			lines: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
 		Input{},
 		true,
@@ -36,10 +36,10 @@ Festival Launcher	Festival Launcher	1
 Hornet EC-300	Electronic Warfare Drone	50
 Men's 'Esquire' Coat (red/gold)	Outer	1`,
 		&ViewContents{
-			items: []ViewContentsItem{
-				ViewContentsItem{name: "Festival Launcher", group: "Festival Launcher", location: "", quantity: 2},
-				ViewContentsItem{name: "Hornet EC-300", group: "Electronic Warfare Drone", location: "", quantity: 50},
-				ViewContentsItem{name: "Men's 'Esquire' Coat (red/gold)", group: "Outer", location: "", quantity: 1}},
+			Items: []ViewContentsItem{
+				ViewContentsItem{Name: "Festival Launcher", Group: "Festival Launcher", Location: "", Quantity: 2},
+				ViewContentsItem{Name: "Hornet EC-300", Group: "Electronic Warfare Drone", Location: "", Quantity: 50},
+				ViewContentsItem{Name: "Men's 'Esquire' Coat (red/gold)", Group: "Outer", Location: "", Quantity: 1}},
 			lines: []int{0, 1, 2, 3}},
 		Input{},
 		true,

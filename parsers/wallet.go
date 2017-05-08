@@ -8,8 +8,8 @@ import (
 )
 
 type Wallet struct {
-	transactions         []WalletTransaction
-	itemizedTransactions []WalletItemizedTransaction
+	Transactions         []WalletTransaction
+	ItemizedTransactions []WalletItemizedTransaction
 	lines                []int
 }
 
@@ -22,22 +22,22 @@ func (r *Wallet) Lines() []int {
 }
 
 type WalletTransaction struct {
-	datetime        string
-	transactionType string
-	amount          string
-	balance         string
-	description     string
+	Datetime        string
+	TransactionType string
+	Amount          string
+	Balance         string
+	Description     string
 }
 
 type WalletItemizedTransaction struct {
-	datetime string
-	name     string
-	price    string
-	quantity int64
-	credit   string
-	currency string
-	client   string
-	location string
+	Datetime string
+	Name     string
+	Price    string
+	Quantity int64
+	Credit   string
+	Currency string
+	Client   string
+	Location string
 }
 
 var reWallet = regexp.MustCompile(strings.Join([]string{
@@ -68,34 +68,34 @@ func ParseWallet(input Input) (ParserResult, Input) {
 
 	for _, match := range matches {
 		item := WalletTransaction{
-			datetime:        match[1],
-			transactionType: match[2],
-			amount:          match[3],
-			balance:         match[4],
-			description:     match[5],
+			Datetime:        match[1],
+			TransactionType: match[2],
+			Amount:          match[3],
+			Balance:         match[4],
+			Description:     match[5],
 		}
-		wallet.transactions = append(wallet.transactions, item)
+		wallet.Transactions = append(wallet.Transactions, item)
 	}
 
 	for _, match := range matches2 {
 		item := WalletItemizedTransaction{
-			datetime: match[1],
-			name:     match[2],
-			price:    match[3],
-			quantity: ToInt(match[4]),
-			credit:   match[5],
-			currency: match[6],
-			client:   match[7],
-			location: match[8],
+			Datetime: match[1],
+			Name:     match[2],
+			Price:    match[3],
+			Quantity: ToInt(match[4]),
+			Credit:   match[5],
+			Currency: match[6],
+			Client:   match[7],
+			Location: match[8],
 		}
-		wallet.itemizedTransactions = append(wallet.itemizedTransactions, item)
+		wallet.ItemizedTransactions = append(wallet.ItemizedTransactions, item)
 	}
 
-	sort.Slice(wallet.transactions, func(i, j int) bool {
-		return fmt.Sprintf("%v", wallet.transactions[i]) < fmt.Sprintf("%v", wallet.transactions[j])
+	sort.Slice(wallet.Transactions, func(i, j int) bool {
+		return fmt.Sprintf("%v", wallet.Transactions[i]) < fmt.Sprintf("%v", wallet.Transactions[j])
 	})
-	sort.Slice(wallet.itemizedTransactions, func(i, j int) bool {
-		return fmt.Sprintf("%v", wallet.itemizedTransactions[i]) < fmt.Sprintf("%v", wallet.itemizedTransactions[j])
+	sort.Slice(wallet.ItemizedTransactions, func(i, j int) bool {
+		return fmt.Sprintf("%v", wallet.ItemizedTransactions[i]) < fmt.Sprintf("%v", wallet.ItemizedTransactions[j])
 	})
 
 	return wallet, rest

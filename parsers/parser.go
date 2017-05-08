@@ -9,26 +9,27 @@ type ParserResult interface {
 
 type Parser func(input Input) (ParserResult, Input)
 
-var AllParser = NewMultiParser(
-	[]Parser{
-		ParseKillmail,
-		ParseEFT,
-		ParseFitting,
-		ParseLootHistory,
-		ParsePI,
-		ParseViewContents,
-		ParseWallet,
-		ParseSurveyScan,
-		ParseContract,
-		ParseAssets,
-		ParseIndustry,
-		ParseCargoScan,
-		ParseDScan,
-		ParseListing,
-	})
+var AllParsers = []Parser{
+	ParseKillmail,
+	ParseEFT,
+	ParseFitting,
+	ParseLootHistory,
+	ParsePI,
+	ParseViewContents,
+	ParseWallet,
+	ParseSurveyScan,
+	ParseContract,
+	ParseAssets,
+	ParseIndustry,
+	ParseCargoScan,
+	ParseDScan,
+	ParseListing,
+}
+
+var AllParser = NewMultiParser(AllParsers)
 
 type MultiParserResult struct {
-	results []ParserResult
+	Results []ParserResult
 }
 
 func (r *MultiParserResult) Name() string {
@@ -37,7 +38,7 @@ func (r *MultiParserResult) Name() string {
 
 func (r *MultiParserResult) Lines() []int {
 	lines := make([]int, 0)
-	for _, r := range r.results {
+	for _, r := range r.Results {
 		lines = append(lines, r.Lines()...)
 	}
 	sort.Ints(lines)
@@ -56,7 +57,7 @@ func NewMultiParser(parsers []Parser) Parser {
 				var result ParserResult
 				result, left = parser(left)
 				if result != nil && len(result.Lines()) > 0 {
-					multiParserResult.results = append(multiParserResult.results, result)
+					multiParserResult.Results = append(multiParserResult.Results, result)
 				}
 			}
 			return multiParserResult, left

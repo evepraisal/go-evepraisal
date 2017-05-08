@@ -7,7 +7,7 @@ import (
 )
 
 type Industry struct {
-	items []IndustryItem
+	Items []IndustryItem
 	lines []int
 }
 
@@ -20,8 +20,8 @@ func (r *Industry) Lines() []int {
 }
 
 type IndustryItem struct {
-	name     string
-	quantity int64
+	Name     string
+	Quantity int64
 }
 
 var reIndustry = regexp.MustCompile(`^([\S ]+) \(([\d]+) Units?\)$`)
@@ -34,17 +34,17 @@ func ParseIndustry(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[IndustryItem]int64)
 	for _, match := range matches {
-		matchgroup[IndustryItem{name: match[1]}] += ToInt(match[2])
+		matchgroup[IndustryItem{Name: match[1]}] += ToInt(match[2])
 	}
 
 	// add items w/totals
 	for item, quantity := range matchgroup {
-		item.quantity = quantity
-		industry.items = append(industry.items, item)
+		item.Quantity = quantity
+		industry.Items = append(industry.Items, item)
 	}
 
-	sort.Slice(industry.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", industry.items[i]) < fmt.Sprintf("%v", industry.items[j])
+	sort.Slice(industry.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", industry.Items[i]) < fmt.Sprintf("%v", industry.Items[j])
 	})
 	return industry, rest
 }

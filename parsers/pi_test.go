@@ -6,9 +6,9 @@ var piTestCases = []Case{
 		`331.0	Aqueous Liquids	Not routed
 331	Aqueous Liquids	Routed`,
 		&PI{
-			items: []PIItem{
-				PIItem{name: "Aqueous Liquids", quantity: 331, volume: 0, routed: false},
-				PIItem{name: "Aqueous Liquids", quantity: 331, volume: 0, routed: true},
+			Items: []PIItem{
+				PIItem{Name: "Aqueous Liquids", Quantity: 331, Volume: 0, Routed: false},
+				PIItem{Name: "Aqueous Liquids", Quantity: 331, Volume: 0, Routed: true},
 			},
 			lines: []int{0, 1},
 		},
@@ -18,8 +18,8 @@ var piTestCases = []Case{
 		"Quantities as floats",
 		`	Aqueous Liquids	305.0	3.05`,
 		&PI{
-			items: []PIItem{
-				PIItem{name: "Aqueous Liquids", quantity: 305.0, volume: 3.05},
+			Items: []PIItem{
+				PIItem{Name: "Aqueous Liquids", Quantity: 305.0, Volume: 3.05},
 			},
 			lines: []int{0},
 		},
@@ -29,8 +29,8 @@ var piTestCases = []Case{
 		"Short format",
 		`	Aqueous Liquids	205.0`,
 		&PI{
-			items: []PIItem{
-				PIItem{name: "Aqueous Liquids", quantity: 205.0},
+			Items: []PIItem{
+				PIItem{Name: "Aqueous Liquids", Quantity: 205.0},
 			},
 			lines: []int{0},
 		},

@@ -8,7 +8,7 @@ import (
 )
 
 type ViewContents struct {
-	items []ViewContentsItem
+	Items []ViewContentsItem
 	lines []int
 }
 
@@ -21,10 +21,10 @@ func (r *ViewContents) Lines() []int {
 }
 
 type ViewContentsItem struct {
-	name     string
-	group    string
-	location string
-	quantity int64
+	Name     string
+	Group    string
+	Location string
+	Quantity int64
 }
 
 var reViewContents = regexp.MustCompile(strings.Join([]string{
@@ -50,29 +50,29 @@ func ParseViewContents(input Input) (ParserResult, Input) {
 	matchgroup := make(map[ViewContentsItem]int64)
 	for _, match := range matches {
 		item := ViewContentsItem{
-			name:     match[1],
-			group:    match[2],
-			location: match[3],
+			Name:     match[1],
+			Group:    match[2],
+			Location: match[3],
 		}
 		matchgroup[item] += ToInt(match[4])
 	}
 
 	for _, match := range matches2 {
 		item := ViewContentsItem{
-			name:  match[1],
-			group: match[2],
+			Name:  match[1],
+			Group: match[2],
 		}
 		matchgroup[item] += ToInt(match[3])
 	}
 
 	// add items w/totals
 	for item, quantity := range matchgroup {
-		item.quantity = quantity
-		viewContents.items = append(viewContents.items, item)
+		item.Quantity = quantity
+		viewContents.Items = append(viewContents.Items, item)
 	}
 
-	sort.Slice(viewContents.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", viewContents.items[i]) < fmt.Sprintf("%v", viewContents.items[j])
+	sort.Slice(viewContents.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", viewContents.Items[i]) < fmt.Sprintf("%v", viewContents.Items[j])
 	})
 
 	return viewContents, rest

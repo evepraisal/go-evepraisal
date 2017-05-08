@@ -8,7 +8,7 @@ import (
 )
 
 type AssetList struct {
-	items []AssetItem
+	Items []AssetItem
 	lines []int
 }
 
@@ -21,25 +21,25 @@ func (r *AssetList) Lines() []int {
 }
 
 type AssetItem struct {
-	name      string
-	quantity  int64
-	volume    float64
-	group     string
-	category  string
-	size      string
-	slot      string
-	metaLevel string
-	techLevel string
+	Name      string
+	Quantity  int64
+	Volume    float64
+	Group     string
+	Category  string
+	Size      string
+	Slot      string
+	MetaLevel string
+	TechLevel string
 }
 
 var reAssetList = regexp.MustCompile(strings.Join([]string{
-	`^([\S\ ]*)`,                           // name
-	`\t([\d,'\.]*)`,                        // quantity
-	`(?:\t([\S ]*))?`,                      // group
-	`(?:\t([\S ]*))?`,                      // category
-	`(?:\t(XLarge|Large|Medium|Small|))?`,  // size
-	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`, // slot
-	`(?:\t([\d ,\.]*) m3)?`,                // volume
+	`^([\S\ ]*)`,                           // Name
+	`\t([\d,'\.]*)`,                        // Quantity
+	`(?:\t([\S ]*))?`,                      // Group
+	`(?:\t([\S ]*))?`,                      // Category
+	`(?:\t(XLarge|Large|Medium|Small|))?`,  // Size
+	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`, // Slot
+	`(?:\t([\d ,\.]*) m3)?`,                // Volume
 	`(?:\t([\d]+|))?`,                      // meta level
 	`(?:\t([\d]+|))?$`,                     // tech level
 }, ""))
@@ -49,21 +49,21 @@ func ParseAssets(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reAssetList, input)
 	assetList.lines = regexMatchedLines(matches)
 	for _, match := range matches {
-		assetList.items = append(assetList.items,
+		assetList.Items = append(assetList.Items,
 			AssetItem{
-				name:      match[1],
-				quantity:  ToInt(match[2]),
-				volume:    ToFloat64(match[7]),
-				group:     match[3],
-				category:  match[4],
-				size:      match[5],
-				slot:      match[6],
-				metaLevel: match[8],
-				techLevel: match[9],
+				Name:      match[1],
+				Quantity:  ToInt(match[2]),
+				Volume:    ToFloat64(match[7]),
+				Group:     match[3],
+				Category:  match[4],
+				Size:      match[5],
+				Slot:      match[6],
+				MetaLevel: match[8],
+				TechLevel: match[9],
 			})
 	}
-	sort.Slice(assetList.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", assetList.items[i]) < fmt.Sprintf("%v", assetList.items[j])
+	sort.Slice(assetList.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", assetList.Items[i]) < fmt.Sprintf("%v", assetList.Items[j])
 	})
 	return assetList, rest
 }

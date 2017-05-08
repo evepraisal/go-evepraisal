@@ -8,7 +8,7 @@ import (
 )
 
 type CargoScan struct {
-	items []CargoScanItem
+	Items []CargoScanItem
 	lines []int
 }
 
@@ -21,9 +21,9 @@ func (r CargoScan) Lines() []int {
 }
 
 type CargoScanItem struct {
-	name     string
-	quantity int64
-	details  string
+	Name     string
+	Quantity int64
+	Details  string
 }
 
 var reCargoScan = regexp.MustCompile(`^([\d,'\.]+) ([\S ]+)$`)
@@ -33,22 +33,22 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reCargoScan, input)
 	scan.lines = regexMatchedLines(matches)
 	for _, match := range matches {
-		item := CargoScanItem{name: match[2], quantity: ToInt(match[1])}
+		item := CargoScanItem{Name: match[2], Quantity: ToInt(match[1])}
 
-		if strings.HasSuffix(item.name, " (Copy)") {
-			item.details = "BLUEPRINT COPY"
-			item.name = strings.TrimSuffix(item.name, " (Copy)")
+		if strings.HasSuffix(item.Name, " (Copy)") {
+			item.Details = "BLUEPRINT COPY"
+			item.Name = strings.TrimSuffix(item.Name, " (Copy)")
 		}
 
-		if strings.HasSuffix(item.name, " (Original)") {
-			item.details = "BLUEPRINT ORIGINAL"
-			item.name = strings.TrimSuffix(item.name, " (Original)")
+		if strings.HasSuffix(item.Name, " (Original)") {
+			item.Details = "BLUEPRINT ORIGINAL"
+			item.Name = strings.TrimSuffix(item.Name, " (Original)")
 		}
-		scan.items = append(scan.items, item)
+		scan.Items = append(scan.Items, item)
 	}
 
-	sort.Slice(scan.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", scan.items[i]) < fmt.Sprintf("%v", scan.items[j])
+	sort.Slice(scan.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", scan.Items[i]) < fmt.Sprintf("%v", scan.Items[j])
 	})
 	return scan, rest
 }

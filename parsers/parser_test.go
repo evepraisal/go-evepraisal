@@ -57,9 +57,9 @@ func TestParsers(rt *testing.T) {
 			rt.Run("AllParser_"+group.name+":"+c.Description, func(t *testing.T) {
 				result, rest := AllParser(StringToInput(c.Input))
 
-				expectedResult := &MultiParserResult{results: []ParserResult{c.Expected}}
+				expectedResult := &MultiParserResult{Results: []ParserResult{c.Expected}}
 				if c.Expected == nil {
-					expectedResult = &MultiParserResult{results: nil}
+					expectedResult = &MultiParserResult{Results: nil}
 				}
 				assert.Equal(t, expectedResult, result, "results should be the same")
 				assert.Equal(t, c.ExpectedRest, rest, "the rest should be the same")

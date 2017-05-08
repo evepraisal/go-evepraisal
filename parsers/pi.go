@@ -8,7 +8,7 @@ import (
 )
 
 type PI struct {
-	items []PIItem
+	Items []PIItem
 	lines []int
 }
 
@@ -21,10 +21,10 @@ func (r *PI) Lines() []int {
 }
 
 type PIItem struct {
-	name     string
-	quantity int64
-	volume   float64
-	routed   bool
+	Name     string
+	Quantity int64
+	Volume   float64
+	Routed   bool
 }
 
 var rePI1 = regexp.MustCompile(strings.Join([]string{
@@ -58,29 +58,29 @@ func ParsePI(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[PIItem]int64)
 	for _, match := range matches1 {
-		item := PIItem{name: match[2], routed: match[3] == "Routed"}
+		item := PIItem{Name: match[2], Routed: match[3] == "Routed"}
 
 		matchgroup[item] += int64(ToFloat64(match[1]))
 	}
 
 	for _, match := range matches2 {
-		item := PIItem{name: match[1], volume: ToFloat64(match[3])}
+		item := PIItem{Name: match[1], Volume: ToFloat64(match[3])}
 		matchgroup[item] += int64(ToFloat64(match[2]))
 	}
 
 	for _, match := range matches3 {
-		item := PIItem{name: match[1]}
+		item := PIItem{Name: match[1]}
 		matchgroup[item] += int64(ToFloat64(match[2]))
 	}
 
 	// add items w/totals
 	for item, quantity := range matchgroup {
-		item.quantity = quantity
-		pi.items = append(pi.items, item)
+		item.Quantity = quantity
+		pi.Items = append(pi.Items, item)
 	}
 
-	sort.Slice(pi.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", pi.items[i]) < fmt.Sprintf("%v", pi.items[j])
+	sort.Slice(pi.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", pi.Items[i]) < fmt.Sprintf("%v", pi.Items[j])
 	})
 	return pi, rest
 }

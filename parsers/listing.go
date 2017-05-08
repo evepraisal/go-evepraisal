@@ -7,7 +7,7 @@ import (
 )
 
 type Listing struct {
-	items []ListingItem
+	Items []ListingItem
 	lines []int
 }
 
@@ -20,8 +20,8 @@ func (r *Listing) Lines() []int {
 }
 
 type ListingItem struct {
-	name     string
-	quantity int64
+	Name     string
+	Quantity int64
 }
 
 var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?x? ([\S ]+)$`)
@@ -44,30 +44,30 @@ func ParseListing(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[ListingItem]int64)
 	for _, match := range matches {
-		matchgroup[ListingItem{name: match[2]}] += ToInt(match[1])
+		matchgroup[ListingItem{Name: match[2]}] += ToInt(match[1])
 	}
 
 	for _, match := range matches2 {
-		matchgroup[ListingItem{name: match[1]}] += ToInt(match[2])
+		matchgroup[ListingItem{Name: match[1]}] += ToInt(match[2])
 	}
 
 	for _, match := range matches3 {
-		matchgroup[ListingItem{name: match[1]}] += 1
+		matchgroup[ListingItem{Name: match[1]}] += 1
 	}
 
 	for _, match := range matchesWithAmmo {
-		matchgroup[ListingItem{name: match[1]}] += 1
-		matchgroup[ListingItem{name: match[2]}] += 1
+		matchgroup[ListingItem{Name: match[1]}] += 1
+		matchgroup[ListingItem{Name: match[2]}] += 1
 	}
 
 	// add items w/totals
 	for item, quantity := range matchgroup {
-		item.quantity = quantity
-		listing.items = append(listing.items, item)
+		item.Quantity = quantity
+		listing.Items = append(listing.Items, item)
 	}
 
-	sort.Slice(listing.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", listing.items[i]) < fmt.Sprintf("%v", listing.items[j])
+	sort.Slice(listing.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", listing.Items[i]) < fmt.Sprintf("%v", listing.Items[j])
 	})
 	sort.Ints(listing.lines)
 	return listing, rest

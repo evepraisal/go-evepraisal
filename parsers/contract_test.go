@@ -5,7 +5,7 @@ var contractTestCases = []Case{
 		"Simple",
 		`Rokh	1	Battleship	Ship	`,
 		&Contract{
-			items: []ContractItem{ContractItem{name: "Rokh", quantity: 1, _type: "Battleship", category: "Ship"}},
+			Items: []ContractItem{ContractItem{Name: "Rokh", Quantity: 1, Type: "Battleship", Category: "Ship"}},
 			lines: []int{0},
 		},
 		Input{},
@@ -15,9 +15,9 @@ var contractTestCases = []Case{
 		`Rokh	1	Battleship	Ship	
 Large Core Defense Field Extender I	1	Rig Shield	Module	Fitted`,
 		&Contract{
-			items: []ContractItem{
-				ContractItem{name: "Large Core Defense Field Extender I", quantity: 1, _type: "Rig Shield", category: "Module", details: "Fitted", fitted: true},
-				ContractItem{name: "Rokh", quantity: 1, _type: "Battleship", category: "Ship", details: ""},
+			Items: []ContractItem{
+				ContractItem{Name: "Large Core Defense Field Extender I", Quantity: 1, Type: "Rig Shield", Category: "Module", Details: "Fitted", Fitted: true},
+				ContractItem{Name: "Rokh", Quantity: 1, Type: "Battleship", Category: "Ship", Details: ""},
 			},
 			lines: []int{0, 1},
 		},
@@ -29,10 +29,10 @@ Large Core Defense Field Extender I	1	Rig Shield	Module	Fitted`,
 Scorch M	1	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged
 Scorch L	2	Advanced Pulse Laser Crystal	Charge	 1% damaged`,
 		&Contract{
-			items: []ContractItem{
-				ContractItem{name: "Rokh", quantity: 1, _type: "Battleship", category: "Ship", details: ""},
-				ContractItem{name: "Scorch L", quantity: 2, _type: "Advanced Pulse Laser Crystal", category: "Charge", details: " 1% damaged"},
-				ContractItem{name: "Scorch M", quantity: 1, _type: "Advanced Pulse Laser Crystal", category: "Charge", details: "Fitted 72% damaged", fitted: true},
+			Items: []ContractItem{
+				ContractItem{Name: "Rokh", Quantity: 1, Type: "Battleship", Category: "Ship", Details: ""},
+				ContractItem{Name: "Scorch L", Quantity: 2, Type: "Advanced Pulse Laser Crystal", Category: "Charge", Details: " 1% damaged"},
+				ContractItem{Name: "Scorch M", Quantity: 1, Type: "Advanced Pulse Laser Crystal", Category: "Charge", Details: "Fitted 72% damaged", Fitted: true},
 			},
 			lines: []int{0, 1, 2},
 		},
@@ -45,8 +45,8 @@ Scorch M	1	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged
 Scorch M	2	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged
 Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		&Contract{
-			items: []ContractItem{
-				ContractItem{name: "Scorch M", quantity: 7, _type: "Advanced Pulse Laser Crystal", category: "Charge", details: "Fitted 72% damaged", fitted: true},
+			Items: []ContractItem{
+				ContractItem{Name: "Scorch M", Quantity: 7, Type: "Advanced Pulse Laser Crystal", Category: "Charge", Details: "Fitted 72% damaged", Fitted: true},
 			},
 			lines: []int{0, 1, 2, 3},
 		},
@@ -56,7 +56,7 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		"BPC",
 		`Armageddon Blueprint	1	Battleship Blueprint	Blueprint	BLUEPRINT COPY - Runs: 9 - Material Level: 29 - Productivity Level: 0`,
 		&Contract{
-			items: []ContractItem{ContractItem{name: "Armageddon Blueprint", quantity: 1, _type: "Battleship Blueprint", category: "Blueprint", details: "BLUEPRINT COPY - Runs: 9 - Material Level: 29 - Productivity Level: 0"}},
+			Items: []ContractItem{ContractItem{Name: "Armageddon Blueprint", Quantity: 1, Type: "Battleship Blueprint", Category: "Blueprint", Details: "BLUEPRINT COPY - Runs: 9 - Material Level: 29 - Productivity Level: 0"}},
 			lines: []int{0},
 		},
 		Input{},
@@ -65,7 +65,7 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		"Over 9000",
 		`425mm Railgun I	9000	Hybrid Weapon`,
 		&Contract{
-			items: []ContractItem{ContractItem{name: "425mm Railgun I", quantity: 9000, _type: "Hybrid Weapon"}},
+			Items: []ContractItem{ContractItem{Name: "425mm Railgun I", Quantity: 9000, Type: "Hybrid Weapon"}},
 			lines: []int{0},
 		},
 		Input{},
@@ -80,7 +80,7 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		"Single-quote comma separator",
 		`Rokh	12'000	Battleship	Ship	`,
 		&Contract{
-			items: []ContractItem{ContractItem{name: "Rokh", quantity: 12000, _type: "Battleship", category: "Ship"}},
+			Items: []ContractItem{ContractItem{Name: "Rokh", Quantity: 12000, Type: "Battleship", Category: "Ship"}},
 			lines: []int{0},
 		},
 		Input{},

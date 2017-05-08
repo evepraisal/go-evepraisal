@@ -8,11 +8,11 @@ var dscanTestCases = []Case{
 some dude's Stabber Fleet Issue	Stabber Fleet Issue	-
 Wreck	Tayra	82 km`,
 		&DScan{
-			items: []DScanItem{
-				DScanItem{name: "Noctis", distance: 3225, distanceUnit: "m"},
-				DScanItem{name: "Stabber Fleet Issue", distance: 0, distanceUnit: ""},
-				DScanItem{name: "Tayra", distance: 82, distanceUnit: "km"},
-				DScanItem{name: "Thrasher", distance: 12, distanceUnit: "km"},
+			Items: []DScanItem{
+				DScanItem{Name: "Noctis", Distance: 3225, DistanceUnit: "m"},
+				DScanItem{Name: "Stabber Fleet Issue", Distance: 0, DistanceUnit: ""},
+				DScanItem{Name: "Tayra", Distance: 82, DistanceUnit: "km"},
+				DScanItem{Name: "Thrasher", Distance: 12, DistanceUnit: "km"},
 			},
 			lines: []int{0, 1, 2, 3},
 		},
@@ -22,7 +22,7 @@ Wreck	Tayra	82 km`,
 		"non-breakable space in distance",
 		"test	Noctis	3\xc2\xa0225 m",
 		&DScan{
-			items: []DScanItem{DScanItem{name: "Noctis", distance: 3225, distanceUnit: "m"}},
+			Items: []DScanItem{DScanItem{Name: "Noctis", Distance: 3225, DistanceUnit: "m"}},
 			lines: []int{0},
 		},
 		Input{},
@@ -31,7 +31,7 @@ Wreck	Tayra	82 km`,
 		"that's no moon!",
 		"Otanuomi V - Moon 11	Moon	10.4 AU",
 		&DScan{
-			items: []DScanItem{DScanItem{name: "Moon", distance: 104, distanceUnit: "AU"}},
+			Items: []DScanItem{DScanItem{Name: "Moon", Distance: 104, DistanceUnit: "AU"}},
 			lines: []int{0},
 		},
 		Input{},

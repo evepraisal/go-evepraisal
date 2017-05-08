@@ -8,7 +8,7 @@ import (
 )
 
 type SurveyScan struct {
-	items []ScanItem
+	Items []ScanItem
 	lines []int
 }
 
@@ -21,9 +21,9 @@ func (r *SurveyScan) Lines() []int {
 }
 
 type ScanItem struct {
-	name     string
-	quantity int64
-	distance string
+	Name     string
+	Quantity int64
+	Distance string
 }
 
 var reSurveyScanner = regexp.MustCompile(strings.Join([]string{
@@ -37,16 +37,16 @@ func ParseSurveyScan(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reSurveyScanner, input)
 	surveyScan.lines = regexMatchedLines(matches)
 	for _, match := range matches {
-		surveyScan.items = append(surveyScan.items,
+		surveyScan.Items = append(surveyScan.Items,
 			ScanItem{
-				name:     match[1],
-				quantity: ToInt(match[2]),
-				distance: match[3],
+				Name:     match[1],
+				Quantity: ToInt(match[2]),
+				Distance: match[3],
 			})
 	}
 
-	sort.Slice(surveyScan.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", surveyScan.items[i]) < fmt.Sprintf("%v", surveyScan.items[j])
+	sort.Slice(surveyScan.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", surveyScan.Items[i]) < fmt.Sprintf("%v", surveyScan.Items[j])
 	})
 	if len(matches) > 0 {
 		return surveyScan, Input{}

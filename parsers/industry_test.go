@@ -9,12 +9,12 @@ Mexallon (1027 Units)
 Isogen (44 Units)
 Nocxium (51 Units)`,
 		&Industry{
-			items: []IndustryItem{
-				IndustryItem{name: "Isogen", quantity: 44},
-				IndustryItem{name: "Mexallon", quantity: 1027},
-				IndustryItem{name: "Nocxium", quantity: 51},
-				IndustryItem{name: "Pyerite", quantity: 1857},
-				IndustryItem{name: "Tritanium", quantity: 4662},
+			Items: []IndustryItem{
+				IndustryItem{Name: "Isogen", Quantity: 44},
+				IndustryItem{Name: "Mexallon", Quantity: 1027},
+				IndustryItem{Name: "Nocxium", Quantity: 51},
+				IndustryItem{Name: "Pyerite", Quantity: 1857},
+				IndustryItem{Name: "Tritanium", Quantity: 4662},
 			},
 			lines: []int{0, 1, 2, 3, 4}},
 		Input{},
@@ -23,7 +23,7 @@ Nocxium (51 Units)`,
 		"One unit",
 		`Strontuim Clathrates (1 Unit)`,
 		&Industry{
-			items: []IndustryItem{IndustryItem{name: "Strontuim Clathrates", quantity: 1}},
+			Items: []IndustryItem{IndustryItem{Name: "Strontuim Clathrates", Quantity: 1}},
 			lines: []int{0}},
 		Input{},
 		true,

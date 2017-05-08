@@ -7,11 +7,11 @@ import (
 )
 
 type Killmail struct {
-	datetime  string
-	victim    map[string]interface{}
-	involved  []map[string]interface{}
-	destroyed []KillmailItem
-	dropped   []KillmailItem
+	Datetime  string
+	Victim    map[string]interface{}
+	Involved  []map[string]interface{}
+	Destroyed []KillmailItem
+	Dropped   []KillmailItem
 	lineCount int
 }
 
@@ -28,9 +28,9 @@ func (r *Killmail) Lines() []int {
 }
 
 type KillmailItem struct {
-	name     string
-	quantity int64
-	location string
+	Name     string
+	Quantity int64
+	Location string
 }
 
 var reKillmailDate = regexp.MustCompile(`^(\d\d\d\d.\d\d.\d\d \d\d:\d\d(:\d\d)?)$`)
@@ -51,7 +51,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 	if len(dateParts) == 0 {
 		return nil, input
 	}
-	killmail.datetime = dateParts[1]
+	killmail.Datetime = dateParts[1]
 
 	var err error
 	inputLines := input.Strings()
@@ -60,7 +60,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 	if err != nil {
 		return nil, input
 	}
-	killmail.victim = victim
+	killmail.Victim = victim
 	offset += victimOffset
 
 	// skip past the blank line
@@ -74,7 +74,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 			if err != nil {
 				return nil, input
 			}
-			killmail.involved = involved
+			killmail.Involved = involved
 			offset += involvedOffset
 		} else if line == "Destroyed items:" {
 			offset += 2
@@ -82,7 +82,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 			if err != nil {
 				return nil, input
 			}
-			killmail.destroyed = destroyed
+			killmail.Destroyed = destroyed
 			offset += destroyedOffset
 		} else if line == "Dropped items:" {
 			offset += 2
@@ -90,7 +90,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 			if err != nil {
 				return nil, input
 			}
-			killmail.dropped = dropped
+			killmail.Dropped = dropped
 			offset += droppedOffset
 		} else {
 			return nil, input
@@ -171,9 +171,9 @@ func parsekillmailItems(lines []string) ([]KillmailItem, int, error) {
 			quantity = ToInt(result[2])
 		}
 		items = append(items, KillmailItem{
-			name:     result[1],
-			quantity: quantity,
-			location: result[3],
+			Name:     result[1],
+			Quantity: quantity,
+			Location: result[3],
 		})
 	}
 	return items, i, nil

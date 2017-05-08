@@ -5,8 +5,8 @@ var listingTestCases = []Case{
 		"No quantity",
 		`Minmatar Shuttle`,
 		&Listing{
-			items: []ListingItem{
-				ListingItem{name: "Minmatar Shuttle", quantity: 1},
+			Items: []ListingItem{
+				ListingItem{Name: "Minmatar Shuttle", Quantity: 1},
 			},
 			lines: []int{0},
 		},
@@ -16,8 +16,8 @@ var listingTestCases = []Case{
 		"No quantity",
 		`Minmatar Shuttle`,
 		&Listing{
-			items: []ListingItem{
-				ListingItem{name: "Minmatar Shuttle", quantity: 1},
+			Items: []ListingItem{
+				ListingItem{Name: "Minmatar Shuttle", Quantity: 1},
 			},
 			lines: []int{0},
 		},
@@ -27,8 +27,8 @@ var listingTestCases = []Case{
 		"quantity prefixed with x",
 		`10x Minmatar Shuttle`,
 		&Listing{
-			items: []ListingItem{
-				ListingItem{name: "Minmatar Shuttle", quantity: 10},
+			Items: []ListingItem{
+				ListingItem{Name: "Minmatar Shuttle", Quantity: 10},
 			},
 			lines: []int{0},
 		},
@@ -38,8 +38,8 @@ var listingTestCases = []Case{
 		"quantity postfixed",
 		`Heavy Assault Missile Launcher II 10`,
 		&Listing{
-			items: []ListingItem{
-				ListingItem{name: "Heavy Assault Missile Launcher II", quantity: 10},
+			Items: []ListingItem{
+				ListingItem{Name: "Heavy Assault Missile Launcher II", Quantity: 10},
 			},
 			lines: []int{0},
 		},
@@ -52,7 +52,7 @@ Tritanium 9'584'702
 Tritanium x 9'584'703
 9,584,704 x Tritanium`,
 		&Listing{
-			items: []ListingItem{ListingItem{name: "Tritanium", quantity: 38338810}},
+			Items: []ListingItem{ListingItem{Name: "Tritanium", Quantity: 38338810}},
 			lines: []int{0, 1, 2, 3},
 		},
 		Input{},

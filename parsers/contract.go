@@ -8,7 +8,7 @@ import (
 )
 
 type Contract struct {
-	items []ContractItem
+	Items []ContractItem
 	lines []int
 }
 
@@ -21,25 +21,25 @@ func (r *Contract) Lines() []int {
 }
 
 type ContractItem struct {
-	name     string
-	quantity int64
-	_type    string
-	category string
-	details  string
-	fitted   bool
+	Name     string
+	Quantity int64
+	Type     string
+	Category string
+	Details  string
+	Fitted   bool
 }
 
 var reContract = regexp.MustCompile(strings.Join([]string{
-	`^([\S ]*)\t`,   // name
-	`([\d,'\.]*)\t`, // quantity
+	`^([\S ]*)\t`,   // Name
+	`([\d,'\.]*)\t`, // Quantity
 	`([\S ]*)\t`,    // type
-	`([\S ]*)\t`,    // category
-	`([\S ]*)$`,     // details
+	`([\S ]*)\t`,    // Category
+	`([\S ]*)$`,     // Details
 }, ""))
 
 var reContractShort = regexp.MustCompile(strings.Join([]string{
-	`^([\S ]*)\t`,   // name
-	`([\d,'\.]*)\t`, // quantity
+	`^([\S ]*)\t`,   // Name
+	`([\d,'\.]*)\t`, // Quantity
 	`([\S ]*)$`,     // type
 }, ""))
 
@@ -53,11 +53,11 @@ func ParseContract(input Input) (ParserResult, Input) {
 	matchgroup := make(map[ContractItem]int64)
 	for _, match := range matches {
 		item := ContractItem{
-			name:     match[1],
-			_type:    match[3],
-			category: match[4],
-			details:  match[5],
-			fitted:   strings.HasPrefix(match[5], "Fitted"),
+			Name:     match[1],
+			Type:     match[3],
+			Category: match[4],
+			Details:  match[5],
+			Fitted:   strings.HasPrefix(match[5], "Fitted"),
 		}
 
 		matchgroup[item] += ToInt(match[2])
@@ -65,20 +65,20 @@ func ParseContract(input Input) (ParserResult, Input) {
 
 	for _, match := range matches2 {
 		item := ContractItem{
-			name:  match[1],
-			_type: match[3],
+			Name: match[1],
+			Type: match[3],
 		}
 		matchgroup[item] += ToInt(match[2])
 	}
 
 	// add items w/totals
-	for item, quantity := range matchgroup {
-		item.quantity = quantity
-		contract.items = append(contract.items, item)
+	for item, Quantity := range matchgroup {
+		item.Quantity = Quantity
+		contract.Items = append(contract.Items, item)
 	}
 
-	sort.Slice(contract.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", contract.items[i]) < fmt.Sprintf("%v", contract.items[j])
+	sort.Slice(contract.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", contract.Items[i]) < fmt.Sprintf("%v", contract.Items[j])
 	})
 	return contract, rest
 }

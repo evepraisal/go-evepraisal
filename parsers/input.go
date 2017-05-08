@@ -16,6 +16,7 @@ func StringsToInput(lines []string) Input {
 }
 
 func StringToInput(s string) Input {
+	s = strings.Replace(s, "\r", "", -1)
 	return StringsToInput(strings.Split(s, "\n"))
 }
 

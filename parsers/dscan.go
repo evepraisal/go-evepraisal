@@ -8,7 +8,7 @@ import (
 )
 
 type DScan struct {
-	items []DScanItem
+	Items []DScanItem
 	lines []int
 }
 
@@ -21,15 +21,15 @@ func (r *DScan) Lines() []int {
 }
 
 type DScanItem struct {
-	name         string
-	distance     int64
-	distanceUnit string
+	Name         string
+	Distance     int64
+	DistanceUnit string
 }
 
 var reDScan = regexp.MustCompile(strings.Join([]string{
 	`^([\S ]*)\t`, // item name
-	`([\S ]*)\t`,  // name
-	`((?:([\d,'\.` + "\xc2\xa0" + `]*) (m|km|AU))|-)`, // distance
+	`([\S ]*)\t`,  // Name
+	`((?:([\d,'\.` + "\xc2\xa0" + `]*) (m|km|AU))|-)`, // Distance
 }, ""))
 
 func ParseDScan(input Input) (ParserResult, Input) {
@@ -37,11 +37,11 @@ func ParseDScan(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reDScan, input)
 	dscan.lines = regexMatchedLines(matches)
 	for _, match := range matches {
-		dscan.items = append(dscan.items, DScanItem{name: match[2], distance: ToInt(match[4]), distanceUnit: match[5]})
+		dscan.Items = append(dscan.Items, DScanItem{Name: match[2], Distance: ToInt(match[4]), DistanceUnit: match[5]})
 	}
 
-	sort.Slice(dscan.items, func(i, j int) bool {
-		return fmt.Sprintf("%v", dscan.items[i]) < fmt.Sprintf("%v", dscan.items[j])
+	sort.Slice(dscan.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", dscan.Items[i]) < fmt.Sprintf("%v", dscan.Items[j])
 	})
 	return dscan, rest
 }
