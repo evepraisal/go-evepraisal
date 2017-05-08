@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/elazarl/go-bindata-assetfs"
@@ -57,7 +58,9 @@ func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.Println("Included assets:")
-	for _, filename := range AssetNames() {
+	assets := AssetNames()
+	sort.Strings(assets)
+	for _, filename := range assets {
 		log.Println(" - ", filename)
 	}
 
