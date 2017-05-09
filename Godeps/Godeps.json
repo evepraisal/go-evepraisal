@@ -1,0 +1,16 @@
+{
+	"ImportPath": "github.com/evepraisal/go-evepraisal",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
+			"Rev": "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
+		},
+		{
+			"ImportPath": "github.com/husobee/vestigo",
+			"Comment": "v1.0.1-83-gf9752ac",
+			"Rev": "f9752ac0653fbb7bca721e6c4ff2eaf239a5b69d"
+		}
+	]
+}

@@ -1,6 +1,6 @@
-package main
+package evepraisal
 
-//go:generate go-bindata -prefix resources/ resources/...
+//go:generate go-bindata --pkg evepraisal -prefix resources/ resources/...
 
 import (
 	"encoding/json"
@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/elazarl/go-bindata-assetfs"
-	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/husobee/vestigo"
 )
 
@@ -45,17 +44,15 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
-	body := r.FormValue("body")
-	result, _ := parsers.AllParser(parsers.StringToInput(body))
-	// json.NewEncoder(w).Encode(result)
-	appraisal, err := ParserResultToAppraisal(result)
+	appraisal, err := StringToAppraisal(r.FormValue("body"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	json.NewEncoder(w).Encode(appraisal)
 }
 
-func main() {
+func HTTPServer(addr string) *http.Server {
 	log.Println("Included assets:")
 	assets := AssetNames()
 	sort.Strings(assets)
@@ -75,8 +72,6 @@ func main() {
 
 	// Mount our web app router to root
 	mux.Handle("/", router)
-	http.ListenAndServe(":8080", mux)
 
-	log.Printf("Starting http server on port %d", serverPort)
-	log.Fatal(http.ListenAndServe(":8080", router))
+	return &http.Server{Addr: addr, Handler: mux}
 }

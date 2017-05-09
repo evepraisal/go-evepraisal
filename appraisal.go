@@ -1,30 +1,101 @@
-package main
+package evepraisal
 
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
 )
 
 type Appraisal struct {
-	Created    int64              `json:"created"`
 	ID         string             `json:"id"`
+	Created    int64              `json:"created"`
 	Kind       string             `json:"kind"`
 	MarketID   int                `json:"market_id"`
 	MarketName string             `json:"market_name"`
 	Totals     map[string]float64 `json:"totals"`
 	Items      []AppraisalItem    `json:"items"`
+	Raw        string             `json:"raw"`
+	Unparsed   map[int]string     `json:"unparsed"`
 }
 
-func ParserResultToAppraisal(result parsers.ParserResult) (*Appraisal, error) {
+func StringToAppraisal(s string) (*Appraisal, error) {
+	result, unparsed := parsers.AllParser(parsers.StringToInput(s))
+
+	kind, err := findKind(result)
+	if err != nil {
+		return nil, err
+	}
+
+	items := parserResultToAppraisalItem(result)
+	// TODO: Lookup types based on each item
+	// TODO:  Lookup location-specific prices
+	for i := 0; i < len(items); i++ {
+		priceItem, ok := universe[strings.ToLower(items[i].Name)]
+		if !ok {
+			continue
+		}
+
+		stats := PriceStats{
+			Average:    priceItem.AdjustedPrice,
+			Max:        priceItem.AdjustedPrice,
+			Median:     priceItem.AdjustedPrice,
+			Min:        priceItem.AdjustedPrice,
+			Percentile: priceItem.AdjustedPrice,
+			Stddev:     priceItem.AdjustedPrice,
+			Volume:     -1,
+		}
+		items[i].Prices.All = stats
+		items[i].Prices.Buy = stats
+		items[i].Prices.Sell = stats
+		items[i].TypeID = priceItem.Type.ID
+		items[i].TypeName = priceItem.Type.Name
+	}
+
+	return &Appraisal{
+		Created:  time.Now().Unix(),
+		Kind:     kind,
+		Items:    items,
+		Raw:      s,
+		Unparsed: map[int]string(unparsed),
+	}, nil
+}
+
+type AppraisalItem struct {
+	Name     string                 `json:"name"`
+	TypeID   int                    `json:"typeID"`
+	TypeName string                 `json:"typeName"`
+	Quantity int64                  `json:"quantity"`
+	Meta     map[string]interface{} `json:"meta"`
+	Prices   struct {
+		All  PriceStats `json:"all"`
+		Buy  PriceStats `json:"buy"`
+		Sell PriceStats `json:"sell"`
+	} `json:"prices"`
+}
+
+type PriceStats struct {
+	Average    float64 `json:"avg"`
+	Max        float64 `json:"max"`
+	Median     float64 `json:"median"`
+	Min        float64 `json:"min"`
+	Percentile float64 `json:"percentile"`
+	Stddev     float64 `json:"stddev"`
+	Volume     float64 `json:"volume"`
+}
+
+func findKind(result parsers.ParserResult) (string, error) {
 	largestLines := -1
 	largestLinesParser := "unknown"
 	switch r := result.(type) {
 	default:
-		return nil, fmt.Errorf("unexpected type %T", r)
+		return largestLinesParser, fmt.Errorf("unexpected type %T", r)
 	case *parsers.MultiParserResult:
+		if len(r.Results) == 0 {
+			return largestLinesParser, fmt.Errorf("No valid lines found")
+		}
 		for _, subResult := range r.Results {
 			if len(subResult.Lines()) > largestLines {
 				largestLines = len(subResult.Lines())
@@ -32,18 +103,7 @@ func ParserResultToAppraisal(result parsers.ParserResult) (*Appraisal, error) {
 			}
 		}
 	}
-
-	return &Appraisal{
-		Created: time.Now().Unix(),
-		Kind:    largestLinesParser,
-		Items:   parserResultToAppraisalItem(result),
-	}, nil
-}
-
-type AppraisalItem struct {
-	Name     string
-	Quantity int64
-	Meta     map[string]interface{}
+	return largestLinesParser, nil
 }
 
 func parserResultToAppraisalItem(result parsers.ParserResult) []AppraisalItem {

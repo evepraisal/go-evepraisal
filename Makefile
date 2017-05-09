@@ -1,5 +1,11 @@
 default: build
 
+setup:
+	go get -u github.com/tools/godep
+	go get -u github.com/jteeuwen/go-bindata
+	go get -u github.com/cespare/reflex
+	go install vendor/...
+
 build:
 	go generate ./...
 	go build ./...
@@ -18,7 +24,7 @@ test-reload:
 	reflex -c reflex.test.conf
 
 run: install
-	go-evepraisal
+	evepraisal
 
 run-reload:
 	reflex -c reflex.conf
