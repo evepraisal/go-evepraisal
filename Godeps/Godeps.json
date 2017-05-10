@@ -19,6 +19,10 @@
 			"Rev": "316fb6d3f031ae8f4d457c6c5186b9e3ded70435"
 		},
 		{
+			"ImportPath": "github.com/gregjones/httpcache",
+			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
+		},
+		{
 			"ImportPath": "github.com/gregjones/httpcache/diskcache",
 			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
 		},
@@ -28,9 +32,9 @@
 			"Rev": "8ad6f810576cc32c82c6e59d46003cd011b331a0"
 		},
 		{
-			"ImportPath": "github.com/jteeuwen/go-bindata",
-			"Comment": "v3.0.7-72-ga0ff256",
-			"Rev": "a0ff2567cfb70903282db057e799fd826784d41d"
+			"ImportPath": "github.com/montanaflynn/stats",
+			"Comment": "0.2.0-63-g41c34e4",
+			"Rev": "41c34e4914ec3c05d485e564d9028d8861d5d9ad"
 		},
 		{
 			"ImportPath": "github.com/peterbourgon/diskv",

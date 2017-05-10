@@ -4,6 +4,7 @@ package evepraisal
 
 import (
 	"encoding/json"
+	"expvar"
 	"html/template"
 	"log"
 	"net/http"
@@ -63,6 +64,7 @@ func HTTPServer(addr string) *http.Server {
 	router := vestigo.NewRouter()
 	router.Get("/", IndexHandler)
 	router.Post("/appraise", AppraiseHandler)
+	router.Handle("/expvar", expvar.Handler())
 
 	mux := http.NewServeMux()
 
