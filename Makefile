@@ -7,7 +7,7 @@ setup:
 	go get -u github.com/jteeuwen/go-bindata
 	go get -u github.com/cespare/reflex
 	go install vendor/...
-	godep save ${PKG_DIRS}
+	godep restore
 
 build:
 	go generate ${PKG_DIRS}
