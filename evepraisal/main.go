@@ -26,8 +26,9 @@ func main() {
 		}
 	}()
 
-	stopCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	stopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer server.Shutdown(stopCtx)
+	defer cancel()
 
 	go func() {
 		err := evepraisal.FetchDataLoop()

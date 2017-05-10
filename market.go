@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/gregjones/httpcache"
-	"github.com/gregjones/httpcache/diskcache"
+	"github.com/gregjones/httpcache/leveldbcache"
 	"github.com/montanaflynn/stats"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var TypeMap = make(map[string]MarketType)
@@ -59,10 +60,14 @@ func fetchURL(client *http.Client, url string, r interface{}) error {
 }
 
 func FetchDataLoop() error {
+	db, err := leveldb.OpenFile("db/cache", nil)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
 	client := &http.Client{
-		// TODO: configuration for the cache dir
-		Transport: httpcache.NewTransport(diskcache.New("cache/")),
+		Transport: httpcache.NewTransport(leveldbcache.NewWithDB(db)),
 	}
 
 	for {

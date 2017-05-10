@@ -66,7 +66,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 	// skip past the blank line
 	offset++
 
-	for offset = offset; offset < len(inputLines); offset++ {
+	for ; offset < len(inputLines); offset++ {
 		line := inputLines[offset]
 		if line == "Involved parties:" {
 			offset += 2

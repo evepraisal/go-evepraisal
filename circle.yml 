@@ -1,0 +1,7 @@
+test:
+  override:
+    - go test
+
+dependencies:
+  override:
+    - make

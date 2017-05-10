@@ -3,27 +3,30 @@
 	"GoVersion": "go1.8",
 	"GodepVersion": "v79",
 	"Packages": [
-		"./..."
+		"github.com/evepraisal/go-evepraisal",
+		"github.com/evepraisal/go-evepraisal/evepraisal",
+		"github.com/evepraisal/go-evepraisal/parsers"
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
-			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+			"Comment": "v1.1.0",
+			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
 			"Rev": "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
 		},
 		{
-			"ImportPath": "github.com/google/btree",
-			"Rev": "316fb6d3f031ae8f4d457c6c5186b9e3ded70435"
+			"ImportPath": "github.com/golang/snappy",
+			"Rev": "553a641470496b2327abcac10b36396bd98e45c9"
 		},
 		{
 			"ImportPath": "github.com/gregjones/httpcache",
 			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
 		},
 		{
-			"ImportPath": "github.com/gregjones/httpcache/diskcache",
+			"ImportPath": "github.com/gregjones/httpcache/leveldbcache",
 			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
 		},
 		{
@@ -37,16 +40,69 @@
 			"Rev": "41c34e4914ec3c05d485e564d9028d8861d5d9ad"
 		},
 		{
-			"ImportPath": "github.com/peterbourgon/diskv",
-			"Comment": "v2.0.0-2-g5dfcb07",
-			"Rev": "5dfcb07a075adbaaa4094cddfd160b1e1c77a043"
-		},
-		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/cache",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/comparer",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/errors",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/filter",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/iterator",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/journal",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/memdb",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/opt",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/storage",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/table",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/util",
+			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
 			"Comment": "v1.1.4-27-g4d4bfba",
 			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		}
