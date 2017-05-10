@@ -1,13 +1,15 @@
 default: build
 
 PKG_DIRS=$(shell go list ./... | grep -v /vendor/)
+TEST_REPORT_PATH ?= reports/
 
 setup:
 	go get -u github.com/tools/godep
 	go get -u github.com/jteeuwen/go-bindata/...
 	go get -u github.com/cespare/reflex
+	go get -u github.com/jstemmer/go-junit-report
 	go install vendor/...
-	godep restore
+	${GOPATH}/bin/godep restore
 
 build:
 	go generate ${PKG_DIRS}
@@ -22,10 +24,11 @@ clean:
 
 test:
 	go vet ${PKG_DIRS}
-	go test ${PKG_DIRS}
+	go test ${PKG_DIRS} -v 2>&1 | tee reports/test-output.txt
+	cat reports/test-output.txt | ${GOPATH}/bin/go-junit-report -set-exit-code > reports/test-report.xml
 
 test-reload:
-	reflex -c reflex.test.conf
+	${GOPATH}/bin/reflex -c reflex.test.conf
 
 run: install
 	evepraisal
