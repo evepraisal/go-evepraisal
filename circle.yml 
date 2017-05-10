@@ -3,5 +3,7 @@ test:
     - go test
 
 dependencies:
+  pre:
+    - make setup
   override:
     - make
