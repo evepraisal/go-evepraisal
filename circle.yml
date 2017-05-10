@@ -16,12 +16,12 @@ checkout:
 
 dependencies:
   pre:
+    - env
+    - make setup
     - ls -l ${GOPATH}
     - ls -l ${GOPATH}/bin
     - ls -l ${GOPATH}/src
     - ls -l ${GOPATH}/src/github.com/jteeuwen
-    - env
-    - make setup
   override:
     - make
 
