@@ -4,7 +4,7 @@ machine:
   environment:
     GOPATH: /home/ubuntu/.go_workspace
     IMPORT_PATH: github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
-    PATH: ${GOPATH}/bin:${PATH}
+    PATH: ${GxOPATH}/bin:${PATH}
 
 general:
   build_dir: ../.go_workspace/src/${IMPORT_PATH}
@@ -14,13 +14,13 @@ checkout:
     - mkdir -p "${GOPATH}/src/${IMPORT_PATH}"
     - rsync -azC --delete ${HOME}/${CIRCLE_PROJECT_REPONAME}/ ${GOPATH}/src/${IMPORT_PATH}/
 
-test:
-  override:
-    - go test
-
 dependencies:
   pre:
+    - env
     - make setup
   override:
     - make
 
+test:
+  override:
+    - go test

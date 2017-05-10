@@ -1,6 +1,6 @@
 package evepraisal
 
-//go:generate go-bindata --pkg evepraisal -prefix resources/ resources/...
+//go:generate $GOPATH/bin/go-bindata --pkg evepraisal -prefix resources/ resources/...
 
 import (
 	"encoding/json"
