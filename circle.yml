@@ -3,16 +3,16 @@ machine:
     - docker
   environment:
     GOPATH: /home/ubuntu/.go_workspace
-    IMPORT_PATH: github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-    PATH: $GOPATH/bin
+    IMPORT_PATH: github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    PATH: ${GOPATH}/bin:${PATH}
 
 general:
-  build_dir: ../.go_workspace/src/$IMPORT_PATH
+  build_dir: ../.go_workspace/src/${IMPORT_PATH}
 
 checkout:
   post:
-    - mkdir -p "$GOPATH/src/$IMPORT_PATH"
-    - rsync -azC --delete $HOME/$CIRCLE_PROJECT_REPONAME/ $GOPATH/src/$IMPORT_PATH/
+    - mkdir -p "${GOPATH}/src/${IMPORT_PATH}"
+    - rsync -azC --delete ${HOME}/${CIRCLE_PROJECT_REPONAME}/ ${GOPATH}/src/${IMPORT_PATH}/
 
 test:
   override:
