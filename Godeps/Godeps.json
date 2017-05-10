@@ -95,16 +95,6 @@
 		{
 			"ImportPath": "github.com/syndtr/goleveldb/leveldb/util",
 			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
-			"Comment": "v1.1.4-27-g4d4bfba",
-			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
-		},
-		{
-			"ImportPath": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
-			"Comment": "v1.1.4-27-g4d4bfba",
-			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		}
 	]
 }
