@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gregjones/httpcache"
@@ -60,6 +61,7 @@ func fetchURL(client *http.Client, url string, r interface{}) error {
 func FetchDataLoop() error {
 
 	client := &http.Client{
+		// TODO: configuration for the cache dir
 		Transport: httpcache.NewTransport(diskcache.New("cache/")),
 	}
 
@@ -67,21 +69,32 @@ func FetchDataLoop() error {
 		log.Println("Starting market data fetch")
 		start := time.Now()
 
-		log.Println("Fetch types")
-		typeMap, err := FetchMarketType(client)
-		if err != nil {
-			log.Println("ERROR fetching market types: ", err)
-			time.Sleep(5 * time.Minute)
-		}
-		TypeMap = typeMap
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Println("Fetch types")
+			typeMap, err := FetchMarketType(client)
+			if err != nil {
+				log.Println("ERROR fetching market types: ", err)
+				return
+			}
+			TypeMap = typeMap
+		}()
 
-		log.Println("Fetch market data")
-		priceMap, err := FetchMarketData(client, 10000002)
-		if err != nil {
-			log.Println("ERROR fetching market data: ", err)
-			time.Sleep(5 * time.Minute)
-		}
-		PriceMap = priceMap
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Println("Fetch market data")
+			priceMap, err := FetchMarketData(client, 10000002)
+			if err != nil {
+				log.Println("ERROR fetching market data: ", err)
+				return
+			}
+			PriceMap = priceMap
+		}()
+
+		wg.Wait()
 
 		log.Printf("Done fetching market data. Took %s", time.Since(start))
 		time.Sleep(5 * time.Minute)
