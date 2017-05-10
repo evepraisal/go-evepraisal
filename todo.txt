@@ -1,16 +1,19 @@
 TODO:
 
+ - configuration
+ - logger w/ levels
+ - http access log
+
 Phase 2
 	Market scanner
 	 - Major regions (using market buy/sell order data)
 	 - Universe (using eve's prices)
 
 Phase 3
-	Basic interface/web server w/SSL certs
-	price lookup
-	 - componentized prices (for capital ships)
-	 - blueprint copy prices
-	Scan persistence
+	Basic interface
+	componentized prices (for capital ships)
+	blueprint copy prices
+	Scan persistence (leveldb?)
 
 Phase 4
 	heuristic parser

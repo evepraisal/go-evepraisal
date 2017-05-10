@@ -61,23 +61,6 @@ func fetchURL(client *http.Client, url string, r interface{}) error {
 	return err
 }
 
-func SaveToCache(db *leveldb.DB, key string, val interface{}) error {
-	v, err := json.Marshal(val)
-	if err != nil {
-		return err
-	}
-	return db.Put([]byte(key), v, nil)
-}
-
-func GetFromCache(db *leveldb.DB, key string, val interface{}) error {
-	v, err := db.Get([]byte(key), nil)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(v, val)
-}
-
 func FetchDataLoop(db *leveldb.DB) error {
 	client := &http.Client{
 		Transport: httpcache.NewTransport(leveldbcache.NewWithDB(db)),
@@ -105,50 +88,54 @@ func FetchDataLoop(db *leveldb.DB) error {
 	}
 
 	for {
-		log.Println("Starting market data fetch")
-		start := time.Now()
-
-		wg := &sync.WaitGroup{}
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			log.Println("Fetch types")
-			typeMap, err := FetchMarketType(client)
-			if err != nil {
-				log.Println("ERROR fetching market types: ", err)
-				return
-			}
-			TypeMap = typeMap
-			err = SaveToCache(db, "type-map", typeMap)
-			if err != nil {
-				log.Println("ERROR saving type data: ", err)
-				return
-			}
-		}()
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			log.Println("Fetch market data")
-			priceMap, err := FetchMarketData(client, 10000002)
-			if err != nil {
-				log.Println("ERROR fetching market data: ", err)
-				return
-			}
-			PriceMap = priceMap
-
-			err = SaveToCache(db, "price-map", priceMap)
-			if err != nil {
-				log.Println("ERROR saving market data: ", err)
-				return
-			}
-		}()
-
-		wg.Wait()
-
-		log.Printf("Done fetching market data. Took %s", time.Since(start))
+		FetchDataOnce(client, db)
 		time.Sleep(5 * time.Minute)
 	}
+}
+
+func FetchDataOnce(client *http.Client, db *leveldb.DB) {
+	log.Println("Starting market data fetch")
+	start := time.Now()
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Println("Fetch types")
+		typeMap, err := FetchMarketType(client)
+		if err != nil {
+			log.Println("ERROR: fetching market types: ", err)
+			return
+		}
+		TypeMap = typeMap
+		err = SaveToCache(db, "type-map", typeMap)
+		if err != nil {
+			log.Println("ERROR: saving type data: ", err)
+			return
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Println("Fetch market data")
+		priceMap, err := FetchMarketData(client, 10000002)
+		if err != nil {
+			log.Println("ERROR: fetching market data: ", err)
+			return
+		}
+		PriceMap = priceMap
+
+		err = SaveToCache(db, "price-map", priceMap)
+		if err != nil {
+			log.Println("ERROR: saving market data: ", err)
+			return
+		}
+	}()
+
+	wg.Wait()
+
+	log.Printf("Done fetching market data. Took %s", time.Since(start))
 }
 
 type MarketTypeResponse struct {
