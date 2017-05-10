@@ -69,6 +69,10 @@ func FetchDataLoop() error {
 	client := &http.Client{
 		Transport: httpcache.NewTransport(leveldbcache.NewWithDB(db)),
 	}
+	// TODO: rate limit using the client
+	// TODO: fetch from each of the major regions
+	// TODO: Aggregate all region data into a universe dataset
+	// TODO: Aggregate data for the jita
 
 	for {
 		log.Println("Starting market data fetch")

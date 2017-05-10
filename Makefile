@@ -4,9 +4,7 @@ PKG_DIRS=$(shell go list ./... | grep -v /vendor/)
 
 setup:
 	go get -u github.com/tools/godep
-	go install github.com/tools/godep
-	go get -u github.com/jteeuwen/go-bindata
-	go install github.com/jteeuwen/go-bindata
+	go get -u github.com/jteeuwen/go-bindata/...
 	go get -u github.com/cespare/reflex
 	go install vendor/...
 	godep restore
