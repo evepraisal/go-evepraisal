@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strings"
 	"sync"
@@ -15,6 +16,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
+// TODO: Persist these values and load them at startup so startup time isn't super slow
 var TypeMap = make(map[string]MarketType)
 var PriceMap = make(map[int64]Prices)
 
@@ -59,20 +61,48 @@ func fetchURL(client *http.Client, url string, r interface{}) error {
 	return err
 }
 
-func FetchDataLoop() error {
-	db, err := leveldb.OpenFile("db/cache", nil)
+func SaveToCache(db *leveldb.DB, key string, val interface{}) error {
+	v, err := json.Marshal(val)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	return db.Put([]byte(key), v, nil)
+}
 
+func GetFromCache(db *leveldb.DB, key string, val interface{}) error {
+	v, err := db.Get([]byte(key), nil)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(v, val)
+}
+
+func FetchDataLoop(db *leveldb.DB) error {
 	client := &http.Client{
 		Transport: httpcache.NewTransport(leveldbcache.NewWithDB(db)),
 	}
+
 	// TODO: rate limit using the client
+	//  from https://eveonline-third-party-documentation.readthedocs.io/en/latest/crest/rate_limits.html
+	// 	 Rate limit: 150 requests per second
+	// 	 Burst limit: 400 requests
+	// 	 Maximum concurrent connections: 20
 	// TODO: fetch from each of the major regions
 	// TODO: Aggregate all region data into a universe dataset
 	// TODO: Aggregate data for the jita
+	// TODO: API fetching concurrency
+
+	// Load cached values until fresh data can be retreived
+	err := GetFromCache(db, "type-map", &TypeMap)
+	if err != nil {
+		log.Printf("WARN: Could not load initial type map value from cache: %s", err)
+	}
+
+	err = GetFromCache(db, "price-map", &PriceMap)
+	if err != nil {
+		log.Printf("WARN: Could not load initial price map value from cache: %s", err)
+	}
 
 	for {
 		log.Println("Starting market data fetch")
@@ -89,6 +119,11 @@ func FetchDataLoop() error {
 				return
 			}
 			TypeMap = typeMap
+			err = SaveToCache(db, "type-map", typeMap)
+			if err != nil {
+				log.Println("ERROR saving type data: ", err)
+				return
+			}
 		}()
 
 		wg.Add(1)
@@ -101,6 +136,12 @@ func FetchDataLoop() error {
 				return
 			}
 			PriceMap = priceMap
+
+			err = SaveToCache(db, "price-map", priceMap)
+			if err != nil {
+				log.Println("ERROR saving market data: ", err)
+				return
+			}
 		}()
 
 		wg.Wait()
@@ -212,34 +253,49 @@ func FetchMarketData(client *http.Client, regionID int) (map[int64]Prices, error
 		}
 
 		// Buy
-		prices.Buy.Average, _ = stats.Mean(buyPrices)
-		prices.Buy.Max, _ = stats.Max(buyPrices)
-		prices.Buy.Median, _ = stats.Median(buyPrices)
-		prices.Buy.Min, _ = stats.Min(buyPrices)
-		prices.Buy.Percentile, _ = stats.Percentile(buyPrices, 90)
-		prices.Buy.Stddev, _ = stats.StandardDeviation(buyPrices)
-		prices.Buy.Volume = buyVolume
+		if buyVolume > 0 {
+			prices.Buy.Average, _ = stats.Mean(buyPrices)
+			prices.Buy.Max, _ = stats.Max(buyPrices)
+			prices.Buy.Median, _ = stats.Median(buyPrices)
+			prices.Buy.Min, _ = stats.Min(buyPrices)
+			prices.Buy.Percentile = percentile90(buyPrices)
+			prices.Buy.Stddev, _ = stats.StandardDeviation(buyPrices)
+			prices.Buy.Volume = buyVolume
+		}
 
 		// Sell
-		prices.Sell.Average, _ = stats.Mean(sellPrices)
-		prices.Sell.Max, _ = stats.Max(sellPrices)
-		prices.Sell.Median, _ = stats.Median(sellPrices)
-		prices.Sell.Min, _ = stats.Min(sellPrices)
-		prices.Sell.Percentile, _ = stats.Percentile(sellPrices, 90)
-		prices.Sell.Stddev, _ = stats.StandardDeviation(sellPrices)
-		prices.Sell.Volume = sellVolume
+		if sellVolume > 0 {
+			prices.Sell.Average, _ = stats.Mean(sellPrices)
+			prices.Sell.Max, _ = stats.Max(sellPrices)
+			prices.Sell.Median, _ = stats.Median(sellPrices)
+			prices.Sell.Min, _ = stats.Min(sellPrices)
+			prices.Sell.Percentile = percentile90(sellPrices)
+			prices.Sell.Stddev, _ = stats.StandardDeviation(sellPrices)
+			prices.Sell.Volume = sellVolume
+		}
 
 		// All
-		prices.All.Average, _ = stats.Mean(allPrices)
-		prices.All.Max, _ = stats.Max(allPrices)
-		prices.All.Median, _ = stats.Median(allPrices)
-		prices.All.Min, _ = stats.Min(allPrices)
-		prices.All.Percentile, _ = stats.Percentile(allPrices, 90)
-		prices.All.Stddev, _ = stats.StandardDeviation(allPrices)
-		prices.All.Volume = allVolume
+		if allVolume > 0 {
+			prices.All.Average, _ = stats.Mean(allPrices)
+			prices.All.Max, _ = stats.Max(allPrices)
+			prices.All.Median, _ = stats.Median(allPrices)
+			prices.All.Min, _ = stats.Min(allPrices)
+			prices.All.Percentile = percentile90(allPrices)
+			prices.All.Stddev, _ = stats.StandardDeviation(allPrices)
+			prices.All.Volume = allVolume
+		}
 
 		newPriceMap[k] = prices
 	}
 
 	return newPriceMap, nil
+}
+
+func percentile90(in []float64) float64 {
+	perc, _ := stats.Percentile(in, 90)
+	if math.IsNaN(perc) {
+		avg, _ := stats.Mean(in)
+		return avg
+	}
+	return perc
 }

@@ -1,7 +1,7 @@
 default: build
 
 PKG_DIRS=$(shell go list ./... | grep -v /vendor/)
-TEST_REPORT_PATH ?= reports/
+TEST_REPORT_PATH ?= reports
 
 setup:
 	go get -u github.com/tools/godep

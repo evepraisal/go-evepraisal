@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 var cleanIntegers = regexp.MustCompile(`[,\'\.` + "\xc2\xa0" + `]`)
@@ -28,6 +29,10 @@ func ToFloat64(s string) float64 {
 		return 0.0
 	}
 	return f
+}
+
+func CleanString(s string) string {
+	return strings.Trim(s, " ")
 }
 
 func regexMatchedLines(matches map[int][]string) []int {

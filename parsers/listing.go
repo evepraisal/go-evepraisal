@@ -44,20 +44,20 @@ func ParseListing(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[ListingItem]int64)
 	for _, match := range matches {
-		matchgroup[ListingItem{Name: match[2]}] += ToInt(match[1])
+		matchgroup[ListingItem{Name: CleanString(match[2])}] += ToInt(match[1])
 	}
 
 	for _, match := range matches2 {
-		matchgroup[ListingItem{Name: match[1]}] += ToInt(match[2])
+		matchgroup[ListingItem{Name: CleanString(match[1])}] += ToInt(match[2])
 	}
 
 	for _, match := range matches3 {
-		matchgroup[ListingItem{Name: match[1]}] += 1
+		matchgroup[ListingItem{Name: CleanString(match[1])}] += 1
 	}
 
 	for _, match := range matchesWithAmmo {
-		matchgroup[ListingItem{Name: match[1]}] += 1
-		matchgroup[ListingItem{Name: match[2]}] += 1
+		matchgroup[ListingItem{Name: CleanString(match[1])}] += 1
+		matchgroup[ListingItem{Name: CleanString(match[2])}] += 1
 	}
 
 	// add items w/totals

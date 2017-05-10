@@ -13,17 +13,6 @@ var listingTestCases = []Case{
 		Input{},
 		true,
 	}, {
-		"No quantity",
-		`Minmatar Shuttle`,
-		&Listing{
-			Items: []ListingItem{
-				ListingItem{Name: "Minmatar Shuttle", Quantity: 1},
-			},
-			lines: []int{0},
-		},
-		Input{},
-		true,
-	}, {
 		"quantity prefixed with x",
 		`10x Minmatar Shuttle`,
 		&Listing{
@@ -54,6 +43,17 @@ Tritanium x 9'584'703
 		&Listing{
 			Items: []ListingItem{ListingItem{Name: "Tritanium", Quantity: 38338810}},
 			lines: []int{0, 1, 2, 3},
+		},
+		Input{},
+		false,
+	}, {
+		"with whitespace",
+		` Tritanium 
+ Tritanium
+Tritanium `,
+		&Listing{
+			Items: []ListingItem{ListingItem{Name: "Tritanium", Quantity: 3}},
+			lines: []int{0, 1, 2},
 		},
 		Input{},
 		false,

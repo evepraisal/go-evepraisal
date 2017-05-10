@@ -10,26 +10,37 @@ import (
 )
 
 type Appraisal struct {
-	ID         string             `json:"id"`
-	Created    int64              `json:"created"`
-	Kind       string             `json:"kind"`
-	MarketID   int                `json:"market_id"`
-	MarketName string             `json:"market_name"`
-	Totals     map[string]float64 `json:"totals"`
-	Items      []AppraisalItem    `json:"items"`
-	Raw        string             `json:"raw"`
-	Unparsed   map[int]string     `json:"unparsed"`
+	ID         string `json:"id"`
+	Created    int64  `json:"created"`
+	Kind       string `json:"kind"`
+	MarketID   int    `json:"market_id"`
+	MarketName string `json:"market_name"`
+	Totals     struct {
+		Buy    float64 `json:"buy"`
+		Sell   float64 `json:"sell"`
+		Volume int64   `json:"volume"`
+	} `json:"totals"`
+	Items    []AppraisalItem `json:"items"`
+	Raw      string          `json:"raw"`
+	Unparsed map[int]string  `json:"unparsed"`
 }
 
 func StringToAppraisal(s string) (*Appraisal, error) {
+	appraisal := &Appraisal{
+		Created: time.Now().Unix(),
+		Raw:     s,
+	}
+
 	result, unparsed := parsers.AllParser(parsers.StringToInput(s))
+	appraisal.Unparsed = map[int]string(unparsed)
 
 	kind, err := findKind(result)
 	if err != nil {
-		return nil, err
+		return appraisal, err
 	}
+	appraisal.Kind = kind
 
-	items := parserResultToAppraisalItem(result)
+	items := parserResultToAppraisalItems(result)
 	for i := 0; i < len(items); i++ {
 		t, ok := TypeMap[strings.ToLower(items[i].Name)]
 		if !ok {
@@ -43,15 +54,14 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 			continue
 		}
 		items[i].Prices = prices
-	}
 
-	return &Appraisal{
-		Created:  time.Now().Unix(),
-		Kind:     kind,
-		Items:    items,
-		Raw:      s,
-		Unparsed: map[int]string(unparsed),
-	}, nil
+		appraisal.Totals.Buy = prices.Buy.Min
+		appraisal.Totals.Sell = prices.Sell.Max
+		appraisal.Totals.Volume = prices.All.Volume
+	}
+	appraisal.Items = items
+
+	return appraisal, nil
 }
 
 type AppraisalItem struct {
@@ -99,14 +109,14 @@ func findKind(result parsers.ParserResult) (string, error) {
 	return largestLinesParser, nil
 }
 
-func parserResultToAppraisalItem(result parsers.ParserResult) []AppraisalItem {
+func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 	var items []AppraisalItem
 	switch r := result.(type) {
 	default:
 		log.Printf("unexpected type %T", r)
 	case *parsers.MultiParserResult:
 		for _, subResult := range r.Results {
-			items = append(items, parserResultToAppraisalItem(subResult)...)
+			items = append(items, parserResultToAppraisalItems(subResult)...)
 		}
 	case *parsers.AssetList:
 		for _, item := range r.Items {
