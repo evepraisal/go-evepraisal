@@ -1,5 +1,7 @@
 default: build
 
+PKG_DIRS=$(shell go list ./... | grep -v /vendor/)
+
 setup:
 	go get -u github.com/tools/godep
 	go get -u github.com/jteeuwen/go-bindata
@@ -7,18 +9,18 @@ setup:
 	go install vendor/...
 
 build:
-	go generate ./...
-	go build ./...
+	go generate ${PKG_DIRS}
+	go build ${PKG_DIRS}
 
 install:
-	go generate ./...
-	go install ./...
+	go generate ${PKG_DIRS}
+	go install ${PKG_DIRS}
 
 clean:
 	go clean ./...
 
 test:
-	go test ./...
+	go test ${PKG_DIRS}
 
 test-reload:
 	reflex -c reflex.test.conf

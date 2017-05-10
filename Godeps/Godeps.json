@@ -2,15 +2,49 @@
 	"ImportPath": "github.com/evepraisal/go-evepraisal",
 	"GoVersion": "go1.8",
 	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
 			"Rev": "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
 		},
 		{
+			"ImportPath": "github.com/google/btree",
+			"Rev": "316fb6d3f031ae8f4d457c6c5186b9e3ded70435"
+		},
+		{
+			"ImportPath": "github.com/gregjones/httpcache/diskcache",
+			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
+		},
+		{
 			"ImportPath": "github.com/husobee/vestigo",
-			"Comment": "v1.0.1-83-gf9752ac",
-			"Rev": "f9752ac0653fbb7bca721e6c4ff2eaf239a5b69d"
+			"Comment": "v1.0.1-85-g8ad6f81",
+			"Rev": "8ad6f810576cc32c82c6e59d46003cd011b331a0"
+		},
+		{
+			"ImportPath": "github.com/jteeuwen/go-bindata",
+			"Comment": "v3.0.7-72-ga0ff256",
+			"Rev": "a0ff2567cfb70903282db057e799fd826784d41d"
+		},
+		{
+			"ImportPath": "github.com/peterbourgon/diskv",
+			"Comment": "v2.0.0-2-g5dfcb07",
+			"Rev": "5dfcb07a075adbaaa4094cddfd160b1e1c77a043"
+		},
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		}
 	]
 }

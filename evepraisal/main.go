@@ -30,7 +30,7 @@ func main() {
 	defer server.Shutdown(stopCtx)
 
 	go func() {
-		err := evepraisal.FetchMarketData()
+		err := evepraisal.FetchDataLoop()
 		if err != nil {
 			log.Fatalf("Fetch market data failure: %s", err)
 		}

@@ -30,28 +30,19 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 	}
 
 	items := parserResultToAppraisalItem(result)
-	// TODO: Lookup types based on each item
-	// TODO:  Lookup location-specific prices
 	for i := 0; i < len(items); i++ {
-		priceItem, ok := universe[strings.ToLower(items[i].Name)]
+		t, ok := TypeMap[strings.ToLower(items[i].Name)]
 		if !ok {
 			continue
 		}
+		items[i].TypeID = t.Type.ID
+		items[i].TypeName = t.Type.Name
 
-		stats := PriceStats{
-			Average:    priceItem.AdjustedPrice,
-			Max:        priceItem.AdjustedPrice,
-			Median:     priceItem.AdjustedPrice,
-			Min:        priceItem.AdjustedPrice,
-			Percentile: priceItem.AdjustedPrice,
-			Stddev:     priceItem.AdjustedPrice,
-			Volume:     -1,
+		prices, ok := PriceMap[t.Type.ID]
+		if !ok {
+			continue
 		}
-		items[i].Prices.All = stats
-		items[i].Prices.Buy = stats
-		items[i].Prices.Sell = stats
-		items[i].TypeID = priceItem.Type.ID
-		items[i].TypeName = priceItem.Type.Name
+		items[i].Prices = prices
 	}
 
 	return &Appraisal{
@@ -65,15 +56,17 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 
 type AppraisalItem struct {
 	Name     string                 `json:"name"`
-	TypeID   int                    `json:"typeID"`
+	TypeID   int64                  `json:"typeID"`
 	TypeName string                 `json:"typeName"`
 	Quantity int64                  `json:"quantity"`
 	Meta     map[string]interface{} `json:"meta"`
-	Prices   struct {
-		All  PriceStats `json:"all"`
-		Buy  PriceStats `json:"buy"`
-		Sell PriceStats `json:"sell"`
-	} `json:"prices"`
+	Prices   Prices                 `json:"prices"`
+}
+
+type Prices struct {
+	All  PriceStats `json:"all"`
+	Buy  PriceStats `json:"buy"`
+	Sell PriceStats `json:"sell"`
 }
 
 type PriceStats struct {
@@ -83,7 +76,7 @@ type PriceStats struct {
 	Min        float64 `json:"min"`
 	Percentile float64 `json:"percentile"`
 	Stddev     float64 `json:"stddev"`
-	Volume     float64 `json:"volume"`
+	Volume     int64   `json:"volume"`
 }
 
 func findKind(result parsers.ParserResult) (string, error) {
