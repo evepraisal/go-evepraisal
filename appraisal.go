@@ -44,7 +44,7 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 	for i := 0; i < len(items); i++ {
 		t, ok := TypeMap[strings.ToLower(items[i].Name)]
 		if !ok {
-			log.Println("WARN: parsed out name that isn't a type", items[i].Name)
+			log.Printf("WARN: parsed out name that isn't a type: %s", items[i].Name)
 			continue
 		}
 		items[i].TypeID = t.Type.ID
@@ -52,7 +52,7 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 
 		prices, ok := PriceMap[t.Type.ID]
 		if !ok {
-			log.Println("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
+			log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
 			continue
 		}
 		items[i].Prices = prices
