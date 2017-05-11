@@ -27,6 +27,7 @@ func (l accessLogger) Log(record accesslog.LogRecord) {
 
 var templateFuncs = template.FuncMap{
 	"commaf":          humanize.Commaf,
+	"comma":           humanize.Comma,
 	"spew":            spew.Sdump,
 	"prettybignumber": HumanLargeNumber,
 }

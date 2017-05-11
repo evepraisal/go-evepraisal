@@ -7,9 +7,6 @@
     {{if not .Appraisal}}
     <p>This is some text that will be replaced with results</p>
     {{else}}
-    <pre>
-      {{spew .Appraisal}}
-    </pre>
     <h4>
       <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
       <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
@@ -23,14 +20,19 @@
       </tr>
       {{range $item := .Appraisal.Items}}
       <tr>
-        <td>{{$item.Quantity}}</td>
+        <td>{{comma $item.Quantity}}</td>
         <td>{{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}} {{end}}</td>
         <td>{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
         <td>{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
       </tr>
       {{end}}
     </table>
+
+    <pre>
+      {{spew .Appraisal}}
+    </pre>
     {{end}}
+
 
   </div>
 </div>

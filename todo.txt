@@ -1,20 +1,23 @@
 TODO:
 
- - logger w/ levels
+	 - Prices for all major market hubs
+	 - Prices for 'Universe'
 
-Phase 2
-	Market scanner
-	 - Major regions (using market buy/sell order data)
-	 - Universe (using eve's prices)
+	Get type database from dump so that item volumes and components are known
+	Fixed-width font for numeric values
+	Appraisal persistence (leveldb?)
+	UI stuff:
+	 - Error page
+	 - view raw
+	 - Add volume columns
+	 - Column sorting
+	 - Dynamic column hiding
+	 - Latest appraisal listing page
 
-Phase 3
-	Basic interface
-	componentized prices (for capital ships)
-	blueprint copy prices
-	Scan persistence (leveldb?)
-
-Phase 4
 	heuristic parser
+
+	Componentized prices (for capital ships)
+	Blueprint copy prices
 
 	Lots of polish
 	App telemetry (new relic)
