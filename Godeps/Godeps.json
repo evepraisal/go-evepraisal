@@ -17,6 +17,10 @@
 			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
+			"ImportPath": "github.com/dustin/go-humanize",
+			"Rev": "259d2a102b871d17f30e3cd9881a642961a1e486"
+		},
+		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
 			"Rev": "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
 		},
@@ -50,6 +54,10 @@
 			"ImportPath": "github.com/magiconair/properties",
 			"Comment": "v1.5.5",
 			"Rev": "337395e44efb4affc8bf11971e22acbd4e27a32d"
+		},
+		{
+			"ImportPath": "github.com/mash/go-accesslog",
+			"Rev": "9ba8e13f36087d6cb83d9a9f17f9e8da137d5ee9"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/mapstructure",
