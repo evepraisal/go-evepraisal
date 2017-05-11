@@ -13,15 +13,12 @@ import (
 	"github.com/gregjones/httpcache"
 	"github.com/gregjones/httpcache/leveldbcache"
 	"github.com/montanaflynn/stats"
+	"github.com/spf13/viper"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-// TODO: Persist these values and load them at startup so startup time isn't super slow
 var TypeMap = make(map[string]MarketType)
 var PriceMap = make(map[int64]Prices)
-
-// TODO: Make this configurable
-var crestURL = "https://crest-tq.eveonline.com"
 
 type MarketOrderResponse struct {
 	TotalCount int           `json:"totalCount"`
@@ -102,7 +99,7 @@ func FetchDataOnce(client *http.Client, db *leveldb.DB) {
 	go func() {
 		defer wg.Done()
 		log.Println("Fetch types")
-		typeMap, err := FetchMarketType(client)
+		typeMap, err := FetchMarketTypes(client)
 		if err != nil {
 			log.Println("ERROR: fetching market types: ", err)
 			return
@@ -157,7 +154,7 @@ type MarketType struct {
 	}
 }
 
-func FetchMarketType(client *http.Client) (map[string]MarketType, error) {
+func FetchMarketTypes(client *http.Client) (map[string]MarketType, error) {
 
 	typeMap := make(map[string]MarketType)
 	requestAndProcess := func(url string) (error, string) {
@@ -172,7 +169,7 @@ func FetchMarketType(client *http.Client) (map[string]MarketType, error) {
 		return nil, r.Next.HREF
 	}
 
-	url := fmt.Sprintf("%s/market/types/", crestURL)
+	url := fmt.Sprintf("%s/market/types/", viper.GetString("crest.baseurl"))
 	for {
 		err, next := requestAndProcess(url)
 		if err != nil {
@@ -203,7 +200,7 @@ func FetchMarketData(client *http.Client, regionID int) (map[int64]Prices, error
 		return nil, r.Next.HREF
 	}
 
-	url := fmt.Sprintf("%s/market/%d/orders/all/", crestURL, regionID)
+	url := fmt.Sprintf("%s/market/%d/orders/all/", viper.GetString("crest.baseurl"), regionID)
 	for {
 		err, next := requestAndProcess(url)
 		if err != nil {

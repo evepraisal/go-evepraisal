@@ -1,69 +1,37 @@
+{{template "header"}}
+<!-- Main component for a primary marketing message or call to action -->
+<div class="row">
+  {{template "paste-panel"}}
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <!-- <link rel="icon" href="../../favicon.ico"> -->
+  <div class="col-lg-8">
+    {{if not .Appraisal}}
+    <p>This is some text that will be replaced with results</p>
+    {{else}}
+    <pre>
+      {{spew .Appraisal}}
+    </pre>
+    <h4>
+      <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
+      <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
+    </h4>
+    <table class="table table-condensed">
+      <tr class="header">
+        <th>Qty</th>
+        <th>Item</th>
+        <th>Single (sell)<br>Single (buy)</th>
+        <th>Total (sell)<br>Total (buy)</th>
+      </tr>
+      {{range $item := .Appraisal.Items}}
+      <tr>
+        <td>{{$item.Quantity}}</td>
+        <td>{{$item.TypeName}}</td>
+        <td>{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
+        <td>{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
+      </tr>
+      {{end}}
+    </table>
+    {{end}}
 
-    <title>Navbar Template for Bootstrap</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="/static/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom styles for this template -->
-    <link href="navbar.css" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-
-  <body>
-
-    <div class="container">
-
-      <!-- Static navbar -->
-      <nav class="navbar navbar-default">
-        <div class="container-fluid">
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">Evepraisal</a>
-          </div>
-          <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav navbar-right">
-              <li><a href="#">Help</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div><!--/.container-fluid -->
-      </nav>
-
-      <!-- Main component for a primary marketing message or call to action -->
-      <div class="jumbotron">
-        <form action="/appraise" method="POST">
-          <div><textarea name="body" rows="20" cols="80"></textarea></div>
-          <input type="submit" class="btn btn-lg btn-primary" href="submit" role="button" value="Submit &raquo;" />
-        </form>
-      </div>
-
-    </div> <!-- /container -->
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-  </body>
-</html>
+  </div>
+</div>
+{{template "footer"}}

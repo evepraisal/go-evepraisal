@@ -44,6 +44,7 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 	for i := 0; i < len(items); i++ {
 		t, ok := TypeMap[strings.ToLower(items[i].Name)]
 		if !ok {
+			log.Println("WARN: parsed out name that isn't a type", items[i].Name)
 			continue
 		}
 		items[i].TypeID = t.Type.ID
@@ -51,13 +52,14 @@ func StringToAppraisal(s string) (*Appraisal, error) {
 
 		prices, ok := PriceMap[t.Type.ID]
 		if !ok {
+			log.Println("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
 			continue
 		}
 		items[i].Prices = prices
 
-		appraisal.Totals.Buy = prices.Buy.Min
-		appraisal.Totals.Sell = prices.Sell.Max
-		appraisal.Totals.Volume = prices.All.Volume
+		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
+		appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
+		appraisal.Totals.Volume += prices.All.Volume * items[i].Quantity
 	}
 	appraisal.Items = items
 
@@ -71,6 +73,14 @@ type AppraisalItem struct {
 	Quantity int64                  `json:"quantity"`
 	Meta     map[string]interface{} `json:"meta"`
 	Prices   Prices                 `json:"prices"`
+}
+
+func (i AppraisalItem) SellTotal() float64 {
+	return float64(i.Quantity) * i.Prices.Sell.Min
+}
+
+func (i AppraisalItem) BuyTotal() float64 {
+	return float64(i.Quantity) * i.Prices.Sell.Max
 }
 
 type Prices struct {

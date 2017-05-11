@@ -1,8 +1,6 @@
 TODO:
 
- - configuration
  - logger w/ levels
- - http access log
 
 Phase 2
 	Market scanner

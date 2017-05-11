@@ -3,7 +3,6 @@ package evepraisal
 //go:generate $GOPATH/bin/go-bindata --pkg evepraisal -prefix resources/ resources/...
 
 import (
-	"encoding/json"
 	"expvar"
 	"html/template"
 	"log"
@@ -11,15 +10,30 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
+	"github.com/dustin/go-humanize"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/husobee/vestigo"
+	"github.com/mash/go-accesslog"
+	"github.com/spf13/viper"
 )
 
-var serverPort = 8080
+type accessLogger struct {
+}
+
+func (l accessLogger) Log(record accesslog.LogRecord) {
+	log.Printf("%s %s %d (%s) - %d", record.Method, record.Uri, record.Status, record.Ip, record.Size)
+}
+
+var templateFuncs = template.FuncMap{
+	"commaf":          humanize.Commaf,
+	"spew":            spew.Sdump,
+	"prettybignumber": HumanLargeNumber,
+}
 var templates = MustLoadTemplateFiles()
 
 func MustLoadTemplateFiles() *template.Template {
-	t := template.New("root")
+	t := template.New("root").Funcs(templateFuncs)
 	for _, path := range AssetNames() {
 		if strings.HasPrefix(path, "templates/") {
 			tmpl := t.New(strings.TrimPrefix(path, "templates/"))
@@ -37,8 +51,12 @@ func MustLoadTemplateFiles() *template.Template {
 	return t
 }
 
+type MainPageStruct struct {
+	Appraisal *Appraisal
+}
+
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "main.html", struct{}{})
+	err := templates.ExecuteTemplate(w, "main.html", MainPageStruct{})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -50,15 +68,24 @@ func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(appraisal)
+
+	err = templates.ExecuteTemplate(
+		w,
+		"main.html",
+		MainPageStruct{Appraisal: appraisal})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-func HTTPServer(addr string) *http.Server {
+func HTTPServer() *http.Server {
 	log.Println("Included assets:")
 	assets := AssetNames()
 	sort.Strings(assets)
+
 	for _, filename := range assets {
-		log.Println(" - ", filename)
+		log.Printf(" -  %s", filename)
 	}
 
 	router := vestigo.NewRouter()
@@ -75,5 +102,8 @@ func HTTPServer(addr string) *http.Server {
 	// Mount our web app router to root
 	mux.Handle("/", router)
 
-	return &http.Server{Addr: addr, Handler: mux}
+	// Setup access logger
+	l := accessLogger{}
+
+	return &http.Server{Addr: viper.GetString("web.addr"), Handler: accesslog.NewLoggingHandler(mux, l)}
 }
