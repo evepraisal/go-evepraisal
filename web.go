@@ -4,6 +4,7 @@ package evepraisal
 
 import (
 	"expvar"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -66,7 +67,11 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
 	appraisal, err := StringToAppraisal(r.FormValue("body"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Invalid input",
+			ErrorMessage: err.Error(),
+		})
 		return
 	}
 
@@ -78,6 +83,11 @@ func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+type ErrorPage struct {
+	ErrorTitle   string
+	ErrorMessage string
 }
 
 func HTTPServer() *http.Server {
@@ -93,6 +103,25 @@ func HTTPServer() *http.Server {
 	router.Get("/", IndexHandler)
 	router.Post("/appraise", AppraiseHandler)
 	router.Handle("/expvar", expvar.Handler())
+
+	vestigo.CustomNotFoundHandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+			templates.ExecuteTemplate(w, "error.html", ErrorPage{
+				ErrorTitle:   "Not Found",
+				ErrorMessage: "I couldn't find what you're looking for",
+			})
+		})
+
+	vestigo.CustomMethodNotAllowedHandlerFunc(func(allowedMethods string) func(w http.ResponseWriter, r *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			templates.ExecuteTemplate(w, "error.html", ErrorPage{
+				ErrorTitle:   "Method not allowed",
+				ErrorMessage: fmt.Sprintf("HTTP Method not allowed. What is allowed is: " + allowedMethods),
+			})
+		}
+	})
 
 	mux := http.NewServeMux()
 
