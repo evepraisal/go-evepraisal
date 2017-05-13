@@ -5,7 +5,6 @@ TODO:
 
 	Get type database from dump so that item volumes and components are known
 	Fixed-width font for numeric values
-	Appraisal persistence (leveldb?)
 	UI stuff:
 	 - view raw
 	 - Add volume columns
