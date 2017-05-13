@@ -3,6 +3,7 @@ package evepraisal
 //go:generate $GOPATH/bin/go-bindata --pkg evepraisal -prefix resources/ resources/...
 
 import (
+	"encoding/json"
 	"expvar"
 	"fmt"
 	"html/template"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/dustin/go-humanize"
@@ -31,6 +33,8 @@ var templateFuncs = template.FuncMap{
 	"comma":           humanize.Comma,
 	"spew":            spew.Sdump,
 	"prettybignumber": HumanLargeNumber,
+	"relativetime":    humanize.Time,
+	"timefmt":         func(t time.Time) string { return t.Format("2006-01-02 15:04:05") },
 }
 var templates = MustLoadTemplateFiles()
 
@@ -57,15 +61,15 @@ type MainPageStruct struct {
 	Appraisal *Appraisal
 }
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "main.html", MainPageStruct{})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
-	appraisal, err := StringToAppraisal(r.FormValue("body"))
+func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
+	appraisal, err := app.StringToAppraisal(r.FormValue("body"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		templates.ExecuteTemplate(w, "error.html", ErrorPage{
@@ -75,10 +79,99 @@ func AppraiseHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = app.AppraisalDB.PutNewAppraisal(appraisal)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Error when storing appraisal",
+			ErrorMessage: err.Error(),
+		})
+		return
+	}
+
 	err = templates.ExecuteTemplate(
 		w,
 		"main.html",
 		MainPageStruct{Appraisal: appraisal})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
+
+	appraisalID := vestigo.Param(r, "appraisalID")
+	if strings.HasSuffix(appraisalID, ".json") {
+		app.HandleViewAppraisalJSON(w, r)
+		return
+	}
+
+	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
+	if err == AppraisalNotFound {
+		w.WriteHeader(http.StatusNotFound)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Not Found",
+			ErrorMessage: "I couldn't find what you're looking for",
+		})
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Something bad happened",
+			ErrorMessage: err.Error(),
+		})
+		return
+	}
+
+	err = templates.ExecuteTemplate(
+		w,
+		"main.html",
+		MainPageStruct{Appraisal: appraisal})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (app *App) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
+	appraisalID := vestigo.Param(r, "appraisalID")
+	appraisalID = strings.TrimSuffix(appraisalID, ".json")
+
+	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
+	if err == AppraisalNotFound {
+		w.WriteHeader(http.StatusNotFound)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Not Found",
+			ErrorMessage: "I couldn't find what you're looking for",
+		})
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Something bad happened",
+			ErrorMessage: err.Error(),
+		})
+		return
+	}
+
+	r.Header["Content-Type"] = []string{"application/json"}
+	json.NewEncoder(w).Encode(appraisal)
+}
+
+func (app *App) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
+	appraisals, err := app.AppraisalDB.LatestAppraisals(100, "")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Something bad happened",
+			ErrorMessage: err.Error(),
+		})
+		return
+	}
+
+	err = templates.ExecuteTemplate(
+		w,
+		"latest.html",
+		struct{ Appraisals []Appraisal }{Appraisals: appraisals})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -90,7 +183,8 @@ type ErrorPage struct {
 	ErrorMessage string
 }
 
-func HTTPServer() *http.Server {
+func HTTPServer(app *App) *http.Server {
+
 	log.Println("Included assets:")
 	assets := AssetNames()
 	sort.Strings(assets)
@@ -100,8 +194,11 @@ func HTTPServer() *http.Server {
 	}
 
 	router := vestigo.NewRouter()
-	router.Get("/", IndexHandler)
-	router.Post("/appraise", AppraiseHandler)
+	router.Get("/latest", app.HandleLatestAppraisals)
+	router.Get("/", app.HandleIndex)
+	router.Post("/", app.HandleAppraisal)
+	router.Get("/a/:appraisalID", app.HandleViewAppraisal)
+
 	router.Handle("/expvar", expvar.Handler())
 
 	vestigo.CustomNotFoundHandlerFunc(

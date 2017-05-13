@@ -3,7 +3,6 @@ package evepraisal
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
@@ -25,45 +24,8 @@ type Appraisal struct {
 	Unparsed map[int]string  `json:"unparsed"`
 }
 
-func StringToAppraisal(s string) (*Appraisal, error) {
-	appraisal := &Appraisal{
-		Created: time.Now().Unix(),
-		Raw:     s,
-	}
-
-	result, unparsed := parsers.AllParser(parsers.StringToInput(s))
-	appraisal.Unparsed = map[int]string(unparsed)
-
-	kind, err := findKind(result)
-	if err != nil {
-		return appraisal, err
-	}
-	appraisal.Kind = kind
-
-	items := parserResultToAppraisalItems(result)
-	for i := 0; i < len(items); i++ {
-		t, ok := TypeMap[strings.ToLower(items[i].Name)]
-		if !ok {
-			log.Printf("WARN: parsed out name that isn't a type: %s", items[i].Name)
-			continue
-		}
-		items[i].TypeID = t.Type.ID
-		items[i].TypeName = t.Type.Name
-
-		prices, ok := PriceMap[t.Type.ID]
-		if !ok {
-			log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
-			continue
-		}
-		items[i].Prices = prices
-
-		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
-		appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
-		appraisal.Totals.Volume += prices.All.Volume * items[i].Quantity
-	}
-	appraisal.Items = items
-
-	return appraisal, nil
+func (appraisal *Appraisal) CreatedTime() time.Time {
+	return time.Unix(appraisal.Created, 0)
 }
 
 type AppraisalItem struct {
@@ -97,6 +59,47 @@ type PriceStats struct {
 	Percentile float64 `json:"percentile"`
 	Stddev     float64 `json:"stddev"`
 	Volume     int64   `json:"volume"`
+}
+
+func (app *App) StringToAppraisal(s string) (*Appraisal, error) {
+	appraisal := &Appraisal{
+		Created: time.Now().Unix(),
+		Raw:     s,
+	}
+
+	result, unparsed := app.Parser(parsers.StringToInput(s))
+	appraisal.Unparsed = map[int]string(unparsed)
+
+	kind, err := findKind(result)
+	if err != nil {
+		return appraisal, err
+	}
+	appraisal.Kind = kind
+
+	items := parserResultToAppraisalItems(result)
+	for i := 0; i < len(items); i++ {
+		t, ok := app.TypeDB.GetType(items[i].Name)
+		if !ok {
+			log.Printf("WARN: parsed out name that isn't a type: %s", items[i].Name)
+			continue
+		}
+		items[i].TypeID = t.Type.ID
+		items[i].TypeName = t.Type.Name
+
+		prices, ok := app.PriceDB.GetPrice(t.Type.ID)
+		if !ok {
+			log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
+			continue
+		}
+		items[i].Prices = prices
+
+		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
+		appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
+		appraisal.Totals.Volume += prices.All.Volume * items[i].Quantity
+	}
+	appraisal.Items = items
+
+	return appraisal, nil
 }
 
 func findKind(result parsers.ParserResult) (string, error) {

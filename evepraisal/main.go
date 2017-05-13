@@ -3,16 +3,20 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal"
+	"github.com/evepraisal/go-evepraisal/bolt"
+	"github.com/evepraisal/go-evepraisal/crest"
+	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/spf13/viper"
-	"github.com/syndtr/goleveldb/leveldb"
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	viper.SetConfigType("toml")
 	viper.SetConfigName("evepraisal")
@@ -39,32 +43,71 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	server := evepraisal.HTTPServer()
-	log.Printf("Starting http server (%s)", viper.GetString("web.addr"))
-
-	go func() {
-		err := server.ListenAndServe()
+	cacheDB, err := bolt.NewCacheDB(viper.GetString("cache.db"))
+	if err != nil {
+		log.Fatalf("Unable to open cacheDB: %s", err)
+	}
+	defer func() {
+		err := cacheDB.Close()
 		if err != nil {
-			log.Fatalf("HTTP server failure: %s", err)
+			log.Fatalf("Problem closing cacheDB: %s", err)
 		}
 	}()
 
+	priceDB, err := crest.NewPriceDB(cacheDB)
+	if err != nil {
+		log.Fatalf("Couldn't start price database")
+	}
+	defer func() {
+		err := priceDB.Close()
+		if err != nil {
+			log.Fatalf("Problem closing priceDB: %s", err)
+		}
+	}()
+
+	typeDB, err := crest.NewTypeDB(cacheDB)
+	if err != nil {
+		log.Fatalf("Couldn't start type database")
+	}
+	defer func() {
+		err := typeDB.Close()
+		if err != nil {
+			log.Fatalf("Problem closing typeDB: %s", err)
+		}
+	}()
+
+	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal.db"))
+	if err != nil {
+		log.Fatalf("Couldn't start appraisal database")
+	}
+	defer func() {
+		err := appraisalDB.Close()
+		if err != nil {
+			log.Fatalf("Problem closing appraisalDB: %s", err)
+		}
+	}()
+
+	app := &evepraisal.App{
+		AppraisalDB: appraisalDB,
+		PriceDB:     priceDB,
+		TypeDB:      typeDB,
+		CacheDB:     cacheDB,
+		Parser:      parsers.AllParser,
+	}
+
+	log.Printf("Starting HTTP server (%s)", viper.GetString("web.addr"))
+	server := evepraisal.HTTPServer(app)
+	go func() {
+		err := server.ListenAndServe()
+		if err == http.ErrServerClosed {
+			log.Println("HTTP server stopped")
+		} else if err != nil {
+			log.Fatalf("HTTP server failure: %s %T", err, err)
+		}
+	}()
 	stopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer server.Shutdown(stopCtx)
 	defer cancel()
-
-	cacheDB, err := leveldb.OpenFile(viper.GetString("cache.dir"), nil)
-	if err != nil {
-		log.Fatalf("Unable to open cache leveldb: %s", err)
-	}
-	defer cacheDB.Close()
-
-	go func() {
-		err := evepraisal.FetchDataLoop(cacheDB)
-		if err != nil {
-			log.Fatalf("Fetch market data failure: %s", err)
-		}
-	}()
 
 	<-stop
 	log.Println("Shutting down")

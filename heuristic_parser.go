@@ -23,7 +23,7 @@ var HeuristicSpecs = [][]int{
 }
 
 type HeuristicParser struct {
-	TypeMap map[string]MarketType
+	TypeMap map[string]EveType
 }
 
 func heuristicTrimStrings(parts []string, trim string) []string {

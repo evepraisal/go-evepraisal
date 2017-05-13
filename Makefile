@@ -15,7 +15,6 @@ setup:
 
 build:
 	go generate ${PKG_DIRS}
-	go build ${PKG_DIRS}
 	go build -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
 
 install:
@@ -45,7 +44,7 @@ dist:
 	GOOS=linux GOARCH=amd64 make build
 
 deploy: dist
-	scp etc/systemd/system/evepraisal.service evepraisal@bleeding-edge.evepraisal.com:/etc/systemd/system/evepraisal.service
-	ssh evepraisal@bleeding-edge.evepraisal.com "systemctl daemon-reload; rm /usr/local/bin/evepraisal"
-	scp target/evepraisal-linux-amd64 evepraisal@bleeding-edge.evepraisal.com:/usr/local/bin/evepraisal
-	ssh evepraisal@bleeding-edge.evepraisal.com "systemctl restart evepraisal"
+	scp etc/systemd/system/evepraisal.service root@bleeding-edge.evepraisal.com:/etc/systemd/system/evepraisal.service
+	ssh root@bleeding-edge.evepraisal.com "systemctl daemon-reload; rm /usr/local/bin/evepraisal"
+	scp target/evepraisal-linux-amd64 root@bleeding-edge.evepraisal.com:/usr/local/bin/evepraisal
+	ssh root@bleeding-edge.evepraisal.com "systemctl restart evepraisal"

@@ -7,7 +7,6 @@ TODO:
 	Fixed-width font for numeric values
 	Appraisal persistence (leveldb?)
 	UI stuff:
-	 - Error page
 	 - view raw
 	 - Add volume columns
 	 - Column sorting
