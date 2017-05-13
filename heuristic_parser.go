@@ -23,7 +23,7 @@ var HeuristicSpecs = [][]int{
 }
 
 type HeuristicParser struct {
-	TypeMap map[string]EveType
+	TypeDB TypeDB
 }
 
 func heuristicTrimStrings(parts []string, trim string) []string {
@@ -72,8 +72,7 @@ func (p *HeuristicParser) Parse(input parsers.Input) (parsers.ParserResult, pars
 				case HEURISTIC_IGNORE:
 				case HEURISTIC_ITEM:
 					name = parts[index]
-					_, ok := p.TypeMap[strings.ToLower(name)]
-					if !ok {
+					if !p.TypeDB.HasType(name) {
 						matched = false
 						break
 					}

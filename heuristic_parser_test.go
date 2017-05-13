@@ -1,6 +1,7 @@
 package evepraisal
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
@@ -26,9 +27,9 @@ func TestHeuristicParser(rt *testing.T) {
 	for _, c := range HeuristicParserCases {
 		rt.Run(c.name, func(t *testing.T) {
 			p := HeuristicParser{
-				TypeMap: map[string]MarketType{
-					"tritanium": MarketType{},
-				},
+				TypeDB: StaticTypeDB{map[string]EveType{
+					"tritanium": EveType{},
+				}},
 			}
 			result, rest := p.Parse(parsers.StringToInput(c.in))
 			assert.Equal(t, c.result, result, "results should be the same")
@@ -36,3 +37,17 @@ func TestHeuristicParser(rt *testing.T) {
 		})
 	}
 }
+
+type StaticTypeDB struct {
+	typeDB map[string]EveType
+}
+
+func (db StaticTypeDB) GetType(typeName string) (EveType, bool) {
+	t, ok := db.typeDB[strings.ToLower(typeName)]
+	return t, ok
+}
+func (db StaticTypeDB) HasType(typeName string) bool {
+	_, ok := db.GetType(typeName)
+	return ok
+}
+func (db StaticTypeDB) Close() error { return nil }
