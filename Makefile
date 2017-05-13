@@ -47,4 +47,4 @@ deploy: dist
 	scp etc/systemd/system/evepraisal.service root@bleeding-edge.evepraisal.com:/etc/systemd/system/evepraisal.service
 	ssh root@bleeding-edge.evepraisal.com "systemctl daemon-reload; rm /usr/local/bin/evepraisal"
 	scp target/evepraisal-linux-amd64 root@bleeding-edge.evepraisal.com:/usr/local/bin/evepraisal
-	ssh root@bleeding-edge.evepraisal.com "systemctl restart evepraisal"
+	ssh root@bleeding-edge.evepraisal.com "setcap 'cap_net_bind_service=+ep' /usr/local/bin/evepraisal; systemctl restart evepraisal"

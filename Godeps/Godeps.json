@@ -30,15 +30,7 @@
 			"Rev": "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
 		},
 		{
-			"ImportPath": "github.com/golang/snappy",
-			"Rev": "553a641470496b2327abcac10b36396bd98e45c9"
-		},
-		{
 			"ImportPath": "github.com/gregjones/httpcache",
-			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
-		},
-		{
-			"ImportPath": "github.com/gregjones/httpcache/leveldbcache",
 			"Rev": "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
 		},
 		{
@@ -99,52 +91,12 @@
 			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
 		},
 		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+			"ImportPath": "golang.org/x/crypto/acme",
+			"Rev": "3543873453996aaab2fc6b3928a35fc5ca2b5afb"
 		},
 		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/cache",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/comparer",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/errors",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/filter",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/iterator",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/journal",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/memdb",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/opt",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/storage",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/table",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/util",
-			"Rev": "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
+			"ImportPath": "golang.org/x/crypto/acme/autocert",
+			"Rev": "3543873453996aaab2fc6b3928a35fc5ca2b5afb"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
