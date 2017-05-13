@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/bolt"
@@ -95,20 +98,72 @@ func main() {
 		Parser:      parsers.AllParser,
 	}
 
-	log.Printf("Starting HTTP server (%s)", viper.GetString("web.addr"))
-	server := evepraisal.HTTPServer(app)
-	go func() {
-		err := server.ListenAndServe()
-		if err == http.ErrServerClosed {
-			log.Println("HTTP server stopped")
-		} else if err != nil {
-			log.Fatalf("HTTP server failure: %s %T", err, err)
-		}
-	}()
-	stopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer server.Shutdown(stopCtx)
-	defer cancel()
+	servers := mustStartServers(evepraisal.HTTPHandler(app))
+	if err != nil {
+		log.Fatalf("Problem starting https server: %s", err)
+	}
+
+	for _, server := range servers {
+		stopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer server.Shutdown(stopCtx)
+		go func() {
+			time.Sleep(10 * time.Second)
+			cancel()
+		}()
+	}
 
 	<-stop
 	log.Println("Shutting down")
+}
+
+func mustStartServers(handler http.Handler) []*http.Server {
+	servers := make([]*http.Server, 0)
+
+	if viper.GetString("web.https.addr") != "" {
+		log.Printf("Starting HTTPS server (%s) (%s)", viper.GetString("web.https.addr"), viper.GetStringSlice("web.https.domain-whitelist"))
+
+		autocertManager := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(viper.GetStringSlice("web.https.domain-whitelist")...),
+			Cache:      autocert.DirCache(viper.GetString("web.https.cert-cache-path")),
+		}
+
+		server := &http.Server{
+			Addr:      viper.GetString("web.https.addr"),
+			Handler:   handler,
+			TLSConfig: &tls.Config{GetCertificate: autocertManager.GetCertificate},
+		}
+		servers = append(servers, server)
+
+		go func() {
+			err := server.ListenAndServeTLS("", "")
+			if err == http.ErrServerClosed {
+				log.Println("HTTPS server stopped")
+			} else if err != nil {
+				log.Fatalf("HTTPS server failure: %s", err)
+			}
+		}()
+		time.Sleep(1 * time.Second)
+	}
+
+	if viper.GetString("web.http.addr") != "" {
+		log.Printf("Starting HTTP server (%s)", viper.GetString("web.http.addr"))
+
+		server := &http.Server{
+			Addr:    viper.GetString("web.http.addr"),
+			Handler: handler,
+		}
+		servers = append(servers, server)
+
+		go func() {
+			err := server.ListenAndServe()
+			if err == http.ErrServerClosed {
+				log.Println("HTTP server stopped")
+			} else if err != nil {
+				log.Fatalf("HTTP server failure: %s", err)
+			}
+		}()
+	}
+
+	return servers
 }

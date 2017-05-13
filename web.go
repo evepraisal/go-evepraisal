@@ -9,7 +9,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"sort"
 	"strings"
 	"time"
 
@@ -18,7 +17,6 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/husobee/vestigo"
 	"github.com/mash/go-accesslog"
-	"github.com/spf13/viper"
 )
 
 type accessLogger struct {
@@ -183,16 +181,7 @@ type ErrorPage struct {
 	ErrorMessage string
 }
 
-func HTTPServer(app *App) *http.Server {
-
-	log.Println("Included assets:")
-	assets := AssetNames()
-	sort.Strings(assets)
-
-	for _, filename := range assets {
-		log.Printf(" -  %s", filename)
-	}
-
+func HTTPHandler(app *App) http.Handler {
 	router := vestigo.NewRouter()
 	router.Get("/latest", app.HandleLatestAppraisals)
 	router.Get("/", app.HandleIndex)
@@ -232,5 +221,5 @@ func HTTPServer(app *App) *http.Server {
 	// Setup access logger
 	l := accessLogger{}
 
-	return &http.Server{Addr: viper.GetString("web.addr"), Handler: accesslog.NewLoggingHandler(mux, l)}
+	return accesslog.NewLoggingHandler(mux, l)
 }
