@@ -4,10 +4,11 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"strconv"
+	"strings"
 
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal"
+	"github.com/martinlindhe/base36"
 )
 
 type AppraisalDB struct {
@@ -21,7 +22,12 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 	}
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("appraisals"))
+		b, err := tx.CreateBucketIfNotExists([]byte("appraisals"))
+		if err != nil {
+			return fmt.Errorf("create appraisal bucket: %s", err)
+		}
+
+		err = b.SetSequence(20000000)
 		if err != nil {
 			return fmt.Errorf("create appraisal bucket: %s", err)
 		}
@@ -39,18 +45,23 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 			return err
 		}
 
-		appraisal.ID = strconv.FormatUint(id, 10)
+		encodedID := EncodeAppraisalIDFromUint64(id)
+		appraisal.ID, err = DecodeAppraisalID(encodedID)
+		if err != nil {
+			return err
+		}
+
 		appraisalBytes, err := json.Marshal(appraisal)
 		if err != nil {
 			return err
 		}
 
-		return b.Put(MakeDatabaseIDFromUint64(id), appraisalBytes)
+		return b.Put(encodedID, appraisalBytes)
 	})
 }
 
 func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
-	dbID, err := MakeDatabaseID(appraisalID)
+	dbID, err := EncodeAppraisalID(appraisalID)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +69,6 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 	appraisal := &evepraisal.Appraisal{}
 
 	err = db.db.View(func(tx *bolt.Tx) error {
-
 		b := tx.Bucket([]byte("appraisals"))
 		buf := b.Get(dbID)
 		if buf == nil {
@@ -104,17 +114,17 @@ func (db *AppraisalDB) Close() error {
 	return db.db.Close()
 }
 
-func MakeDatabaseID(appraisalID string) ([]byte, error) {
-	uintID, err := strconv.ParseUint(appraisalID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	return MakeDatabaseIDFromUint64(uintID), nil
+func EncodeAppraisalID(appraisalID string) ([]byte, error) {
+	// TODO: check for [a-z0-9] charset
+	return EncodeAppraisalIDFromUint64(base36.Decode(appraisalID)), nil
 }
 
-func MakeDatabaseIDFromUint64(appraisalID uint64) []byte {
+func EncodeAppraisalIDFromUint64(appraisalID uint64) []byte {
 	dbID := make([]byte, 8)
 	binary.BigEndian.PutUint64(dbID, appraisalID)
 	return dbID
+}
+
+func DecodeAppraisalID(dbID []byte) (string, error) {
+	return strings.ToLower(base36.Encode(binary.BigEndian.Uint64(dbID))), nil
 }

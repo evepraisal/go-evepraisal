@@ -53,6 +53,10 @@
 			"Rev": "337395e44efb4affc8bf11971e22acbd4e27a32d"
 		},
 		{
+			"ImportPath": "github.com/martinlindhe/base36",
+			"Rev": "44e007f2c95e7c7396eb67802b9bd1ac9123785f"
+		},
+		{
 			"ImportPath": "github.com/mash/go-accesslog",
 			"Rev": "9ba8e13f36087d6cb83d9a9f17f9e8da137d5ee9"
 		},
