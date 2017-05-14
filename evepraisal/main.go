@@ -15,6 +15,7 @@ import (
 	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/crest"
 	"github.com/evepraisal/go-evepraisal/parsers"
+	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/spf13/viper"
 )
 
@@ -68,9 +69,13 @@ func main() {
 		}
 	}()
 
-	typeDB, err := crest.NewTypeDB(cacheDB, viper.GetString("crest.baseurl"))
+	err = os.MkdirAll("db/static", 0700)
 	if err != nil {
-		log.Fatalf("Couldn't start type database")
+		log.Fatalf("Unable to create static data dir: %s", err)
+	}
+	typeDB, err := staticdump.NewTypeDB("db/static", "https://cdn1.eveonline.com/data/sde/tranquility/sde-20170509-TRANQUILITY.zip")
+	if err != nil {
+		log.Fatalf("Couldn't start type database: %s", err)
 	}
 	defer func() {
 		err := typeDB.Close()

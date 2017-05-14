@@ -3,18 +3,19 @@ TODO:
 	 - Prices for all major market hubs
 	 - Prices for 'Universe'
 
-	Get type database from dump so that item volumes and components are known
-	Fixed-width font for numeric values
 	UI stuff:
-	 - view raw
 	 - Add volume columns
-	 - Column sorting
-	 - Dynamic column hiding
-	 - Latest appraisal listing page
+	 - Fixed-width font for numeric values
 
 	heuristic parser
+	listing parser with type information
 
 	Componentized prices (for capital ships)
 	Blueprint copy prices
 
 	App telemetry (new relic)
+	Google Analytics
+
+	 - Price breakdown page for each item. Why is it currently priced a certain why? This will be important for capital ships and BPOs and just give a good breakdown of prices per region
+	 - Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
+	 - Automatic deletion of appraisals which hasn't been visted in a long time

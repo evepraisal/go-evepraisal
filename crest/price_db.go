@@ -18,7 +18,7 @@ type PriceDB struct {
 	client  *http.Client
 	baseURL string
 
-	priceMap map[int64]evepraisal.Prices
+	priceMap map[string]map[int64]evepraisal.Prices
 }
 
 type MarketOrder struct {
@@ -35,12 +35,28 @@ type MarketOrder struct {
 	Type          int64   `json:"type"`
 }
 
+var SpecialRegions = []struct {
+	name     string
+	stations []int64
+}{
+	{
+		name:     "jita",
+		stations: []int64{60003466, 60003760, 60003757, 60000361, 60000451, 60004423, 60002959, 60003460, 60003055, 60003469, 60000364, 60002953, 60000463, 60003463},
+	},
+}
+
 func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, error) {
 	client := &http.Client{
 		Transport: httpcache.NewTransport(evepraisal.NewHTTPCache(cache)),
 	}
 
-	priceMap := make(map[int64]evepraisal.Prices)
+	priceDB := &PriceDB{
+		cache:   cache,
+		client:  client,
+		baseURL: baseURL,
+	}
+
+	priceMap := priceDB.freshPriceMap()
 	buf, err := cache.Get("price-map")
 	if err != nil {
 		log.Printf("WARN: Could not fetch initial price map value from cache: %s", err)
@@ -50,13 +66,7 @@ func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, e
 	if err != nil {
 		log.Printf("WARN: Could not unserialize initial price map value from cache: %s", err)
 	}
-
-	priceDB := &PriceDB{
-		cache:    cache,
-		client:   client,
-		priceMap: priceMap,
-		baseURL:  baseURL,
-	}
+	priceDB.priceMap = priceMap
 
 	go func() {
 		for {
@@ -68,8 +78,14 @@ func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, e
 	return priceDB, nil
 }
 
-func (p *PriceDB) GetPrice(typeID int64) (evepraisal.Prices, bool) {
-	price, ok := p.priceMap[typeID]
+func (p *PriceDB) GetPrice(market string, typeID int64) (evepraisal.Prices, bool) {
+	var prices evepraisal.Prices
+	locationPrices, ok := p.priceMap[market]
+	if !ok {
+		return prices, false
+	}
+
+	price, ok := locationPrices[typeID]
 	return price, ok
 }
 
@@ -88,7 +104,7 @@ type MarketOrderResponse struct {
 
 func (p *PriceDB) runOnce() {
 	log.Println("Fetch market data")
-	priceMap, err := FetchMarketData(p.client, p.baseURL, 10000002)
+	priceMap, err := p.FetchMarketData(p.client, p.baseURL, 10000002)
 	if err != nil {
 		log.Println("ERROR: fetching market data: ", err)
 		return
@@ -107,7 +123,16 @@ func (p *PriceDB) runOnce() {
 	}
 }
 
-func FetchMarketData(client *http.Client, baseURL string, regionID int) (map[int64]evepraisal.Prices, error) {
+func (p *PriceDB) freshPriceMap() map[string]map[int64]evepraisal.Prices {
+	priceMap := make(map[string]map[int64]evepraisal.Prices)
+	for _, region := range SpecialRegions {
+		priceMap[region.name] = make(map[int64]evepraisal.Prices)
+	}
+	priceMap["universe"] = make(map[int64]evepraisal.Prices)
+	return priceMap
+}
+
+func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionID int) (map[string]map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
 	requestAndProcess := func(url string) (error, string) {
 		var r MarketOrderResponse
@@ -136,61 +161,29 @@ func FetchMarketData(client *http.Client, baseURL string, regionID int) (map[int
 	}
 
 	// Calculate aggregates that we care about:
-	newPriceMap := make(map[int64]evepraisal.Prices)
+	newPriceMap := p.freshPriceMap()
+
 	for k, orders := range allOrdersByType {
-		var prices evepraisal.Prices
-		buyPrices := make([]float64, 0)
-		sellPrices := make([]float64, 0)
-		allPrices := make([]float64, 0)
-		var buyVolume int64
-		var sellVolume int64
-		var allVolume int64
-		for _, order := range orders {
-			if order.Buy {
-				buyPrices = append(buyPrices, order.Price)
-				buyVolume += order.Volume
-			} else {
-				sellPrices = append(sellPrices, order.Price)
-				sellVolume += order.Volume
+		for _, region := range SpecialRegions {
+			filteredOrders := make([]MarketOrder, 0)
+			ordercount := 0
+			for _, order := range orders {
+				matched := false
+				for _, station := range region.stations {
+					if station == order.StationID {
+						matched = true
+						ordercount++
+						break
+					}
+				}
+				if matched {
+					filteredOrders = append(filteredOrders, order)
+				}
 			}
-			allPrices = append(allPrices, order.Price)
-			allVolume += order.Volume
+			newPriceMap[region.name][k] = getPriceAggregatesForOrders(filteredOrders)
 		}
 
-		// Buy
-		if buyVolume > 0 {
-			prices.Buy.Average, _ = stats.Mean(buyPrices)
-			prices.Buy.Max, _ = stats.Max(buyPrices)
-			prices.Buy.Median, _ = stats.Median(buyPrices)
-			prices.Buy.Min, _ = stats.Min(buyPrices)
-			prices.Buy.Percentile = percentile90(buyPrices)
-			prices.Buy.Stddev, _ = stats.StandardDeviation(buyPrices)
-			prices.Buy.Volume = buyVolume
-		}
-
-		// Sell
-		if sellVolume > 0 {
-			prices.Sell.Average, _ = stats.Mean(sellPrices)
-			prices.Sell.Max, _ = stats.Max(sellPrices)
-			prices.Sell.Median, _ = stats.Median(sellPrices)
-			prices.Sell.Min, _ = stats.Min(sellPrices)
-			prices.Sell.Percentile = percentile90(sellPrices)
-			prices.Sell.Stddev, _ = stats.StandardDeviation(sellPrices)
-			prices.Sell.Volume = sellVolume
-		}
-
-		// All
-		if allVolume > 0 {
-			prices.All.Average, _ = stats.Mean(allPrices)
-			prices.All.Max, _ = stats.Max(allPrices)
-			prices.All.Median, _ = stats.Median(allPrices)
-			prices.All.Min, _ = stats.Min(allPrices)
-			prices.All.Percentile = percentile90(allPrices)
-			prices.All.Stddev, _ = stats.StandardDeviation(allPrices)
-			prices.All.Volume = allVolume
-		}
-
-		newPriceMap[k] = prices
+		newPriceMap["universe"][k] = getPriceAggregatesForOrders(orders)
 	}
 
 	return newPriceMap, nil

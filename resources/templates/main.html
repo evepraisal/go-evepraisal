@@ -7,27 +7,9 @@
     <p>This is some text that will be replaced with results</p>
     {{else}}
 
-    <!-- Modal -->
-    <div class="modal fade" id="rawTextModal" tabindex="-1" role="dialog" aria-labelledby="rawTextModalLabel">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="rawTextModalLabel">Raw Pasted Text</h4>
-          </div>
-          <div class="modal-body">
-            <pre>{{.Appraisal.Raw}}</pre>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="col-lg-12">
       <div class="pull-left">
-      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw" data-target="#rawTextModal" data-toggle="modal">View Raw</a></p>
+      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw">View Raw</a></p>
       </div>
     </div>
 
@@ -48,15 +30,15 @@
       <tbody>
       {{range $item := .Appraisal.Items}}
         <tr>
-          <td class="text-center" data-sort-value="{{$item.Quantity}}">{{comma $item.Quantity}}</td>
+          <td class="text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
           <td>
             {{if $item.TypeName}}
               <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
             {{end}}
             &nbsp;
             {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}</td>
-          <td class="text-right" data-sort-value="{{$item.SingleRepresentativePrice | printf "%f"}}">{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
-          <td class="text-right" data-sort-value="{{$item.RepresentativePrice | printf "%f"}}">{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
+          <td class="text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
+          <td class="text-right" data-sort-value="-{{$item.RepresentativePrice | printf "%f"}}">{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
         </tr>
       {{end}}
       </tbody>

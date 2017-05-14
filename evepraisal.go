@@ -39,16 +39,11 @@ type TypeDB interface {
 }
 
 type PriceDB interface {
-	GetPrice(typeID int64) (Prices, bool)
+	GetPrice(market string, typeID int64) (Prices, bool)
 	Close() error
 }
 
 type EveType struct {
-	Type struct {
-		ID   int64  `json:"id"`
-		Name string `json:"name"`
-		Icon struct {
-			HREF string `json:"href"`
-		} `json:"icon"`
-	}
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
 }

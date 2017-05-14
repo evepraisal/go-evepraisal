@@ -73,7 +73,7 @@ type PriceStats struct {
 	Volume     int64   `json:"volume"`
 }
 
-func (app *App) StringToAppraisal(s string) (*Appraisal, error) {
+func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 	appraisal := &Appraisal{
 		Created: time.Now().Unix(),
 		Raw:     s,
@@ -95,10 +95,10 @@ func (app *App) StringToAppraisal(s string) (*Appraisal, error) {
 			log.Printf("WARN: parsed out name that isn't a type: %s", items[i].Name)
 			continue
 		}
-		items[i].TypeID = t.Type.ID
-		items[i].TypeName = t.Type.Name
+		items[i].TypeID = t.ID
+		items[i].TypeName = t.Name
 
-		prices, ok := app.PriceDB.GetPrice(t.Type.ID)
+		prices, ok := app.PriceDB.GetPrice(market, t.ID)
 		if !ok {
 			log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
 			continue

@@ -1,4 +1,8 @@
-.table-condensed th, .table-condensed td { padding: 0px 4px; }
 .results-table th {
   cursor: pointer;
+  padding: 0px;
+}
+.results-table td {
+  font-family: monospace, monospace;
+  padding: 0px;
 }

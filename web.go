@@ -71,7 +71,8 @@ func (app *App) HandleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
-	appraisal, err := app.StringToAppraisal(r.FormValue("body"))
+	log.Println("New appraisal at ", r.FormValue("market"))
+	appraisal, err := app.StringToAppraisal(r.FormValue("market"), r.FormValue("body"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		templates.ExecuteTemplate(w, "error.html", ErrorPage{
