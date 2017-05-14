@@ -36,27 +36,51 @@
       <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
     </h4>
 
-    <table class="table table-condensed table-striped">
-      <tr class="header">
-        <th class="text-center">Qty</th>
-        <th>Item</th>
-        <th class="text-right">Single (sell)<br>Single (buy)</th>
-        <th class="text-right">Total (sell)<br>Total (buy)</th>
-      </tr>
+    <table id="results" class="table table-condensed table-striped results-table">
+      <thead>
+        <tr class="header">
+          <th class="text-center">Qty</th>
+          <th>Item</th>
+          <th class="text-right">Single (sell)<br>Single (buy)</th>
+          <th class="text-right">Total (sell)<br>Total (buy)</th>
+        </tr>
+      </thead>
+      <tbody>
       {{range $item := .Appraisal.Items}}
-      <tr>
-        <td class="text-center">{{comma $item.Quantity}}</td>
-        <td>{{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}} {{end}}</td>
-        <td class="text-right">{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
-        <td class="text-right">{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
-      </tr>
+        <tr>
+          <td class="text-center" data-sort-value="{{$item.Quantity}}">{{comma $item.Quantity}}</td>
+          <td>
+            {{if $item.TypeName}}
+              <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
+            {{end}}
+            &nbsp;
+            {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}</td>
+          <td class="text-right" data-sort-value="{{$item.SingleRepresentativePrice | printf "%f"}}">{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
+          <td class="text-right" data-sort-value="{{$item.RepresentativePrice | printf "%f"}}">{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
+        </tr>
       {{end}}
+      </tbody>
     </table>
+
     <script type="text/javascript">
       window.history.pushState({}, "", "/a/{{.Appraisal.ID}}");
+      $(document).ready(function() {
+        $("#results").tablesorter({
+          textExtraction : function(node, table, cellIndex){
+              n = $(node);
+              return n.attr('data-sort-value') || n.text();
+          },
+          headers: {
+             0: { sorter: 'digit' },
+             2: { sorter: 'digit' },
+             3: { sorter: 'digit' }
+          }
+        });
+      });
     </script>
     {{end}}
 
   </div>
 </div>
+
 {{template "footer"}}

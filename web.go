@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -27,12 +28,14 @@ func (l accessLogger) Log(record accesslog.LogRecord) {
 }
 
 var templateFuncs = template.FuncMap{
-	"commaf":          humanize.Commaf,
+	"commaf":          humanizeCommaf,
 	"comma":           humanize.Comma,
-	"spew":            spew.Sdump,
 	"prettybignumber": HumanLargeNumber,
 	"relativetime":    humanize.Time,
 	"timefmt":         func(t time.Time) string { return t.Format("2006-01-02 15:04:05") },
+
+	// Only for debugging
+	"spew": spew.Sdump,
 }
 var templates = MustLoadTemplateFiles()
 
@@ -120,6 +123,10 @@ func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	sort.Slice(appraisal.Items, func(i, j int) bool {
+		return appraisal.Items[i].SingleRepresentativePrice() > appraisal.Items[j].SingleRepresentativePrice()
+	})
 
 	err = templates.ExecuteTemplate(
 		w,

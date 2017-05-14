@@ -10,12 +10,12 @@ import (
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/gregjones/httpcache"
-	"github.com/spf13/viper"
 )
 
 type TypeDB struct {
-	cache  evepraisal.CacheDB
-	client *http.Client
+	cache   evepraisal.CacheDB
+	client  *http.Client
+	baseURL string
 
 	typeMap map[string]evepraisal.EveType
 }
@@ -29,7 +29,7 @@ type MarketTypeResponse struct {
 	} `json:"next"`
 }
 
-func NewTypeDB(cache evepraisal.CacheDB) (evepraisal.TypeDB, error) {
+func NewTypeDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.TypeDB, error) {
 	client := &http.Client{
 		Transport: httpcache.NewTransport(evepraisal.NewHTTPCache(cache)),
 	}
@@ -49,6 +49,7 @@ func NewTypeDB(cache evepraisal.CacheDB) (evepraisal.TypeDB, error) {
 		cache:   cache,
 		client:  client,
 		typeMap: typeMap,
+		baseURL: baseURL,
 	}
 
 	go func() {
@@ -78,7 +79,7 @@ func (p *TypeDB) Close() error {
 
 func (p *TypeDB) runOnce() {
 	log.Println("Fetch type data")
-	typeMap, err := FetchEveTypes(p.client)
+	typeMap, err := FetchEveTypes(p.client, p.baseURL)
 	if err != nil {
 		log.Println("ERROR: fetching type data: ", err)
 		return
@@ -97,7 +98,7 @@ func (p *TypeDB) runOnce() {
 	}
 }
 
-func FetchEveTypes(client *http.Client) (map[string]evepraisal.EveType, error) {
+func FetchEveTypes(client *http.Client, baseURL string) (map[string]evepraisal.EveType, error) {
 	typeMap := make(map[string]evepraisal.EveType)
 	requestAndProcess := func(url string) (error, string) {
 		var r MarketTypeResponse
@@ -111,7 +112,7 @@ func FetchEveTypes(client *http.Client) (map[string]evepraisal.EveType, error) {
 		return nil, r.Next.HREF
 	}
 
-	url := fmt.Sprintf("%s/market/types/", viper.GetString("crest.baseurl"))
+	url := fmt.Sprintf("%s/market/types/", baseURL)
 	for {
 		err, next := requestAndProcess(url)
 		if err != nil {

@@ -11,12 +11,12 @@ import (
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/gregjones/httpcache"
 	"github.com/montanaflynn/stats"
-	"github.com/spf13/viper"
 )
 
 type PriceDB struct {
-	cache  evepraisal.CacheDB
-	client *http.Client
+	cache   evepraisal.CacheDB
+	client  *http.Client
+	baseURL string
 
 	priceMap map[int64]evepraisal.Prices
 }
@@ -35,7 +35,7 @@ type MarketOrder struct {
 	Type          int64   `json:"type"`
 }
 
-func NewPriceDB(cache evepraisal.CacheDB) (evepraisal.PriceDB, error) {
+func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, error) {
 	client := &http.Client{
 		Transport: httpcache.NewTransport(evepraisal.NewHTTPCache(cache)),
 	}
@@ -55,6 +55,7 @@ func NewPriceDB(cache evepraisal.CacheDB) (evepraisal.PriceDB, error) {
 		cache:    cache,
 		client:   client,
 		priceMap: priceMap,
+		baseURL:  baseURL,
 	}
 
 	go func() {
@@ -87,7 +88,7 @@ type MarketOrderResponse struct {
 
 func (p *PriceDB) runOnce() {
 	log.Println("Fetch market data")
-	priceMap, err := FetchMarketData(p.client, 10000002)
+	priceMap, err := FetchMarketData(p.client, p.baseURL, 10000002)
 	if err != nil {
 		log.Println("ERROR: fetching market data: ", err)
 		return
@@ -106,7 +107,7 @@ func (p *PriceDB) runOnce() {
 	}
 }
 
-func FetchMarketData(client *http.Client, regionID int) (map[int64]evepraisal.Prices, error) {
+func FetchMarketData(client *http.Client, baseURL string, regionID int) (map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
 	requestAndProcess := func(url string) (error, string) {
 		var r MarketOrderResponse
@@ -120,7 +121,7 @@ func FetchMarketData(client *http.Client, regionID int) (map[int64]evepraisal.Pr
 		return nil, r.Next.HREF
 	}
 
-	url := fmt.Sprintf("%s/market/%d/orders/all/", viper.GetString("crest.baseurl"), regionID)
+	url := fmt.Sprintf("%s/market/%d/orders/all/", baseURL, regionID)
 	for {
 		err, next := requestAndProcess(url)
 		if err != nil {

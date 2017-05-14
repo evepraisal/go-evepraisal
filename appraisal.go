@@ -42,7 +42,19 @@ func (i AppraisalItem) SellTotal() float64 {
 }
 
 func (i AppraisalItem) BuyTotal() float64 {
-	return float64(i.Quantity) * i.Prices.Sell.Max
+	return float64(i.Quantity) * i.Prices.Buy.Max
+}
+
+func (i AppraisalItem) SingleRepresentativePrice() float64 {
+	if i.Prices.Sell.Min != 0 {
+		return i.Prices.Sell.Min
+	} else {
+		return i.Prices.Buy.Max
+	}
+}
+
+func (i AppraisalItem) RepresentativePrice() float64 {
+	return float64(i.Quantity) * i.SingleRepresentativePrice()
 }
 
 type Prices struct {

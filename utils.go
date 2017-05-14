@@ -31,3 +31,8 @@ func HumanLargeNumber(n float64) string {
 	val, _ := stats.Round(n/math.Pow(1000, float64(exp)), 2)
 	return humanize.Commaf(val) + " " + suffix
 }
+
+func humanizeCommaf(f float64) string {
+	val, _ := stats.Round(f, 0)
+	return humanize.Commaf(val)
+}

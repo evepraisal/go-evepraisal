@@ -1,0 +1,4 @@
+.table-condensed th, .table-condensed td { padding: 0px 4px; }
+.results-table th {
+  cursor: pointer;
+}

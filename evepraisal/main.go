@@ -57,7 +57,7 @@ func main() {
 		}
 	}()
 
-	priceDB, err := crest.NewPriceDB(cacheDB)
+	priceDB, err := crest.NewPriceDB(cacheDB, viper.GetString("crest.baseurl"))
 	if err != nil {
 		log.Fatalf("Couldn't start price database")
 	}
@@ -68,7 +68,7 @@ func main() {
 		}
 	}()
 
-	typeDB, err := crest.NewTypeDB(cacheDB)
+	typeDB, err := crest.NewTypeDB(cacheDB, viper.GetString("crest.baseurl"))
 	if err != nil {
 		log.Fatalf("Couldn't start type database")
 	}
