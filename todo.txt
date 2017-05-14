@@ -17,5 +17,4 @@ TODO:
 	Componentized prices (for capital ships)
 	Blueprint copy prices
 
-	Lots of polish
 	App telemetry (new relic)

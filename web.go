@@ -7,6 +7,7 @@ import (
 	"expvar"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"sort"
@@ -107,6 +108,11 @@ func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.HasSuffix(appraisalID, ".raw") {
+		app.HandleViewAppraisalRAW(w, r)
+		return
+	}
+
 	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == AppraisalNotFound {
 		w.WriteHeader(http.StatusNotFound)
@@ -160,6 +166,31 @@ func (app *App) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) 
 
 	r.Header["Content-Type"] = []string{"application/json"}
 	json.NewEncoder(w).Encode(appraisal)
+}
+
+func (app *App) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
+	appraisalID := vestigo.Param(r, "appraisalID")
+	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
+
+	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
+	if err == AppraisalNotFound {
+		w.WriteHeader(http.StatusNotFound)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Not Found",
+			ErrorMessage: "I couldn't find what you're looking for",
+		})
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Something bad happened",
+			ErrorMessage: err.Error(),
+		})
+		return
+	}
+
+	r.Header["Content-Type"] = []string{"application/text"}
+	io.WriteString(w, appraisal.Raw)
 }
 
 func (app *App) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {

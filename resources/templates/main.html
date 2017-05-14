@@ -27,7 +27,7 @@
 
     <div class="col-lg-12">
       <div class="pull-left">
-      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}">#<strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="#rawTextModal" data-toggle="modal">View Raw</a></p>
+      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw" data-target="#rawTextModal" data-toggle="modal">View Raw</a></p>
       </div>
     </div>
 
@@ -71,9 +71,9 @@
               return n.attr('data-sort-value') || n.text();
           },
           headers: {
-             0: { sorter: 'digit' },
-             2: { sorter: 'digit' },
-             3: { sorter: 'digit' }
+             0: { sorter: 'digit', sortInitialOrder: 'desc' },
+             2: { sorter: 'digit', sortInitialOrder: 'desc' },
+             3: { sorter: 'digit', sortInitialOrder: 'desc' }
           }
         });
       });
