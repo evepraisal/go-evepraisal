@@ -83,13 +83,17 @@ func (db *TypeDB) downloadStaticDump() error {
 	}
 	req.Header.Add("User-Agent", "go-evepraisal")
 	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
+
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Successfully wrote %d bytes to %s", n, db.staticDumpPath())
+	log.Printf("Successfully wrote %d bytes to %s", n, db.staticDumpPath())
 	return nil
 }
 
