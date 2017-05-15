@@ -29,12 +29,13 @@ func (appraisal *Appraisal) CreatedTime() time.Time {
 }
 
 type AppraisalItem struct {
-	Name     string                 `json:"name"`
-	TypeID   int64                  `json:"typeID"`
-	TypeName string                 `json:"typeName"`
-	Quantity int64                  `json:"quantity"`
-	Meta     map[string]interface{} `json:"meta"`
-	Prices   Prices                 `json:"prices"`
+	Name       string                 `json:"name"`
+	TypeID     int64                  `json:"typeID"`
+	TypeName   string                 `json:"typeName"`
+	TypeVolume float64                `json:"typeVolume"`
+	Quantity   int64                  `json:"quantity"`
+	Meta       map[string]interface{} `json:"meta"`
+	Prices     Prices                 `json:"prices"`
 }
 
 func (i AppraisalItem) SellTotal() float64 {
@@ -43,6 +44,14 @@ func (i AppraisalItem) SellTotal() float64 {
 
 func (i AppraisalItem) BuyTotal() float64 {
 	return float64(i.Quantity) * i.Prices.Buy.Max
+}
+
+func (i AppraisalItem) SellISKVolume() float64 {
+	return i.SellTotal() / i.TypeVolume
+}
+
+func (i AppraisalItem) BuyISKVolume() float64 {
+	return i.BuyTotal() / i.TypeVolume
 }
 
 func (i AppraisalItem) SingleRepresentativePrice() float64 {
@@ -97,6 +106,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		}
 		items[i].TypeID = t.ID
 		items[i].TypeName = t.Name
+		items[i].TypeVolume = t.Volume
 
 		prices, ok := app.PriceDB.GetPrice(market, t.ID)
 		if !ok {

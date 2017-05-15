@@ -9,7 +9,7 @@
 
     <div class="col-lg-12">
       <div class="pull-left">
-      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw">View Raw</a></p>
+      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw" target="_blank">View Raw</a></p>
       </div>
     </div>
 
@@ -18,27 +18,38 @@
       <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
     </h4>
 
-    <table id="results" class="table table-condensed table-striped results-table">
+    <table id="results" class="table table-sm table-condensed table-striped results-table">
       <thead>
         <tr class="header">
           <th class="text-center">Qty</th>
           <th>Item</th>
+          <th>Volume</th>
           <th class="text-right">Single (sell)<br>Single (buy)</th>
           <th class="text-right">Total (sell)<br>Total (buy)</th>
+          <th class="text-right">ISK/m3 (sell)<br>ISK/m3 (buy)</th>
         </tr>
       </thead>
       <tbody>
       {{range $item := .Appraisal.Items}}
         <tr>
-          <td class="text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
+          <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
           <td>
             {{if $item.TypeName}}
               <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
             {{end}}
             &nbsp;
             {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}</td>
-          <td class="text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">{{commaf $item.Prices.Sell.Min}}<br>{{commaf $item.Prices.Buy.Max}}</td>
-          <td class="text-right" data-sort-value="-{{$item.RepresentativePrice | printf "%f"}}">{{commaf $item.SellTotal}}<br>{{commaf $item.BuyTotal}}</td>
+          <td class="numeric-cell text-right" >{{$item.TypeVolume}}</td>
+          <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice}}">
+            {{commaf $item.Prices.Sell.Min}}<br />
+            {{commaf $item.Prices.Buy.Max}}</td>
+          <td class="numeric-cell text-right" data-sort-value="-{{$item.RepresentativePrice | printf "%f"}}">
+            {{commaf $item.SellTotal}}<br />
+            {{commaf $item.BuyTotal}}</td>
+          <td class="numeric-cell text-right" data-sort-value="-{{$item.SellISKVolume | printf "%f"}}">
+            {{commaf $item.SellISKVolume}}<br />
+            {{commaf $item.BuyISKVolume}}
+          </td>
         </tr>
       {{end}}
       </tbody>

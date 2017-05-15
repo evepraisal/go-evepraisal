@@ -129,8 +129,9 @@ func (db *TypeDB) loadTypeData() error {
 	typeMap := make(map[string]evepraisal.EveType)
 	for typeID, t := range allTypes {
 		typeMap[strings.ToLower(t.Name.En)] = evepraisal.EveType{
-			ID:   typeID,
-			Name: t.Name.En,
+			ID:     typeID,
+			Name:   t.Name.En,
+			Volume: t.Volume,
 		}
 	}
 
@@ -143,6 +144,7 @@ type Type struct {
 	Name struct {
 		En string
 	}
+	Volume float64
 }
 
 func findZipFile(files []*zip.File, filename string) (*zip.File, error) {

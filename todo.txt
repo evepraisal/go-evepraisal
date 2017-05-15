@@ -3,10 +3,6 @@ TODO:
 	 - Prices for all major market hubs
 	 - Prices for 'Universe'
 
-	UI stuff:
-	 - Add volume columns
-	 - Fixed-width font for numeric values
-
 	heuristic parser
 	listing parser with type information
 
