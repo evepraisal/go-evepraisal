@@ -1,12 +1,9 @@
 TODO:
 
-	 - Prices for all major market hubs
-	 - Prices for 'Universe'
-
 	heuristic parser
 	listing parser with type information
-
 	Componentized prices (for capital ships)
+
 	Blueprint copy prices
 
 	App telemetry (new relic)
