@@ -7,6 +7,12 @@
     <p>This is some text that will be replaced with results</p>
     {{else}}
 
+    <div class="col-lg-12">
+      <div class="pull-left">
+      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw" target="_blank">View Raw</a></p>
+      </div>
+    </div>
+
     <h4>
       <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
       <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
