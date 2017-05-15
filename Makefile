@@ -2,8 +2,9 @@ default: build
 
 PKG_DIRS=$(shell go list ./... | grep -v /vendor/)
 TEST_REPORT_PATH ?= target/reports
+BINDATA_FLAGS?=-debug
 
-.PHONY: setup build install clean test test-reload run run-reload dist deploy
+.PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
 setup:
 	go get -u github.com/tools/godep
@@ -13,13 +14,15 @@ setup:
 	go install vendor/...
 	${GOPATH}/bin/godep restore
 
-build:
-	go generate ${PKG_DIRS}
+build: generate
 	go build -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
 
-install:
-	go generate ${PKG_DIRS}
+install: generate
 	go install ${PKG_DIRS}
+
+generate:
+	go generate ${PKG_DIRS}
+	${GOPATH}/bin/go-bindata ${BINDATA_FLAGS} --pkg evepraisal -prefix resources/ resources/...
 
 clean:
 	go clean ./...
@@ -35,13 +38,13 @@ test-reload:
 	${GOPATH}/bin/reflex -c reflex.test.conf
 
 run: install
-	evepraisal
+	${GOPATH}/bin/evepraisal
 
 run-reload:
 	reflex -c reflex.conf
 
 dist:
-	GOOS=linux GOARCH=amd64 make build
+	BINDATA_FLAGS= GOOS=linux GOARCH=amd64 make build
 
 deploy: dist
 	scp etc/systemd/system/evepraisal.service root@bleeding-edge.evepraisal.com:/etc/systemd/system/evepraisal.service

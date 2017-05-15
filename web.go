@@ -1,7 +1,5 @@
 package evepraisal
 
-//go:generate $GOPATH/bin/go-bindata --pkg evepraisal -prefix resources/ resources/...
-
 import (
 	"encoding/json"
 	"expvar"
@@ -38,9 +36,13 @@ var templateFuncs = template.FuncMap{
 	// Only for debugging
 	"spew": spew.Sdump,
 }
-var templates = MustLoadTemplateFiles()
+var templates *template.Template
 
-func MustLoadTemplateFiles() *template.Template {
+func init() {
+	MustLoadTemplateFiles()
+}
+
+func MustLoadTemplateFiles() {
 	t := template.New("root").Funcs(templateFuncs)
 	for _, path := range AssetNames() {
 		if strings.HasPrefix(path, "templates/") {
@@ -56,7 +58,7 @@ func MustLoadTemplateFiles() *template.Template {
 			}
 		}
 	}
-	return t
+	templates = t
 }
 
 type MainPageStruct struct {
