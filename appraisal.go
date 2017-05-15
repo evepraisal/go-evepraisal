@@ -3,6 +3,7 @@ package evepraisal
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
@@ -101,7 +102,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 	for i := 0; i < len(items); i++ {
 		t, ok := app.TypeDB.GetType(items[i].Name)
 		if !ok {
-			log.Printf("WARN: parsed out name that isn't a type: %s", items[i].Name)
+			log.Printf("WARN: parsed out name that isn't a type: %q", items[i].Name)
 			continue
 		}
 		items[i].TypeID = t.ID
@@ -276,5 +277,12 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				})
 		}
 	}
-	return items
+
+	returnItems := make([]AppraisalItem, len(items))
+	for i, item := range items {
+		item.Name = strings.Trim(item.Name, " \t")
+		returnItems[i] = item
+	}
+
+	return returnItems
 }
