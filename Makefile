@@ -2,7 +2,11 @@ default: build
 
 PKG_DIRS=$(shell go list ./... | grep -v /vendor/)
 TEST_REPORT_PATH ?= target/reports
-BINDATA_FLAGS?=-debug
+ENV?=dev
+ifeq ($(ENV), dev)
+	BUILD_OPTS?=-tags dev
+	BINDATA_FLAGS?=-debug
+endif
 
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
@@ -15,10 +19,10 @@ setup:
 	${GOPATH}/bin/godep restore
 
 build: generate
-	go build -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
+	go build ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
 
 install: generate
-	go install ${PKG_DIRS}
+	go install ${BUILD_OPTS} ${PKG_DIRS}
 
 generate:
 	go generate ${PKG_DIRS}
@@ -44,7 +48,7 @@ run-reload:
 	reflex -c reflex.conf
 
 dist:
-	BINDATA_FLAGS= GOOS=linux GOARCH=amd64 make build
+	ENV=PROD GOOS=linux GOARCH=amd64 make build
 
 deploy: dist
 	scp etc/systemd/system/evepraisal.service root@bleeding-edge.evepraisal.com:/etc/systemd/system/evepraisal.service

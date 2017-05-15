@@ -4,9 +4,6 @@ import "github.com/spf13/viper"
 
 func init() {
 	viper.SetDefault("web", map[string]interface{}{
-		"resources": map[string]interface{}{
-			"reload-on-change": true,
-		},
 		"http": map[string]interface{}{
 			"addr": ":8080",
 		},

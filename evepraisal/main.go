@@ -9,15 +9,13 @@ import (
 	"os/signal"
 	"time"
 
-	"golang.org/x/crypto/acme/autocert"
-
-	"github.com/dietsche/rfsnotify"
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/crest"
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
@@ -115,21 +113,6 @@ func main() {
 		go func() {
 			time.Sleep(10 * time.Second)
 			cancel()
-		}()
-	}
-
-	// In dev, we want to reload our templates whenever our resources change
-	if viper.GetBool("web.resources.reload-on-change") {
-		watcher, err := rfsnotify.NewWatcher()
-		if err != nil {
-			log.Fatalf("Not able to set up resource watcher: %s", err)
-		}
-		watcher.AddRecursive("resources/")
-		go func() {
-			for range watcher.Events {
-				log.Println("Detected resource changes, reloading templates")
-				evepraisal.MustLoadTemplateFiles()
-			}
 		}()
 	}
 

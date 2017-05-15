@@ -19,6 +19,7 @@ dependencies:
     - make setup
   override:
     - make
+    - make dist
 
 test:
   pre:

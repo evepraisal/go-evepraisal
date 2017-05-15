@@ -22,6 +22,10 @@
 			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
+			"ImportPath": "github.com/dietsche/rfsnotify",
+			"Rev": "94bf32bab0afb5f7d8b1af410fd89118eae02de2"
+		},
+		{
 			"ImportPath": "github.com/dustin/go-humanize",
 			"Rev": "259d2a102b871d17f30e3cd9881a642961a1e486"
 		},
@@ -105,6 +109,11 @@
 		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "9ccfe848b9db8435a24c424abbc07a921adf1df5"
+		},
+		{
+			"ImportPath": "gopkg.in/fsnotify.v1",
+			"Comment": "v1.2.0",
+			"Rev": "96c060f6a6b7e0d6f75fddd10efeaca3e5d1bcb0"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
