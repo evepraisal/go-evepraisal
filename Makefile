@@ -6,6 +6,8 @@ ENV?=dev
 ifeq ($(ENV), dev)
 	BUILD_OPTS?=-tags dev
 	BINDATA_FLAGS?=-debug
+else
+	BUILD_OPTS?=-tags prod
 endif
 
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
@@ -25,8 +27,7 @@ install: generate
 	go install ${BUILD_OPTS} ${PKG_DIRS}
 
 generate:
-	go generate ${PKG_DIRS}
-	${GOPATH}/bin/go-bindata ${BINDATA_FLAGS} --pkg evepraisal -prefix resources/ resources/...
+	go generate ${BUILD_OPTS} ${PKG_DIRS}
 
 clean:
 	go clean ./...
