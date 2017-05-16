@@ -99,7 +99,13 @@ func (p *HeuristicParser) Parse(input Input) (ParserResult, Input) {
 func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
 	parts := removeEmpty(heuristicTrimStrings(strings.Split(line, "\t"), ", _=-[]*"))
 	if len(parts) == 1 {
+		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "-"), ", _=-[]*"))
+	}
+	if len(parts) == 1 {
 		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "  "), ", _=-[]*"))
+	}
+	if len(parts) == 1 {
+		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, " "), ", _=-[]*"))
 	}
 	if len(parts) == 1 {
 		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, " "), ", _=-[]*"))
@@ -139,15 +145,27 @@ func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
 			return []HeuristicItem{{Name: name, Quantity: quantity}}
 		}
 	}
+
+	r, _ := NewContextListingParser(p.typeDB)(StringsToInput(parts))
+	if len(r.Lines()) > 0 {
+		switch r := r.(type) {
+		case *Listing:
+			var items []HeuristicItem
+			for _, item := range r.Items {
+				items = append(items, HeuristicItem{Name: item.Name, Quantity: item.Quantity})
+			}
+			return items
+		}
+	}
 	return nil
 }
 
 func (p *HeuristicParser) heuristicMethod2(line string) []HeuristicItem {
 	var b bytes.Buffer
-	for _, part := range strings.Split(line, " ") {
+	for _, part := range strings.Fields(line) {
 		b.WriteString(strings.Trim(part, ",\t "))
 		name := b.String()
-		if !p.typeDB.HasType(strings.ToLower(name)) {
+		if p.typeDB.HasType(name) {
 			return []HeuristicItem{{Name: name, Quantity: 1}}
 		}
 	}

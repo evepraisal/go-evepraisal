@@ -99,7 +99,8 @@ func main() {
 		PriceDB:     priceDB,
 		TypeDB:      typeDB,
 		CacheDB:     cacheDB,
-		Parser: parsers.NewMultiParser(
+		Parser: evepraisal.NewContextMultiParser(
+			typeDB,
 			[]parsers.Parser{
 				parsers.ParseKillmail,
 				parsers.ParseEFT,

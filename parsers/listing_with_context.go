@@ -23,10 +23,6 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reListing, rest)
 	matches2, rest := regexParseLines(reListing2, rest)
 	matches3, rest := regexParseLines(reListing3, rest)
-	listing.lines = append(listing.lines, regexMatchedLines(matches)...)
-	listing.lines = append(listing.lines, regexMatchedLines(matches2)...)
-	listing.lines = append(listing.lines, regexMatchedLines(matches3)...)
-	listing.lines = append(listing.lines, regexMatchedLines(matchesWithAmmo)...)
 
 	// collect items
 	matchgroup := make(map[ListingItem]int64)
@@ -34,6 +30,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		name := CleanString(match[2])
 		if p.typeDB.HasType(name) {
 			matchgroup[ListingItem{Name: name}] += ToInt(match[1])
+			listing.lines = append(listing.lines, i)
 		} else {
 			rest[i] = input[i]
 		}
@@ -43,6 +40,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		name := CleanString(match[1])
 		if p.typeDB.HasType(name) {
 			matchgroup[ListingItem{Name: name}] += ToInt(match[2])
+			listing.lines = append(listing.lines, i)
 		} else {
 			rest[i] = input[i]
 		}
@@ -52,6 +50,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		name := CleanString(match[1])
 		if p.typeDB.HasType(name) {
 			matchgroup[ListingItem{Name: name}] += 1
+			listing.lines = append(listing.lines, i)
 		} else {
 			rest[i] = input[i]
 		}
@@ -63,6 +62,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		if p.typeDB.HasType(name1) && p.typeDB.HasType(name2) {
 			matchgroup[ListingItem{Name: name1}] += 1
 			matchgroup[ListingItem{Name: name2}] += 1
+			listing.lines = append(listing.lines, i)
 		} else {
 			rest[i] = input[i]
 		}
