@@ -97,12 +97,12 @@ func (p *HeuristicParser) Parse(input Input) (ParserResult, Input) {
 }
 
 func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
-	parts := removeEmpty(heuristicTrimStrings(strings.Split(line, "\t"), ", _=-[]"))
+	parts := removeEmpty(heuristicTrimStrings(strings.Split(line, "\t"), ", _=-[]*"))
 	if len(parts) == 1 {
-		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "  "), ", _=-[]"))
+		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "  "), ", _=-[]*"))
 	}
 	if len(parts) == 1 {
-		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, " "), ", _=-[]"))
+		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, " "), ", _=-[]*"))
 	}
 
 	if len(parts) == 1 {
