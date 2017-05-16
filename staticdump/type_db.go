@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/evepraisal/go-evepraisal"
+	"github.com/evepraisal/go-evepraisal/typedb"
 
 	"gopkg.in/yaml.v2"
 )
@@ -20,13 +20,13 @@ type TypeDB struct {
 	staticDumpURL string
 	dir           string
 
-	typeMap map[string]evepraisal.EveType
+	typeMap map[string]typedb.EveType
 }
 
-func NewTypeDB(dir string, staticDumpURL string) (evepraisal.TypeDB, error) {
+func NewTypeDB(dir string, staticDumpURL string) (typedb.TypeDB, error) {
 
 	typeDB := &TypeDB{
-		typeMap:       make(map[string]evepraisal.EveType),
+		typeMap:       make(map[string]typedb.EveType),
 		staticDumpURL: staticDumpURL,
 		dir:           dir,
 	}
@@ -61,7 +61,7 @@ func (db *TypeDB) HasType(typeName string) bool {
 	return ok
 }
 
-func (db *TypeDB) GetType(typeName string) (evepraisal.EveType, bool) {
+func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
 	t, ok := db.typeMap[strings.ToLower(typeName)]
 	return t, ok
 }
@@ -126,9 +126,9 @@ func (db *TypeDB) loadTypeData() error {
 		return err
 	}
 
-	typeMap := make(map[string]evepraisal.EveType)
+	typeMap := make(map[string]typedb.EveType)
 	for typeID, t := range allTypes {
-		typeMap[strings.ToLower(t.Name.En)] = evepraisal.EveType{
+		typeMap[strings.ToLower(t.Name.En)] = typedb.EveType{
 			ID:     typeID,
 			Name:   t.Name.En,
 			Volume: t.Volume,

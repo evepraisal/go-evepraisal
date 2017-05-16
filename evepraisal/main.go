@@ -99,7 +99,24 @@ func main() {
 		PriceDB:     priceDB,
 		TypeDB:      typeDB,
 		CacheDB:     cacheDB,
-		Parser:      parsers.AllParser,
+		Parser: parsers.NewMultiParser(
+			[]parsers.Parser{
+				parsers.ParseKillmail,
+				parsers.ParseEFT,
+				parsers.ParseFitting,
+				parsers.ParseLootHistory,
+				parsers.ParsePI,
+				parsers.ParseViewContents,
+				parsers.ParseWallet,
+				parsers.ParseSurveyScan,
+				parsers.ParseContract,
+				parsers.ParseAssets,
+				parsers.ParseIndustry,
+				parsers.ParseCargoScan,
+				parsers.ParseDScan,
+				parsers.NewContextListingParser(typeDB),
+				parsers.NewHeuristicParser(typeDB),
+			}),
 	}
 
 	servers := mustStartServers(evepraisal.HTTPHandler(app))

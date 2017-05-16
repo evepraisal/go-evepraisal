@@ -4,75 +4,9 @@
 
   <div class="col-lg-8">
     {{if not .Appraisal}}
-    <p>This is some text that will be replaced with results</p>
+    <p>Welcome to what will be the new evepraisal! There is some serious construction going on so don't expect this to be super stable yet. Follow along with the progress here: <a href="https://github.com/evepraisal/go-evepraisal" target="_blank">https://github.com/evepraisal/go-evepraisal</a></p>
     {{else}}
-
-    <div class="col-lg-12">
-      <div class="pull-left">
-      <p class="text-left">Result <a href="/a/{{.Appraisal.ID}}"><strong>{{.Appraisal.ID}}</strong></a> ({{.Appraisal.Kind}}) created {{relativetime .Appraisal.CreatedTime}}. <a href="/a/{{.Appraisal.ID}}.raw" target="_blank">View Raw</a></p>
-      </div>
-    </div>
-
-    <h4>
-      <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
-      <span class="nowrap">{{ prettybignumber .Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
-    </h4>
-
-    <table id="results" class="table table-sm table-condensed table-striped results-table">
-      <thead>
-        <tr class="header">
-          <th class="text-center">Qty</th>
-          <th>Item</th>
-          <th>Volume</th>
-          <th class="text-right">Single (sell)<br>Single (buy)</th>
-          <th class="text-right">Total (sell)<br>Total (buy)</th>
-          <th class="text-right">ISK/m3 (sell)<br>ISK/m3 (buy)</th>
-        </tr>
-      </thead>
-      <tbody>
-      {{range $item := .Appraisal.Items}}
-        <tr>
-          <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
-          <td>
-            {{if $item.TypeName}}
-              <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
-            {{end}}
-            &nbsp;
-            {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}</td>
-          <td class="numeric-cell text-right" >{{$item.TypeVolume}}</td>
-          <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
-            {{commaf $item.Prices.Sell.Min}}<br />
-            {{commaf $item.Prices.Buy.Max}}</td>
-          <td class="numeric-cell text-right" data-sort-value="-{{$item.RepresentativePrice | printf "%f"}}">
-            {{commaf $item.SellTotal}}<br />
-            {{commaf $item.BuyTotal}}</td>
-          <td class="numeric-cell text-right" data-sort-value="-{{$item.SellISKVolume | printf "%f"}}">
-            {{commaf $item.SellISKVolume}}<br />
-            {{commaf $item.BuyISKVolume}}
-          </td>
-        </tr>
-      {{end}}
-      </tbody>
-    </table>
-
-    <script type="text/javascript">
-      window.history.pushState({}, "", "/a/{{.Appraisal.ID}}");
-      $(document).ready(function() {
-        $("#results").tablesorter({
-          textExtraction : function(node, table, cellIndex){
-              n = $(node);
-              return n.attr('data-sort-value') || n.text();
-          },
-          headers: {
-             0: { sorter: 'digit', sortInitialOrder: 'desc' },
-             2: { sorter: 'digit', sortInitialOrder: 'desc' },
-             3: { sorter: 'digit', sortInitialOrder: 'desc' },
-             4: { sorter: 'digit', sortInitialOrder: 'desc' },
-             5: { sorter: 'digit', sortInitialOrder: 'desc' }
-          }
-        });
-      });
-    </script>
+      {{template "appraisal-panel" .Appraisal}}
     {{end}}
 
   </div>

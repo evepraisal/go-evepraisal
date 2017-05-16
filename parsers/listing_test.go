@@ -48,7 +48,7 @@ Tritanium x 9'584'703
 		false,
 	}, {
 		"with whitespace",
-		` Tritanium 
+		` Tritanium
  Tritanium
 Tritanium `,
 		&Listing{

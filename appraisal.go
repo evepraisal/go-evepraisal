@@ -90,7 +90,8 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 	}
 
 	result, unparsed := app.Parser(parsers.StringToInput(s))
-	appraisal.Unparsed = map[int]string(unparsed)
+
+	appraisal.Unparsed = map[int]string(filterUnparsed(unparsed))
 
 	kind, err := findKind(result)
 	if err != nil {
@@ -276,6 +277,10 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 					},
 				})
 		}
+	case *parsers.HeuristicResult:
+		for _, item := range r.Items {
+			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
+		}
 	}
 
 	returnItems := make([]AppraisalItem, len(items))
@@ -285,4 +290,13 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 	}
 
 	return returnItems
+}
+
+func filterUnparsed(unparsed map[int]string) map[int]string {
+	for lineNum, line := range unparsed {
+		if strings.Trim(line, " \t") == "" {
+			delete(unparsed, lineNum)
+		}
+	}
+	return unparsed
 }

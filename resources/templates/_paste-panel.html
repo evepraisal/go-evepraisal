@@ -1,22 +1,28 @@
 {{define "paste-panel"}}
-<div class="col-lg-4 form-group">
-  <h4>Quick Estimate</h4>
-  <form action="/" method="POST">
-    <div class="well well-small">
-	    <textarea class="form-control" name="body" rows="10" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v"></textarea>
-		  <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
-		  <button type="reset" class="btn">Reset</button>
-		  <div class="pull-right input-append">
-        <select id="market" name="market">
-          <option value="jita">Jita</option>
-          <option value="universe">Universe</option>
-          <option value="amarr">Amarr</option>
-          <option value="dodixie">Dodixie</option>
-          <option value="rens">Rens</option>
-          <option value="hek">Hek</option>
-        </select>
+<div class="col-lg-4">
+  <div class="panel panel-default form-group">
+    <div class="panel-heading">Quick Estimate</div>
+    <form action="/" method="POST">
+      <div class="panel-body">
+        <div class="form-group">
+         <textarea class="form-control" name="body" rows="10" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v"></textarea>
+        </div>
+        <div class="clearfix pull-right">
+          <div class="form-inline">
+            <select id="market" name="market" class="form-control">
+              <option value="jita">Jita</option>
+              <option value="universe">Universe</option>
+              <option value="amarr">Amarr</option>
+              <option value="dodixie">Dodixie</option>
+              <option value="rens">Rens</option>
+              <option value="hek">Hek</option>
+            </select>
+            <button type="reset" class="btn">Reset</button>
+            <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
+          </div>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </div>
 {{end}}

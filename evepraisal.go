@@ -4,12 +4,13 @@ import (
 	"errors"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
+	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
 type App struct {
 	AppraisalDB AppraisalDB
 	CacheDB     CacheDB
-	TypeDB      TypeDB
+	TypeDB      typedb.TypeDB
 	PriceDB     PriceDB
 	Parser      parsers.Parser
 }
@@ -32,19 +33,7 @@ var (
 	AppraisalNotFound = errors.New("Appraisal not found")
 )
 
-type TypeDB interface {
-	GetType(typeName string) (EveType, bool)
-	HasType(typeName string) bool
-	Close() error
-}
-
 type PriceDB interface {
 	GetPrice(market string, typeID int64) (Prices, bool)
 	Close() error
-}
-
-type EveType struct {
-	ID     int64   `json:"id"`
-	Name   string  `json:"name"`
-	Volume float64 `json:"volume"`
 }

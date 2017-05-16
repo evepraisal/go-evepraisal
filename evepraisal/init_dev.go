@@ -17,10 +17,20 @@ func init() {
 	}
 
 	watcher.AddRecursive("resources/")
-	go func() {
-		for range watcher.Events {
-			log.Println("Detected resource changes, reloading templates")
-			evepraisal.MustLoadTemplateFiles()
+	go reloadTemplates(watcher)
+}
+
+func reloadTemplates(watcher *rfsnotify.RWatcher) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Error reloading templates: %v", r)
+			reloadTemplates(watcher)
 		}
 	}()
+
+	for range watcher.Events {
+		log.Println("Detected resource changes, reloading templates")
+		evepraisal.MustLoadTemplateFiles()
+		log.Println("Done reloading templates")
+	}
 }
