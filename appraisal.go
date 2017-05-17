@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
+	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
 type Appraisal struct {
@@ -81,6 +82,7 @@ type PriceStats struct {
 	Percentile float64 `json:"percentile"`
 	Stddev     float64 `json:"stddev"`
 	Volume     int64   `json:"volume"`
+	OrderCount int64   `json:"order_count"`
 }
 
 func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
@@ -113,7 +115,45 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		prices, ok := app.PriceDB.GetPrice(market, t.ID)
 		if !ok {
 			log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
-			continue
+		}
+
+		priceByComponents := func(components []typedb.Component) Prices {
+			var prices Prices
+			for _, component := range components {
+				p, ok := app.PriceDB.GetPrice(market, component.TypeID)
+				if !ok {
+					continue
+				}
+				qty := float64(component.Quantity)
+				prices.All.Average += p.All.Average * qty
+				prices.All.Max += p.All.Max * qty
+				prices.All.Min += p.All.Min * qty
+				prices.All.Median += p.All.Median * qty
+				prices.All.Percentile += p.All.Percentile * qty
+				prices.All.Stddev += p.All.Stddev * qty
+				prices.All.Volume += p.All.Volume
+
+				prices.Buy.Average += p.Buy.Average * qty
+				prices.Buy.Max += p.Buy.Max * qty
+				prices.Buy.Min += p.Buy.Min * qty
+				prices.Buy.Median += p.Buy.Median * qty
+				prices.Buy.Percentile += p.Buy.Percentile * qty
+				prices.Buy.Stddev += p.Buy.Stddev * qty
+				prices.Buy.Volume += p.Buy.Volume
+
+				prices.Sell.Average += p.Sell.Average * qty
+				prices.Sell.Max += p.Sell.Max * qty
+				prices.Sell.Min += p.Sell.Min * qty
+				prices.Sell.Median += p.Sell.Median * qty
+				prices.Sell.Percentile += p.Sell.Percentile * qty
+				prices.Sell.Stddev += p.Sell.Stddev * qty
+				prices.Sell.Volume += p.Sell.Volume
+			}
+			return prices
+		}
+
+		if prices.Sell.Volume == 0 && len(t.BaseComponenets) > 0 {
+			prices = priceByComponents(t.BaseComponenets)
 		}
 		items[i].Prices = prices
 

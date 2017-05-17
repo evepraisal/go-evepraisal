@@ -21,23 +21,23 @@
     <tr class="header">
       <th class="text-center">Qty</th>
       <th>Item</th>
-      <th class="text-right">Volume</th>
+      <th class="text-right">Volume (m<sup>3</sup>)</th>
       <th class="text-right">Single (sell)<br>Single (buy)</th>
       <th class="text-right">Total (sell)<br>Total (buy)</th>
       <th class="text-right">ISK/m3 (sell)<br>ISK/m3 (buy)</th>
     </tr>
   </thead>
   <tbody>
-  {{range $item := .Items}}
+  {{range $i, $item := .Items}}
     <tr class="{{if eq $item.TypeID 0}}danger{{else if eq $item.Prices.All.Volume 0}}info{{end}}">
       <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
       <td>
-        {{if $item.TypeName}}
+        {{if (and $item.TypeName (lt $i 30))}}
           <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
+          &nbsp;
         {{end}}
-        &nbsp;
         {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}</td>
-      <td class="numeric-cell text-right" >{{$item.TypeVolume}}</td>
+      <td class="numeric-cell text-right" >{{commaf $item.TypeVolume }}</td>
       <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
         {{commaf $item.Prices.Sell.Min}}<br />
         {{commaf $item.Prices.Buy.Max}}</td>
@@ -69,6 +69,7 @@
          5: { sorter: 'digit', sortInitialOrder: 'desc' }
       }
     });
+    $('[data-toggle="tooltip"]').tooltip()
   });
 </script>
 {{end}}

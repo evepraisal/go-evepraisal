@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/gregjones/httpcache"
-	"github.com/montanaflynn/stats"
 )
 
 type PriceDB struct {
@@ -221,13 +219,4 @@ func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs
 	log.Println("Finished performing aggregates on order data")
 
 	return newPriceMap, nil
-}
-
-func percentile90(in []float64) float64 {
-	perc, _ := stats.Percentile(in, 90)
-	if math.IsNaN(perc) {
-		avg, _ := stats.Mean(in)
-		return avg
-	}
-	return perc
 }

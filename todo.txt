@@ -1,7 +1,4 @@
 TODO:
-
-	heuristic parser
-
 	Componentized prices (for capital ships)
 	Blueprint copy prices
 

@@ -42,7 +42,7 @@ func NewTypeDB(dir string, staticDumpURL string) (typedb.TypeDB, error) {
 	}
 
 	log.Println("Load type data")
-	err := typeDB.loadTypeData()
+	err := typeDB.loadData()
 	if err != nil {
 		return nil, err
 	}
@@ -97,42 +97,53 @@ func (db *TypeDB) downloadStaticDump() error {
 	return nil
 }
 
-func (db *TypeDB) loadTypeData() error {
+func (db *TypeDB) loadData() error {
 	r, err := zip.OpenReader(db.staticDumpPath())
 	if err != nil {
 		return err
 	}
 	defer r.Close()
 
-	f, err := findZipFile(r.File, "sde/fsd/typeIDs.yaml")
-	if err != nil {
-		return err
-	}
-
-	fr, err := f.Open()
-	if err != nil {
-		return err
-	}
-
-	typeIDContents, err := ioutil.ReadAll(fr)
-	if err != nil {
-		return err
-	}
-
 	var allTypes map[int64]Type
-
-	err = yaml.Unmarshal(typeIDContents, &allTypes)
+	err = loadDataFromZipFile(r, "sde/fsd/typeIDs.yaml", &allTypes)
 	if err != nil {
 		return err
+	}
+	log.Printf("Loaded %d types", len(allTypes))
+
+	var allBlueprints map[int64]Blueprint
+	err = loadDataFromZipFile(r, "sde/fsd/blueprints.yaml", &allBlueprints)
+	if err != nil {
+		return err
+	}
+	log.Printf("Loaded %d blueprints", len(allBlueprints))
+
+	blueprintsByProductType := make(map[int64][]Blueprint)
+	for _, blueprint := range allBlueprints {
+		for _, product := range blueprint.Activities.Manufacturing.Products {
+			blueprints, ok := blueprintsByProductType[product.TypeID]
+			if ok {
+				blueprintsByProductType[product.TypeID] = append(blueprints, blueprint)
+			} else {
+				blueprintsByProductType[product.TypeID] = []Blueprint{blueprint}
+			}
+		}
 	}
 
 	typeMap := make(map[string]typedb.EveType)
 	for typeID, t := range allTypes {
-		typeMap[strings.ToLower(t.Name.En)] = typedb.EveType{
-			ID:     typeID,
-			Name:   t.Name.En,
-			Volume: t.Volume,
+		if !t.Published {
+			continue
 		}
+
+		eveType := typedb.EveType{
+			ID:              typeID,
+			Name:            t.Name.En,
+			Volume:          t.Volume,
+			BaseComponenets: resolveBaseComponents(blueprintsByProductType, typeID, 1, 5),
+		}
+
+		typeMap[strings.ToLower(t.Name.En)] = eveType
 	}
 
 	db.typeMap = typeMap
@@ -140,11 +151,51 @@ func (db *TypeDB) loadTypeData() error {
 	return nil
 }
 
+func resolveBaseComponents(blueprintsByProductType map[int64][]Blueprint, typeID int64, multiplier int64, left int) []typedb.Component {
+	if left == 0 {
+		return nil
+	}
+
+	blueprints, ok := blueprintsByProductType[typeID]
+	if !ok || len(blueprints) == 0 {
+		return nil
+	}
+
+	bp := blueprints[0]
+	var components []typedb.Component
+	for _, material := range bp.Activities.Manufacturing.Materials {
+		r := resolveBaseComponents(blueprintsByProductType, material.TypeID, material.Quantity*multiplier, left-1)
+		if r == nil {
+			components = append(components, typedb.Component{Quantity: material.Quantity * multiplier, TypeID: material.TypeID})
+		} else {
+			components = append(components, r...)
+		}
+	}
+	return components
+}
+
 type Type struct {
 	Name struct {
 		En string
 	}
-	Volume float64
+	Published bool
+	Volume    float64
+}
+
+type Blueprint struct {
+	BlueprintTypeID int64 `yaml:"blueprintTypeID"`
+	Activities      struct {
+		Manufacturing struct {
+			Materials []struct {
+				Quantity int64
+				TypeID   int64 `yaml:"typeID"`
+			}
+			Products []struct {
+				Quantity int64
+				TypeID   int64 `yaml:"typeID"`
+			}
+		}
+	}
 }
 
 func findZipFile(files []*zip.File, filename string) (*zip.File, error) {
@@ -154,4 +205,28 @@ func findZipFile(files []*zip.File, filename string) (*zip.File, error) {
 		}
 	}
 	return nil, fmt.Errorf("Could not locate %s in archive", filename)
+}
+
+func loadDataFromZipFile(r *zip.ReadCloser, filename string, res interface{}) error {
+	f, err := findZipFile(r.File, filename)
+	if err != nil {
+		return err
+	}
+
+	fr, err := f.Open()
+	if err != nil {
+		return err
+	}
+
+	contents, err := ioutil.ReadAll(fr)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(contents, res)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
