@@ -54,5 +54,15 @@ var cargoScanTestCases = []Case{
 		},
 		Input{},
 		true,
+	}, {
+		"Duplicates",
+		`1 Tengu
+2 Tengu`,
+		&CargoScan{
+			Items: []CargoScanItem{CargoScanItem{Name: "Tengu", Quantity: 3}},
+			lines: []int{0, 1},
+		},
+		Input{},
+		true,
 	},
 }

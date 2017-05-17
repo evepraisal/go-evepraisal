@@ -32,8 +32,11 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 	scan := &CargoScan{}
 	matches, rest := regexParseLines(reCargoScan, input)
 	scan.lines = regexMatchedLines(matches)
+
+	// collect items
+	matchgroup := make(map[CargoScanItem]int64)
 	for _, match := range matches {
-		item := CargoScanItem{Name: match[2], Quantity: ToInt(match[1])}
+		item := CargoScanItem{Name: match[2]}
 
 		if strings.HasSuffix(item.Name, " (Copy)") {
 			item.Details = "BLUEPRINT COPY"
@@ -44,6 +47,12 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 			item.Details = "BLUEPRINT ORIGINAL"
 			item.Name = strings.TrimSuffix(item.Name, " (Original)")
 		}
+		matchgroup[item] += ToInt(match[1])
+	}
+
+	// add items w/totals
+	for item, quantity := range matchgroup {
+		item.Quantity = quantity
 		scan.Items = append(scan.Items, item)
 	}
 
