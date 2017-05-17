@@ -17,5 +17,4 @@ func init() {
 	viper.SetDefault("cache.db", "db/cache")
 	viper.SetDefault("appraisal.db", "db/appraisals")
 	viper.SetDefault("newrelic.app-name", "Evepraisal")
-	viper.SetDefault("newrelic.license-key", "")
 }

@@ -98,8 +98,10 @@ func main() {
 
 	var txnLogger evepraisal.TransactionLogger
 	if viper.GetString("newrelic.license-key") == "" {
+		log.Println("Using no op transaction logger")
 		txnLogger = noop.NewTransactionLogger()
 	} else {
+		log.Println("Using new relic transaction logger")
 		txnLogger, err = newrelic.NewTransactionLogger(viper.GetString("newrelic.app-name"), viper.GetString("newrelic.license-key"))
 		if err != nil {
 			log.Fatalf("Problem starting transaction logger: %s", err)
