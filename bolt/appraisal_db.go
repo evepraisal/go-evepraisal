@@ -110,6 +110,17 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 	return appraisals, err
 }
 
+func (db *AppraisalDB) TotalAppraisals() (int64, error) {
+	var total int64
+	err := db.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("appraisals"))
+		total = int64(b.Stats().KeyN)
+		return nil
+	})
+
+	return total, err
+}
+
 func (db *AppraisalDB) Close() error {
 	return db.db.Close()
 }

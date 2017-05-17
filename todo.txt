@@ -1,10 +1,7 @@
 TODO:
-	Componentized prices (for capital ships)
-	Blueprint copy prices
+	* Google Analytics
+	* Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
 
-	App telemetry (new relic)
-	Google Analytics
-
-	 - Price breakdown page for each item. Why is it currently priced a certain way? This will be important for capital ships and BPOs and just give a good breakdown of prices per region
-	 - Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
-	 - Automatic deletion of appraisals which hasn't been visted in a long time
+	- Blueprint copy prices
+	-  Price breakdown page for each item. Why is it currently priced a certain way? This will be important for capital ships and BPOs and just give a good breakdown of prices per region
+	-  Automatic deletion of appraisals which hasn't been visted in a long time

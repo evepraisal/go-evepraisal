@@ -2,17 +2,19 @@ package evepraisal
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
 type App struct {
-	AppraisalDB AppraisalDB
-	CacheDB     CacheDB
-	TypeDB      typedb.TypeDB
-	PriceDB     PriceDB
-	Parser      parsers.Parser
+	AppraisalDB       AppraisalDB
+	CacheDB           CacheDB
+	TypeDB            typedb.TypeDB
+	PriceDB           PriceDB
+	Parser            parsers.Parser
+	TransactionLogger TransactionLogger
 }
 
 type CacheDB interface {
@@ -26,6 +28,7 @@ type AppraisalDB interface {
 	PutNewAppraisal(appraisal *Appraisal) error
 	GetAppraisal(appraisalID string) (*Appraisal, error)
 	LatestAppraisals(count int, kind string) ([]Appraisal, error)
+	TotalAppraisals() (int64, error)
 	Close() error
 }
 
@@ -36,4 +39,13 @@ var (
 type PriceDB interface {
 	GetPrice(market string, typeID int64) (Prices, bool)
 	Close() error
+}
+
+type TransactionLogger interface {
+	StartTransaction(identifier string) Transaction
+	StartWebTransaction(identifier string, w http.ResponseWriter, r *http.Request) Transaction
+}
+
+type Transaction interface {
+	End() error
 }

@@ -12,6 +12,8 @@ import (
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/crest"
+	"github.com/evepraisal/go-evepraisal/newrelic"
+	"github.com/evepraisal/go-evepraisal/noop"
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/spf13/viper"
@@ -94,11 +96,22 @@ func main() {
 		}
 	}()
 
+	var txnLogger evepraisal.TransactionLogger
+	if viper.GetString("newrelic.license-key") == "" {
+		txnLogger = noop.NewTransactionLogger()
+	} else {
+		txnLogger, err = newrelic.NewTransactionLogger(viper.GetString("newrelic.app-name"), viper.GetString("newrelic.license-key"))
+		if err != nil {
+			log.Fatalf("Problem starting transaction logger: %s", err)
+		}
+	}
+
 	app := &evepraisal.App{
-		AppraisalDB: appraisalDB,
-		PriceDB:     priceDB,
-		TypeDB:      typeDB,
-		CacheDB:     cacheDB,
+		AppraisalDB:       appraisalDB,
+		PriceDB:           priceDB,
+		TypeDB:            typeDB,
+		CacheDB:           cacheDB,
+		TransactionLogger: txnLogger,
 		Parser: evepraisal.NewContextMultiParser(
 			typeDB,
 			[]parsers.Parser{

@@ -62,17 +62,33 @@ func MustLoadTemplateFiles() {
 }
 
 type MainPageStruct struct {
-	Appraisal *Appraisal
+	Appraisal           *Appraisal
+	TotalAppraisalCount int64
 }
 
 func (app *App) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "main.html", MainPageStruct{})
+	txn := app.TransactionLogger.StartWebTransaction("view_index", w, r)
+	defer txn.End()
+
+	total, err := app.AppraisalDB.TotalAppraisals()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ExecuteTemplate(w, "error.html", ErrorPage{
+			ErrorTitle:   "Something bad happened",
+			ErrorMessage: err.Error(),
+		})
+		return
+	}
+	err = templates.ExecuteTemplate(w, "main.html", MainPageStruct{TotalAppraisalCount: total})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
+	txn := app.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
+	defer txn.End()
+
 	log.Println("New appraisal at ", r.FormValue("market"))
 	appraisal, err := app.StringToAppraisal(r.FormValue("market"), r.FormValue("body"))
 	if err != nil {
@@ -104,6 +120,8 @@ func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
+	txn := app.TransactionLogger.StartWebTransaction("view_appraisal", w, r)
+	defer txn.End()
 
 	appraisalID := vestigo.Param(r, "appraisalID")
 	if strings.HasSuffix(appraisalID, ".json") {
@@ -147,6 +165,9 @@ func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
+	txn := app.TransactionLogger.StartWebTransaction("view_appraisal_json", w, r)
+	defer txn.End()
+
 	appraisalID := vestigo.Param(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".json")
 
@@ -172,6 +193,9 @@ func (app *App) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *App) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
+	txn := app.TransactionLogger.StartWebTransaction("view_appraisal_raw", w, r)
+	defer txn.End()
+
 	appraisalID := vestigo.Param(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
 
@@ -197,6 +221,9 @@ func (app *App) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
+	txn := app.TransactionLogger.StartWebTransaction("view_latest_appraisals", w, r)
+	defer txn.End()
+
 	appraisals, err := app.AppraisalDB.LatestAppraisals(100, "")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -259,8 +286,5 @@ func HTTPHandler(app *App) http.Handler {
 	// Mount our web app router to root
 	mux.Handle("/", router)
 
-	// Setup access logger
-	l := accessLogger{}
-
-	return accesslog.NewLoggingHandler(mux, l)
+	return accesslog.NewLoggingHandler(mux, accessLogger{})
 }

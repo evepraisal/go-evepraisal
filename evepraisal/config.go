@@ -16,4 +16,6 @@ func init() {
 	viper.SetDefault("crest.baseurl", "https://crest-tq.eveonline.com")
 	viper.SetDefault("cache.db", "db/cache")
 	viper.SetDefault("appraisal.db", "db/appraisals")
+	viper.SetDefault("newrelic.app-name", "Evepraisal")
+	viper.SetDefault("newrelic.license-key", "")
 }

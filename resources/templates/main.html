@@ -4,7 +4,33 @@
 
   <div class="col-lg-8">
     {{if not .Appraisal}}
-    <p>Welcome to what will be the new evepraisal! There is some serious construction going on so don't expect this to be super stable yet. Follow along with the progress here: <a href="https://github.com/evepraisal/go-evepraisal" target="_blank">https://github.com/evepraisal/go-evepraisal</a></p>
+
+      <div style="text-align:right"><h5>Over {{.TotalAppraisalCount}} Appraisals Performed</h5></div>
+      <h4>What do I do?</h4>
+      <p>
+         Find something in Eve Online that you want to price check like a contract, cargo scan result, etc. Press <strong>CTRL + A, CTRL + C</strong>, then click on the lovely box to the left or above this and press <strong>CTRL + V</strong>. Submit and you should see a price breakdown of all the items.
+      </p>
+
+      <h4>What all can I paste in there?</h4>
+      <p>At first, this started as a simple cargo scan estimator but over time more formats have been added to the parser so you can use it as a more general price checker. Currently the following formats are supported:</p>
+      <ul>
+        <li>Inventory</li>
+        <li>Cargo Scanner</li>
+        <li>D-Scan</li>
+        <li>Bill of Materials</li>
+        <li>Loot History</li>
+        <li>Planetary Interaction</li>
+        <li>Survey Scanner</li>
+        <li>View Contents</li>
+        <li>Contracts</li>
+        <li>EFT Blocks</li>
+        <li>In-game Killmail</li>
+        <li>Wallet Transactions</li>
+        <li>Asset listings (named ships don't work)</li>
+        <li>Manual Entry. Example: "94812 Tritanium"</li>
+      </ul>
+  </div>
+
     {{else}}
       {{template "appraisal-panel" .Appraisal}}
     {{end}}
