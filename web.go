@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -38,71 +37,6 @@ var templateFuncs = template.FuncMap{
 	"spew": spew.Sdump,
 }
 
-func (app *App) LoadTemplates() error {
-
-	templates := make(map[string]*template.Template)
-	root := template.New("root").Funcs(templateFuncs)
-
-	for _, path := range AssetNames() {
-		if strings.HasPrefix(path, "templates/") && strings.HasPrefix(filepath.Base(path), "_") {
-			log.Println("load partial:", path)
-			tmplPartial := root.New(strings.TrimPrefix(path, "templates/"))
-			fileContents, err := Asset(path)
-			if err != nil {
-				return err
-			}
-			_, err = tmplPartial.Parse(string(fileContents))
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	root.New("extra-javascript").Parse(app.ExtraJS)
-
-	for _, path := range AssetNames() {
-		baseName := filepath.Base(path)
-		if strings.HasPrefix(path, "templates/") && !strings.HasPrefix(baseName, "_") {
-			log.Println("load:", baseName)
-			r, err := root.Clone()
-			if err != nil {
-				return err
-			}
-			tmpl := r.New(strings.TrimPrefix(path, "templates/"))
-			fileContents, err := Asset(path)
-			if err != nil {
-				return err
-			}
-
-			_, err = tmpl.Parse(string(fileContents))
-			if err != nil {
-				return err
-			}
-			templates[baseName] = tmpl
-		}
-	}
-
-	for _, template := range root.Templates() {
-		log.Println(template.Name())
-	}
-
-	app.templates = templates
-	return nil
-}
-
-func (app *App) render(w http.ResponseWriter, templateName string, input interface{}) error {
-	tmpl, ok := app.templates[templateName]
-	if !ok {
-		return fmt.Errorf("Could not find template named '%s'", templateName)
-	}
-	err := tmpl.ExecuteTemplate(w, templateName, input)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
-	}
-	return nil
-}
-
 type MainPageStruct struct {
 	Appraisal           *Appraisal
 	TotalAppraisalCount int64
@@ -117,12 +51,7 @@ func (app *App) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
-	err = app.render(w, "main.html", MainPageStruct{
-		TotalAppraisalCount: total,
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	app.render(w, "main.html", MainPageStruct{TotalAppraisalCount: total})
 }
 
 func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
@@ -142,13 +71,7 @@ func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.render(
-		w,
-		"main.html",
-		MainPageStruct{Appraisal: appraisal})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	err = app.render(w, "main.html", MainPageStruct{Appraisal: appraisal})
 }
 
 func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
@@ -179,13 +102,7 @@ func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 		return appraisal.Items[i].SingleRepresentativePrice() > appraisal.Items[j].SingleRepresentativePrice()
 	})
 
-	err = app.render(
-		w,
-		"main.html",
-		MainPageStruct{Appraisal: appraisal})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	app.render(w, "main.html", MainPageStruct{Appraisal: appraisal})
 }
 
 func (app *App) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
@@ -237,32 +154,23 @@ func (app *App) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
 		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
-	// {{ define "title"}}<title>Index Page</title>{{ end }}
 
-	err = app.render(
-		w,
-		"latest.html",
-		struct{ Appraisals []Appraisal }{appraisals})
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	app.render(w, "latest.html", struct{ Appraisals []Appraisal }{appraisals})
 }
 
-func (app *App) renderErrorPage(w http.ResponseWriter, statusCode int, title, message string) {
-	w.WriteHeader(statusCode)
-	app.render(w, "error.html", struct {
-		ErrorTitle   string
-		ErrorMessage string
-	}{title, message})
+func (app *App) HandleLegal(w http.ResponseWriter, r *http.Request) {
+	txn := app.TransactionLogger.StartWebTransaction("view_legal", w, r)
+	defer txn.End()
+	app.render(w, "legal.html", "wat")
 }
 
 func HTTPHandler(app *App) http.Handler {
 	router := vestigo.NewRouter()
-	router.Get("/latest", app.HandleLatestAppraisals)
 	router.Get("/", app.HandleIndex)
 	router.Post("/", app.HandleAppraisal)
 	router.Get("/a/:appraisalID", app.HandleViewAppraisal)
+	router.Get("/latest", app.HandleLatestAppraisals)
+	router.Get("/legal", app.HandleLegal)
 
 	router.Handle("/expvar", expvar.Handler())
 

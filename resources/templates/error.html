@@ -1,7 +1,7 @@
 {{define "title"}}{{.ErrorTitle}}{{end}}
-
+{{define "content"}}
 <div class="">
-  {{template "paste-panel"}}
+  {{template "_paste-panel.html"}}
 
   <div class="col-lg-8">
     <div class="jumbotron">
@@ -10,4 +10,6 @@
     </div>
   </div>
 </div>
+{{end}}
+
 {{template "_layout.html" .}}
