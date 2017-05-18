@@ -49,10 +49,15 @@ func ParseAssets(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reAssetList, input)
 	assetList.lines = regexMatchedLines(matches)
 	for _, match := range matches {
+		qty := ToInt(match[2])
+		if qty == 0 {
+			qty = 1
+		}
+
 		assetList.Items = append(assetList.Items,
 			AssetItem{
 				Name:      match[1],
-				Quantity:  ToInt(match[2]),
+				Quantity:  qty,
 				Volume:    ToFloat64(match[7]),
 				Group:     match[3],
 				Category:  match[4],

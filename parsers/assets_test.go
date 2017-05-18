@@ -63,5 +63,16 @@ Sleeper Data Library	1.080`,
 		},
 		Input{},
 		false,
+	}, {
+		"With empty quantity",
+		`Sleeper Data Library	`,
+		&AssetList{
+			Items: []AssetItem{
+				AssetItem{Name: "Sleeper Data Library", Quantity: 1},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 }
