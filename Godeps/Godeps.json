@@ -74,6 +74,36 @@
 			"Rev": "41c34e4914ec3c05d485e564d9028d8861d5d9ad"
 		},
 		{
+			"ImportPath": "github.com/newrelic/go-agent",
+			"Comment": "v1.9.0",
+			"Rev": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+		},
+		{
+			"ImportPath": "github.com/newrelic/go-agent/internal",
+			"Comment": "v1.9.0",
+			"Rev": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+		},
+		{
+			"ImportPath": "github.com/newrelic/go-agent/internal/jsonx",
+			"Comment": "v1.9.0",
+			"Rev": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+		},
+		{
+			"ImportPath": "github.com/newrelic/go-agent/internal/logger",
+			"Comment": "v1.9.0",
+			"Rev": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+		},
+		{
+			"ImportPath": "github.com/newrelic/go-agent/internal/sysinfo",
+			"Comment": "v1.9.0",
+			"Rev": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+		},
+		{
+			"ImportPath": "github.com/newrelic/go-agent/internal/utilization",
+			"Comment": "v1.9.0",
+			"Rev": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+		},
+		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
