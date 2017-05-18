@@ -1,6 +1,7 @@
-{{template "header"}}
+{{define "title"}}Evepraisal{{end}}
+{{define "content"}}
 <div class="row">
-  {{template "paste-panel"}}
+  {{template "_paste-panel.html"}}
 
   <div class="col-lg-8">
     {{if not .Appraisal}}
@@ -29,13 +30,13 @@
         <li>Asset listings (named ships don't work)</li>
         <li>Manual Entry. Example: "94812 Tritanium"</li>
       </ul>
-  </div>
+    </div>
 
     {{else}}
-      {{template "appraisal-panel" .Appraisal}}
+      {{template "_appraisal-panel.html" .Appraisal}}
     {{end}}
 
   </div>
 </div>
-
-{{template "footer"}}
+{{end}}
+{{template "_layout.html" .}}

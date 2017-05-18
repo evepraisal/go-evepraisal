@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -36,29 +37,70 @@ var templateFuncs = template.FuncMap{
 	// Only for debugging
 	"spew": spew.Sdump,
 }
-var templates *template.Template
 
-func init() {
-	MustLoadTemplateFiles()
-}
+func (app *App) LoadTemplates() error {
 
-func MustLoadTemplateFiles() {
-	t := template.New("root").Funcs(templateFuncs)
+	templates := make(map[string]*template.Template)
+	root := template.New("root").Funcs(templateFuncs)
+
 	for _, path := range AssetNames() {
-		if strings.HasPrefix(path, "templates/") {
-			tmpl := t.New(strings.TrimPrefix(path, "templates/"))
+		if strings.HasPrefix(path, "templates/") && strings.HasPrefix(filepath.Base(path), "_") {
+			log.Println("load partial:", path)
+			tmplPartial := root.New(strings.TrimPrefix(path, "templates/"))
 			fileContents, err := Asset(path)
 			if err != nil {
-				panic(err)
+				return err
+			}
+			_, err = tmplPartial.Parse(string(fileContents))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	root.New("extra-javascript").Parse(app.ExtraJS)
+
+	for _, path := range AssetNames() {
+		baseName := filepath.Base(path)
+		if strings.HasPrefix(path, "templates/") && !strings.HasPrefix(baseName, "_") {
+			log.Println("load:", baseName)
+			r, err := root.Clone()
+			if err != nil {
+				return err
+			}
+			tmpl := r.New(strings.TrimPrefix(path, "templates/"))
+			fileContents, err := Asset(path)
+			if err != nil {
+				return err
 			}
 
 			_, err = tmpl.Parse(string(fileContents))
 			if err != nil {
-				panic(err)
+				return err
 			}
+			templates[baseName] = tmpl
 		}
 	}
-	templates = t
+
+	for _, template := range root.Templates() {
+		log.Println(template.Name())
+	}
+
+	app.templates = templates
+	return nil
+}
+
+func (app *App) render(w http.ResponseWriter, templateName string, input interface{}) error {
+	tmpl, ok := app.templates[templateName]
+	if !ok {
+		return fmt.Errorf("Could not find template named '%s'", templateName)
+	}
+	err := tmpl.ExecuteTemplate(w, templateName, input)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	return nil
 }
 
 type MainPageStruct struct {
@@ -72,14 +114,12 @@ func (app *App) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	total, err := app.AppraisalDB.TotalAppraisals()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Something bad happened",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
-	err = templates.ExecuteTemplate(w, "main.html", MainPageStruct{TotalAppraisalCount: total})
+	err = app.render(w, "main.html", MainPageStruct{
+		TotalAppraisalCount: total,
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -92,25 +132,17 @@ func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	log.Println("New appraisal at ", r.FormValue("market"))
 	appraisal, err := app.StringToAppraisal(r.FormValue("market"), r.FormValue("body"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Invalid input",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
 
 	err = app.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Error when storing appraisal",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
-	err = templates.ExecuteTemplate(
+	err = app.render(
 		w,
 		"main.html",
 		MainPageStruct{Appraisal: appraisal})
@@ -136,18 +168,10 @@ func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == AppraisalNotFound {
-		w.WriteHeader(http.StatusNotFound)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Not Found",
-			ErrorMessage: "I couldn't find what you're looking for",
-		})
+		app.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Something bad happened",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
@@ -155,7 +179,7 @@ func (app *App) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 		return appraisal.Items[i].SingleRepresentativePrice() > appraisal.Items[j].SingleRepresentativePrice()
 	})
 
-	err = templates.ExecuteTemplate(
+	err = app.render(
 		w,
 		"main.html",
 		MainPageStruct{Appraisal: appraisal})
@@ -173,18 +197,10 @@ func (app *App) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) 
 
 	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == AppraisalNotFound {
-		w.WriteHeader(http.StatusNotFound)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Not Found",
-			ErrorMessage: "I couldn't find what you're looking for",
-		})
+		app.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Something bad happened",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
@@ -201,18 +217,10 @@ func (app *App) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
 
 	appraisal, err := app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == AppraisalNotFound {
-		w.WriteHeader(http.StatusNotFound)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Not Found",
-			ErrorMessage: "I couldn't find what you're looking for",
-		})
+		app.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Something bad happened",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
@@ -226,27 +234,27 @@ func (app *App) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
 
 	appraisals, err := app.AppraisalDB.LatestAppraisals(100, "")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ExecuteTemplate(w, "error.html", ErrorPage{
-			ErrorTitle:   "Something bad happened",
-			ErrorMessage: err.Error(),
-		})
+		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
+	// {{ define "title"}}<title>Index Page</title>{{ end }}
 
-	err = templates.ExecuteTemplate(
+	err = app.render(
 		w,
 		"latest.html",
-		struct{ Appraisals []Appraisal }{Appraisals: appraisals})
+		struct{ Appraisals []Appraisal }{appraisals})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-type ErrorPage struct {
-	ErrorTitle   string
-	ErrorMessage string
+func (app *App) renderErrorPage(w http.ResponseWriter, statusCode int, title, message string) {
+	w.WriteHeader(statusCode)
+	app.render(w, "error.html", struct {
+		ErrorTitle   string
+		ErrorMessage string
+	}{title, message})
 }
 
 func HTTPHandler(app *App) http.Handler {
@@ -260,20 +268,12 @@ func HTTPHandler(app *App) http.Handler {
 
 	vestigo.CustomNotFoundHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotFound)
-			templates.ExecuteTemplate(w, "error.html", ErrorPage{
-				ErrorTitle:   "Not Found",
-				ErrorMessage: "I couldn't find what you're looking for",
-			})
+			app.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		})
 
 	vestigo.CustomMethodNotAllowedHandlerFunc(func(allowedMethods string) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			templates.ExecuteTemplate(w, "error.html", ErrorPage{
-				ErrorTitle:   "Method not allowed",
-				ErrorMessage: fmt.Sprintf("HTTP Method not allowed. What is allowed is: " + allowedMethods),
-			})
+			app.renderErrorPage(w, http.StatusInternalServerError, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
 		}
 	})
 
@@ -285,6 +285,10 @@ func HTTPHandler(app *App) http.Handler {
 
 	// Mount our web app router to root
 	mux.Handle("/", router)
+	err := app.LoadTemplates()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return accesslog.NewLoggingHandler(mux, accessLogger{})
 }

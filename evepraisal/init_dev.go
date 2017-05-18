@@ -9,28 +9,22 @@ import (
 	"github.com/evepraisal/go-evepraisal"
 )
 
-// In dev, we want to reload our templates whenever our resources change
-func init() {
+func startEnvironmentWatchers(app *evepraisal.App) {
 	watcher, err := rfsnotify.NewWatcher()
 	if err != nil {
 		log.Fatalf("Not able to set up resource watcher: %s", err)
 	}
 
 	watcher.AddRecursive("resources/")
-	go reloadTemplates(watcher)
-}
-
-func reloadTemplates(watcher *rfsnotify.RWatcher) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("Error reloading templates: %v", r)
-			reloadTemplates(watcher)
+	go func() {
+		for range watcher.Events {
+			log.Println("Detected resource changes, reloading templates")
+			err := app.LoadTemplates()
+			if err != nil {
+				log.Printf("Could not reload templates %s", err)
+			} else {
+				log.Println("Done reloading templates")
+			}
 		}
 	}()
-
-	for range watcher.Events {
-		log.Println("Detected resource changes, reloading templates")
-		evepraisal.MustLoadTemplateFiles()
-		log.Println("Done reloading templates")
-	}
 }

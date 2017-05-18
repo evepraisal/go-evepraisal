@@ -1,4 +1,5 @@
-{{template "header"}}
+{{define "title"}}{{.ErrorTitle}}{{end}}
+
 <div class="">
   {{template "paste-panel"}}
 
@@ -9,4 +10,4 @@
     </div>
   </div>
 </div>
-{{template "footer"}}
+{{template "_layout.html" .}}

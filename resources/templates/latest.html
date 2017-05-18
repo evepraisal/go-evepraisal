@@ -1,4 +1,5 @@
-{{template "header"}}
+{{define "title"}}Latest Appraisals{{end}}
+{{define "content"}}
 <div class="col-lg-12">
   <h2>Latest Appraisals</h2>
   <table class="table table-condensed table-striped">
@@ -25,4 +26,5 @@
     {{end}}
   </table>
 </div>
-{{template "footer"}}
+{{end}}
+{{template "_layout.html" .}}

@@ -2,6 +2,7 @@ package evepraisal
 
 import (
 	"errors"
+	"html/template"
 	"net/http"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
@@ -15,6 +16,8 @@ type App struct {
 	PriceDB           PriceDB
 	Parser            parsers.Parser
 	TransactionLogger TransactionLogger
+	ExtraJS           string
+	templates         map[string]*template.Template
 }
 
 type CacheDB interface {
@@ -48,4 +51,8 @@ type TransactionLogger interface {
 
 type Transaction interface {
 	End() error
+}
+
+type TrackingCodeProvider interface {
+	TrackingJS() string
 }

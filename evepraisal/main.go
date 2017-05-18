@@ -114,6 +114,7 @@ func main() {
 		TypeDB:            typeDB,
 		CacheDB:           cacheDB,
 		TransactionLogger: txnLogger,
+		ExtraJS:           viper.GetString("web.extra-js"),
 		Parser: evepraisal.NewContextMultiParser(
 			typeDB,
 			[]parsers.Parser{
@@ -148,6 +149,8 @@ func main() {
 			cancel()
 		}()
 	}
+
+	startEnvironmentWatchers(app)
 
 	<-stop
 	log.Println("Shutting down")

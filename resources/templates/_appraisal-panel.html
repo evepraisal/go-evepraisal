@@ -1,4 +1,3 @@
-{{define "appraisal-panel"}}
 {{ if .Unparsed }}
 <div class="alert alert-warning" role="alert">
   <strong>Bad lines!</strong> <strong>{{ .Unparsed | len }}</strong> of the lines could not be parsed.
@@ -78,4 +77,3 @@
     $('[data-toggle="tooltip"]').tooltip()
   });
 </script>
-{{end}}
