@@ -23,7 +23,7 @@ func (r CargoScan) Lines() []int {
 type CargoScanItem struct {
 	Name     string
 	Quantity int64
-	Details  string
+	BPC      bool
 }
 
 var reCargoScan = regexp.MustCompile(`^([\d,'\.]+) ([\S ]+)$`)
@@ -39,12 +39,11 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 		item := CargoScanItem{Name: match[2]}
 
 		if strings.HasSuffix(item.Name, " (Copy)") {
-			item.Details = "BLUEPRINT COPY"
+			item.BPC = true
 			item.Name = strings.TrimSuffix(item.Name, " (Copy)")
 		}
 
 		if strings.HasSuffix(item.Name, " (Original)") {
-			item.Details = "BLUEPRINT ORIGINAL"
 			item.Name = strings.TrimSuffix(item.Name, " (Original)")
 		}
 		matchgroup[item] += ToInt(match[1])

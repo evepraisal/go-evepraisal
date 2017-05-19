@@ -31,7 +31,7 @@ var cargoScanTestCases = []Case{
 		"BPO",
 		`10 Plagioclase Mining Crystal I Blueprint (Original)`,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10, Details: "BLUEPRINT ORIGINAL"}},
+			Items: []CargoScanItem{CargoScanItem{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10}},
 			lines: []int{0},
 		},
 		Input{},
@@ -40,7 +40,7 @@ var cargoScanTestCases = []Case{
 		"BPC",
 		`10 Plagioclase Mining Crystal I Blueprint (Copy)`,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10, Details: "BLUEPRINT COPY"}},
+			Items: []CargoScanItem{CargoScanItem{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10, BPC: true}},
 			lines: []int{0},
 		},
 		Input{},

@@ -38,6 +38,8 @@ type AppraisalItem struct {
 	Quantity   int64                  `json:"quantity"`
 	Meta       map[string]interface{} `json:"meta"`
 	Prices     Prices                 `json:"prices"`
+	BPC        bool                   `json:"bpc"`
+	BPCRuns    int64                  `json:"bpcRuns,omitempty"`
 }
 
 func (i AppraisalItem) SellTotal() float64 {
@@ -112,54 +114,55 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		items[i].TypeName = t.Name
 		items[i].TypeVolume = t.Volume
 
-		prices, ok := app.PriceDB.GetPrice(market, t.ID)
-		if !ok {
-			log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
-		}
-
-		priceByComponents := func(components []typedb.Component) Prices {
-			var prices Prices
-			for _, component := range components {
-				p, ok := app.PriceDB.GetPrice(market, component.TypeID)
-				if !ok {
-					continue
-				}
-				qty := float64(component.Quantity)
-				prices.All.Average += p.All.Average * qty
-				prices.All.Max += p.All.Max * qty
-				prices.All.Min += p.All.Min * qty
-				prices.All.Median += p.All.Median * qty
-				prices.All.Percentile += p.All.Percentile * qty
-				prices.All.Stddev += p.All.Stddev * qty
-				prices.All.Volume += p.All.Volume
-
-				prices.Buy.Average += p.Buy.Average * qty
-				prices.Buy.Max += p.Buy.Max * qty
-				prices.Buy.Min += p.Buy.Min * qty
-				prices.Buy.Median += p.Buy.Median * qty
-				prices.Buy.Percentile += p.Buy.Percentile * qty
-				prices.Buy.Stddev += p.Buy.Stddev * qty
-				prices.Buy.Volume += p.Buy.Volume
-
-				prices.Sell.Average += p.Sell.Average * qty
-				prices.Sell.Max += p.Sell.Max * qty
-				prices.Sell.Min += p.Sell.Min * qty
-				prices.Sell.Median += p.Sell.Median * qty
-				prices.Sell.Percentile += p.Sell.Percentile * qty
-				prices.Sell.Stddev += p.Sell.Stddev * qty
-				prices.Sell.Volume += p.Sell.Volume
+		if !items[i].BPC {
+			prices, ok := app.PriceDB.GetPrice(market, t.ID)
+			if !ok {
+				log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
 			}
-			return prices
-		}
 
-		if prices.Sell.Volume == 0 && len(t.BaseComponenets) > 0 {
-			prices = priceByComponents(t.BaseComponenets)
-		}
-		items[i].Prices = prices
+			priceByComponents := func(components []typedb.Component) Prices {
+				var prices Prices
+				for _, component := range components {
+					p, ok := app.PriceDB.GetPrice(market, component.TypeID)
+					if !ok {
+						continue
+					}
+					qty := float64(component.Quantity)
+					prices.All.Average += p.All.Average * qty
+					prices.All.Max += p.All.Max * qty
+					prices.All.Min += p.All.Min * qty
+					prices.All.Median += p.All.Median * qty
+					prices.All.Percentile += p.All.Percentile * qty
+					prices.All.Stddev += p.All.Stddev * qty
+					prices.All.Volume += p.All.Volume
 
-		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
-		appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
-		appraisal.Totals.Volume += prices.All.Volume * items[i].Quantity
+					prices.Buy.Average += p.Buy.Average * qty
+					prices.Buy.Max += p.Buy.Max * qty
+					prices.Buy.Min += p.Buy.Min * qty
+					prices.Buy.Median += p.Buy.Median * qty
+					prices.Buy.Percentile += p.Buy.Percentile * qty
+					prices.Buy.Stddev += p.Buy.Stddev * qty
+					prices.Buy.Volume += p.Buy.Volume
+
+					prices.Sell.Average += p.Sell.Average * qty
+					prices.Sell.Max += p.Sell.Max * qty
+					prices.Sell.Min += p.Sell.Min * qty
+					prices.Sell.Median += p.Sell.Median * qty
+					prices.Sell.Percentile += p.Sell.Percentile * qty
+					prices.Sell.Stddev += p.Sell.Stddev * qty
+					prices.Sell.Volume += p.Sell.Volume
+				}
+				return prices
+			}
+
+			if prices.Sell.Volume == 0 && len(t.BaseComponenets) > 0 {
+				prices = priceByComponents(t.BaseComponenets)
+			}
+			items[i].Prices = prices
+			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
+			appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
+			appraisal.Totals.Volume += prices.All.Volume * items[i].Quantity
+		}
 	}
 	appraisal.Items = items
 
@@ -201,7 +204,12 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		}
 	case *parsers.CargoScan:
 		for _, item := range r.Items {
-			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
+			items = append(items,
+				AppraisalItem{
+					Name:     item.Name,
+					Quantity: item.Quantity,
+					BPC:      item.BPC,
+				})
 		}
 	case *parsers.Contract:
 		for _, item := range r.Items {
@@ -210,6 +218,8 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 					Name:     item.Name,
 					Quantity: item.Quantity,
 					Meta:     map[string]interface{}{"fitted": item.Fitted},
+					BPC:      item.BPC,
+					BPCRuns:  item.BPCRuns,
 				})
 		}
 	case *parsers.DScan:
