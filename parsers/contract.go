@@ -27,6 +27,8 @@ type ContractItem struct {
 	Category string
 	Details  string
 	Fitted   bool
+	BPC      bool
+	BPCRuns  int64
 }
 
 var reContract = regexp.MustCompile(strings.Join([]string{
@@ -43,6 +45,8 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 	`([\S ]*)$`,     // type
 }, ""))
 
+var reBPCDetails = regexp.MustCompile(`BLUEPRINT COPY - Runs: ([\d]+) - .*`)
+
 func ParseContract(input Input) (ParserResult, Input) {
 	contract := &Contract{}
 	matches, rest := regexParseLines(reContract, input)
@@ -52,12 +56,21 @@ func ParseContract(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[ContractItem]int64)
 	for _, match := range matches {
+		bpc := reBPCDetails.FindStringSubmatch(match[5])
+		var isBPC bool
+		var bpcRuns int64
+		if len(bpc) > 0 {
+			isBPC = true
+			bpcRuns = ToInt(bpc[1])
+		}
 		item := ContractItem{
 			Name:     match[1],
 			Type:     match[3],
 			Category: match[4],
 			Details:  match[5],
 			Fitted:   strings.HasPrefix(match[5], "Fitted"),
+			BPC:      isBPC,
+			BPCRuns:  bpcRuns,
 		}
 
 		matchgroup[item] += ToInt(match[2])

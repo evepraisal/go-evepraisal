@@ -1,5 +1,6 @@
 TODO:
 	* Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
+	* Price blueprint copies properly (or at least fail to price them)
 	* Database backups
 
 	- Automatic deletion of appraisals which hasn't been visted in a long time
