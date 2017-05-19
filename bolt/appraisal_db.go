@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/boltdb/bolt"
@@ -22,14 +23,15 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 	}
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte("appraisals"))
-		if err != nil {
-			return fmt.Errorf("create appraisal bucket: %s", err)
-		}
-
-		err = b.SetSequence(20000000)
-		if err != nil {
-			return fmt.Errorf("create appraisal bucket: %s", err)
+		b, err := tx.CreateBucket([]byte("appraisals"))
+		if err == nil {
+			err = b.SetSequence(20000000)
+			if err != nil {
+				return fmt.Errorf("set appraisal bucket sequence: %s", err)
+			}
+			log.Println("Appraisal bucket created")
+		} else if err != bolt.ErrBucketExists {
+			return err
 		}
 		return nil
 	})
@@ -82,6 +84,7 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 
 func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	log.Println(reqCount, kind)
 	err := db.db.View(func(tx *bolt.Tx) error {
 
 		b := tx.Bucket([]byte("appraisals"))
@@ -98,7 +101,8 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 			}
 
 			appraisals = append(appraisals, appraisal)
-
+			id, _ := DecodeAppraisalID(k)
+			log.Println(id, appraisal.CreatedTime())
 			if len(appraisals) >= reqCount {
 				break
 			}

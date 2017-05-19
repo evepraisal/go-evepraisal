@@ -102,6 +102,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		return appraisal, err
 	}
 	appraisal.Kind = kind
+	appraisal.MarketName = market
 
 	items := parserResultToAppraisalItems(result)
 	for i := 0; i < len(items); i++ {

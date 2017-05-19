@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -57,8 +58,11 @@ func (app *App) HandleIndex(w http.ResponseWriter, r *http.Request) {
 func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	txn := app.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
 	defer txn.End()
+	if len(r.FormValue("body")) > 200000 {
+		app.renderErrorPage(w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
+		return
+	}
 
-	log.Println("New appraisal at ", r.FormValue("market"))
 	appraisal, err := app.StringToAppraisal(r.FormValue("market"), r.FormValue("body"))
 	if err != nil {
 		app.renderErrorPage(w, http.StatusBadRequest, "Invalid input", err.Error())
@@ -70,6 +74,7 @@ func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
+	log.Printf("[New appraisal] id=%s, market=%s, items=%d, unparsed=%d", appraisal.ID, appraisal.MarketName, len(appraisal.Items), len(appraisal.Unparsed))
 
 	err = app.render(w, "main.html", MainPageStruct{Appraisal: appraisal})
 }
@@ -149,7 +154,14 @@ func (app *App) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
 	txn := app.TransactionLogger.StartWebTransaction("view_latest_appraisals", w, r)
 	defer txn.End()
 
-	appraisals, err := app.AppraisalDB.LatestAppraisals(100, "")
+	var limit int64
+	var err error
+	limit, err = strconv.ParseInt(r.FormValue("limit"), 10, 64)
+	if err != nil {
+		limit = 100
+	}
+
+	appraisals, err := app.AppraisalDB.LatestAppraisals(int(limit), r.FormValue("kind"))
 	if err != nil {
 		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
