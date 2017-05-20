@@ -17,18 +17,20 @@ import (
 )
 
 type TypeDB struct {
-	staticDumpURL string
-	dir           string
+	staticDumpURL   string
+	dir             string
+	loadUnpublished bool
 
 	typeMap map[string]typedb.EveType
 }
 
-func NewTypeDB(dir string, staticDumpURL string) (typedb.TypeDB, error) {
+func NewTypeDB(dir string, staticDumpURL string, loadUnpublished bool) (typedb.TypeDB, error) {
 
 	typeDB := &TypeDB{
-		typeMap:       make(map[string]typedb.EveType),
-		staticDumpURL: staticDumpURL,
-		dir:           dir,
+		typeMap:         make(map[string]typedb.EveType),
+		staticDumpURL:   staticDumpURL,
+		dir:             dir,
+		loadUnpublished: loadUnpublished,
 	}
 
 	if _, err := os.Stat(typeDB.staticDumpPath()); os.IsNotExist(err) {
@@ -132,7 +134,7 @@ func (db *TypeDB) loadData() error {
 
 	typeMap := make(map[string]typedb.EveType)
 	for typeID, t := range allTypes {
-		if !t.Published {
+		if !db.loadUnpublished && !t.Published {
 			continue
 		}
 

@@ -1,0 +1,151 @@
+memo = "1d9419280267b3a372b6ed65e6d5db62a9830857d7a2b0daf7bdcfa90f9ddd8e"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/boltdb/bolt"
+  packages = ["."]
+  revision = "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd"
+
+[[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/dietsche/rfsnotify"
+  packages = ["."]
+  revision = "94bf32bab0afb5f7d8b1af410fd89118eae02de2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+  packages = ["."]
+  revision = "259d2a102b871d17f30e3cd9881a642961a1e486"
+
+[[projects]]
+  name = "github.com/elazarl/go-bindata-assetfs"
+  packages = ["."]
+  revision = "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
+
+[[projects]]
+  name = "github.com/gregjones/httpcache"
+  packages = ["."]
+  revision = "0d2297f241a3503b4d464cd434e6d1490ec76e9a"
+
+[[projects]]
+  name = "github.com/husobee/vestigo"
+  packages = ["."]
+  revision = "8ad6f810576cc32c82c6e59d46003cd011b331a0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kr/pretty"
+  packages = ["."]
+  revision = "e6ac2fc51e89a3249e82157fa0bb7a18ef9dd5bb"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kr/text"
+  packages = ["."]
+  revision = "e373e137fafd8abd480af49182dea0513914adb4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/magiconair/properties"
+  packages = ["."]
+  revision = "337395e44efb4affc8bf11971e22acbd4e27a32d"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/martinlindhe/base36"
+  packages = ["."]
+  revision = "44e007f2c95e7c7396eb67802b9bd1ac9123785f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mash/go-accesslog"
+  packages = ["."]
+  revision = "9ba8e13f36087d6cb83d9a9f17f9e8da137d5ee9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "281073eb9eb092240d33ef253c404f1cca550309"
+
+[[projects]]
+  name = "github.com/montanaflynn/stats"
+  packages = ["."]
+  revision = "41c34e4914ec3c05d485e564d9028d8861d5d9ad"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/newrelic/go-agent"
+  packages = [".","internal","internal/jsonx","internal/logger","internal/sysinfo","internal/utilization"]
+  revision = "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
+
+[[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/spf13/cast"
+  packages = ["."]
+  revision = "ee815aaf958c707ad07547cd62150d973710f747"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/spf13/jwalterweatherman"
+  packages = ["."]
+  revision = "3d60171a64319ef63c78bd45bd60e6eab1e75f8b"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/spf13/pflag"
+  packages = ["."]
+  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/spf13/viper"
+  packages = ["."]
+  revision = "3c0ff861e3d9906ecc4ebfb7e41557d44d3e277b"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "4d4bfba8f1d1027c4fdbe371823030df51419987"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["acme","acme/autocert"]
+  revision = "3543873453996aaab2fc6b3928a35fc5ca2b5afb"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "9ccfe848b9db8435a24c424abbc07a921adf1df5"
+
+[[projects]]
+  branch = "master"
+  name = "gopkg.in/fsnotify.v1"
+  packages = ["."]
+  revision = "96c060f6a6b7e0d6f75fddd10efeaca3e5d1bcb0"
+
+[[projects]]
+  branch = "master"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "7ad95dd0798a40da1ccdff6dff35fd177b5edf40"

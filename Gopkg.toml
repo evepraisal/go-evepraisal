@@ -1,0 +1,44 @@
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/boltdb/bolt"
+
+[[dependencies]]
+  name = "github.com/davecgh/go-spew"
+  version = "^1.1.0"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/dietsche/rfsnotify"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/martinlindhe/base36"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/mash/go-accesslog"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/newrelic/go-agent"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/spf13/viper"
+
+[[dependencies]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
+[[dependencies]]
+  branch = "master"
+  name = "gopkg.in/fsnotify.v1"
+
+[[dependencies]]
+  branch = "master"
+  name = "gopkg.in/yaml.v2"

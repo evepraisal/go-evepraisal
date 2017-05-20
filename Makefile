@@ -10,15 +10,18 @@ else
 	BUILD_OPTS?=-tags prod
 endif
 
+GOOS?=$(shell go env GOOS)
+GOARCH?=$(shell go env GOARCH)
+
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
 setup:
-	go get -u github.com/tools/godep
+	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/jteeuwen/go-bindata/...
 	go get -u github.com/cespare/reflex
 	go get -u github.com/jstemmer/go-junit-report
 	go install vendor/...
-	${GOPATH}/bin/godep restore
+	${GOPATH}/bin/dep ensure
 
 build: generate
 	go build ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal

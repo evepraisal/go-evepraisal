@@ -71,6 +71,7 @@ func (app *App) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	err = app.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
+		log.Printf("ERROR: saving appraisal: %s", err)
 		app.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}

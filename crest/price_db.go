@@ -177,6 +177,7 @@ func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs
 			for {
 				err, next := requestAndProcess(url)
 				if err != nil {
+					// TODO: Retry
 					log.Println("WARNING: Failed to fetch market orders", err)
 				}
 
