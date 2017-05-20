@@ -37,7 +37,7 @@ func restoreMain() {
 		}
 	}
 
-	typeDB, err := staticdump.NewTypeDB("db/static", "https://cdn1.eveonline.com/data/sde/tranquility/sde-20170509-TRANQUILITY.zip", true)
+	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.db"), viper.GetString("type.static-file"), true)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}
@@ -60,9 +60,11 @@ func restoreMain() {
 	}()
 
 	for _, filename := range filenames {
+		log.Printf("Start restoring: %s", filename)
 		err := legacy.RestoreLegacyFile(appraisalDB, typeDB, filename)
 		if err != nil {
 			log.Fatalf("Error while importing legacy file: %s", err)
 		}
+		log.Printf("Done restoring: %s", filename)
 	}
 }

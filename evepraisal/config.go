@@ -17,4 +17,6 @@ func init() {
 	viper.SetDefault("cache.db", "db/cache")
 	viper.SetDefault("appraisal.db", "db/appraisals")
 	viper.SetDefault("newrelic.app-name", "Evepraisal")
+	viper.SetDefault("type.db", "db/static")
+	viper.SetDefault("type.static-file", "https://cdn1.eveonline.com/data/sde/tranquility/sde-20170509-TRANQUILITY.zip")
 }

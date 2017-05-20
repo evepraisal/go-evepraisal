@@ -50,7 +50,8 @@ func appMain() {
 	if err != nil {
 		log.Fatalf("Unable to create static data dir: %s", err)
 	}
-	typeDB, err := staticdump.NewTypeDB("db/static", "https://cdn1.eveonline.com/data/sde/tranquility/sde-20170509-TRANQUILITY.zip", false)
+
+	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.db"), viper.GetString("type.static-file"), false)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}

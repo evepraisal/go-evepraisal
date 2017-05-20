@@ -117,6 +117,10 @@ func RestoreLegacyFile(appraisalDB evepraisal.AppraisalDB, typeDB typedb.TypeDB,
 				log.Printf("WARN: Could not parse kind (%s): %s", typeTuple[0], err)
 			}
 
+			// log.Printf("INFO: kind=%s, id=%s", kind, appraisal.ID)
+			// if appraisal.ID == "8otq5" {
+			// 	log.Println(string(typeTuple[1]))
+			// }
 			var items []evepraisal.AppraisalItem
 			switch kind {
 			case "killmail":
@@ -287,9 +291,6 @@ type LegacyType struct {
 }
 
 func (t LegacyType) ToNewItems() []evepraisal.AppraisalItem {
-	if t.Name == "" {
-		log.Println("WTF")
-	}
 	items := make([]evepraisal.AppraisalItem, 0)
 	item := evepraisal.AppraisalItem{
 		Name:     t.Name,
