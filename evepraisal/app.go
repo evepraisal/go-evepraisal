@@ -12,10 +12,12 @@ import (
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/crest"
+	"github.com/evepraisal/go-evepraisal/management"
 	"github.com/evepraisal/go-evepraisal/newrelic"
 	"github.com/evepraisal/go-evepraisal/noop"
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/staticdump"
+	"github.com/evepraisal/go-evepraisal/web"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
 )
@@ -64,7 +66,7 @@ func appMain() {
 
 	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal.db"))
 	if err != nil {
-		log.Fatalf("Couldn't start appraisal database")
+		log.Fatalf("Couldn't start appraisal database: %s", err)
 	}
 	defer func() {
 		err := appraisalDB.Close()
@@ -91,7 +93,6 @@ func appMain() {
 		TypeDB:            typeDB,
 		CacheDB:           cacheDB,
 		TransactionLogger: txnLogger,
-		ExtraJS:           viper.GetString("web.extra-js"),
 		Parser: evepraisal.NewContextMultiParser(
 			typeDB,
 			[]parsers.Parser{
@@ -113,7 +114,9 @@ func appMain() {
 			}),
 	}
 
-	servers := mustStartServers(evepraisal.HTTPHandler(app))
+	app.WebContext = web.NewContext(app, viper.GetString("web.extra-js"))
+
+	servers := mustStartServers(app.WebContext.HTTPHandler())
 	if err != nil {
 		log.Fatalf("Problem starting https server: %s", err)
 	}
@@ -128,6 +131,21 @@ func appMain() {
 	}
 
 	startEnvironmentWatchers(app)
+
+	log.Printf("Starting Management HTTP server (%s)", viper.GetString("management.http.addr"))
+	mgmtServer := &http.Server{
+		Addr:    viper.GetString("management.http.addr"),
+		Handler: management.HTTPHandler(app),
+	}
+	defer mgmtServer.Close()
+	go func() {
+		err := mgmtServer.ListenAndServe()
+		if err == http.ErrServerClosed {
+			log.Println("Management HTTP server stopped")
+		} else if err != nil {
+			log.Fatalf("Management HTTP server failure: %s", err)
+		}
+	}()
 
 	<-stop
 	log.Println("Shutting down")

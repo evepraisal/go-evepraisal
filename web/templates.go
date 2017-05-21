@@ -1,4 +1,4 @@
-package evepraisal
+package web
 
 import (
 	"fmt"
@@ -9,8 +9,7 @@ import (
 	"strings"
 )
 
-func (app *App) LoadTemplates() error {
-
+func (ctx *Context) Reload() error {
 	templates := make(map[string]*template.Template)
 	root := template.New("root").Funcs(templateFuncs)
 
@@ -29,7 +28,7 @@ func (app *App) LoadTemplates() error {
 		}
 	}
 
-	root.New("extra-javascript").Parse(app.ExtraJS)
+	root.New("extra-javascript").Parse(ctx.extraJS)
 
 	for _, path := range AssetNames() {
 		baseName := filepath.Base(path)
@@ -53,12 +52,12 @@ func (app *App) LoadTemplates() error {
 		}
 	}
 
-	app.templates = templates
+	ctx.templates = templates
 	return nil
 }
 
-func (app *App) render(w http.ResponseWriter, templateName string, input interface{}) error {
-	tmpl, ok := app.templates[templateName]
+func (ctx *Context) render(w http.ResponseWriter, templateName string, input interface{}) error {
+	tmpl, ok := ctx.templates[templateName]
 	if !ok {
 		return fmt.Errorf("Could not find template named '%s'", templateName)
 	}
@@ -70,9 +69,9 @@ func (app *App) render(w http.ResponseWriter, templateName string, input interfa
 	return nil
 }
 
-func (app *App) renderErrorPage(w http.ResponseWriter, statusCode int, title, message string) {
+func (ctx *Context) renderErrorPage(w http.ResponseWriter, statusCode int, title, message string) {
 	w.WriteHeader(statusCode)
-	app.render(w, "error.html", struct {
+	ctx.render(w, "error.html", struct {
 		ErrorTitle   string
 		ErrorMessage string
 	}{title, message})

@@ -22,7 +22,7 @@ type AppraisalDB struct {
 }
 
 func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
-	db, err := bolt.Open(filename, 0600, nil)
+	db, err := bolt.Open(filename, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	var total int64
 	err := db.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
-		total = int64(b.Stats().KeyN)
+		total = int64(b.Sequence())
 		return nil
 	})
 

@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
-	"github.com/evepraisal/go-evepraisal/bolt"
+	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/legacy"
 	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/spf13/viper"
@@ -37,7 +41,8 @@ func restoreMain() {
 		}
 	}
 
-	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.db"), viper.GetString("type.static-file"), true)
+	log.Println("New typedb")
+	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.tmp.db"), viper.GetString("type.static-file"), true)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}
@@ -48,20 +53,31 @@ func restoreMain() {
 		}
 	}()
 
-	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal.db"))
-	if err != nil {
-		log.Fatalf("Couldn't start appraisal database")
-	}
-	defer func() {
-		err := appraisalDB.Close()
+	saver := func(appraisal *evepraisal.Appraisal) error {
+		var buf bytes.Buffer
+		err := json.NewEncoder(&buf).Encode(appraisal)
 		if err != nil {
-			log.Fatalf("Problem closing appraisalDB: %s", err)
+			return err
 		}
-	}()
+
+		req, _ := http.NewRequest("POST", "http://"+viper.GetString("management.http.addr")+"/restore", &buf)
+		req.Header.Add("Content-Type", "application/json")
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != 200 {
+			body, _ := ioutil.ReadAll(resp.Body)
+			log.Printf("ERROR: %s: %s", resp.Status, string(body))
+		}
+		resp.Body.Close()
+
+		return nil
+	}
 
 	for _, filename := range filenames {
 		log.Printf("Start restoring: %s", filename)
-		err := legacy.RestoreLegacyFile(appraisalDB, typeDB, filename)
+		err := legacy.RestoreLegacyFile(saver, typeDB, filename)
 		if err != nil {
 			log.Fatalf("Error while importing legacy file: %s", err)
 		}

@@ -1,5 +1,4 @@
 TODO:
-	* View stats for each appraisal + automatic deletion of old appraisals
 	* Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
 	* Database backups (through local management HTTP API)
 

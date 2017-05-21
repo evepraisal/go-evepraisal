@@ -3,6 +3,7 @@ package bolt
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal"
@@ -18,7 +19,7 @@ type CacheDB struct {
 
 func NewCacheDB(filename string) (evepraisal.CacheDB, error) {
 
-	db, err := bolt.Open(filename, 0600, nil)
+	db, err := bolt.Open(filename, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
 	}

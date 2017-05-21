@@ -1,4 +1,4 @@
-package evepraisal
+package web
 
 import (
 	"testing"

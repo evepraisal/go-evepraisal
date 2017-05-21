@@ -27,7 +27,7 @@ var (
 	}
 )
 
-func RestoreLegacyFile(appraisalDB evepraisal.AppraisalDB, typeDB typedb.TypeDB, filename string) error {
+func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.TypeDB, filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatalf("Cannot open file (%s) for reading: %s", filename, err)
@@ -201,11 +201,13 @@ func RestoreLegacyFile(appraisalDB evepraisal.AppraisalDB, typeDB typedb.TypeDB,
 
 		appraisal.Created = timestamp
 
-		appraisalDB.PutNewAppraisal(appraisal)
-
 		// NOTE: public, record[8] ("t" or "f" ->bool)
 		// NOTE: UserId (ignored), record[9]
 		// NOTE: ParsedVersion (ignored), record[10]
+		err = saver(appraisal)
+		if err != nil {
+			log.Println("Could not save appraisal!", err)
+		}
 	}
 	return nil
 }

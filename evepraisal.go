@@ -2,7 +2,6 @@ package evepraisal
 
 import (
 	"errors"
-	"html/template"
 	"net/http"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
@@ -16,8 +15,7 @@ type App struct {
 	PriceDB           PriceDB
 	Parser            parsers.Parser
 	TransactionLogger TransactionLogger
-	ExtraJS           string
-	templates         map[string]*template.Template
+	WebContext        WebContext
 }
 
 type CacheDB interface {
@@ -55,4 +53,9 @@ type Transaction interface {
 
 type TrackingCodeProvider interface {
 	TrackingJS() string
+}
+
+type WebContext interface {
+	HTTPHandler() http.Handler
+	Reload() error
 }

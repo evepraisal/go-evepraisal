@@ -26,7 +26,7 @@ func startEnvironmentWatchers(app *evepraisal.App) {
 				os.Exit(0)
 			case fsnotify.Write:
 				log.Println("Detected resource changes, reloading templates")
-				err := app.LoadTemplates()
+				err := app.WebContext.Reload()
 				if err != nil {
 					log.Printf("Could not reload templates %s", err)
 				} else {
