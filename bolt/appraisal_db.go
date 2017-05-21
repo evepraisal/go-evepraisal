@@ -232,7 +232,7 @@ func (db *AppraisalDB) startReaper() {
 				if time.Since(timestamp) > time.Hour*24*90 {
 					appraisalID, err := DecodeAppraisalID(key)
 					if err != nil {
-						log.Printf("Unable to parse appraisal ID", appraisalID)
+						log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
 						continue
 					}
 					unused = append(unused, appraisalID)
@@ -251,7 +251,7 @@ func (db *AppraisalDB) startReaper() {
 			for _, appraisalID := range unused {
 				dbID, err := EncodeAppraisalID(appraisalID)
 				if err != nil {
-					log.Printf("Unable to parse appraisal ID", appraisalID)
+					log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
 					continue
 				}
 
@@ -271,7 +271,7 @@ func (db *AppraisalDB) startReaper() {
 			log.Printf("ERROR: Problem removing unused appraisals: %s", err)
 		}
 
-		log.Printf("Done reaping unused appraisals, removed %s appraisals", len(unused))
+		log.Printf("Done reaping unused appraisals, removed %d appraisals", len(unused))
 		time.Sleep(time.Hour)
 	}
 }
