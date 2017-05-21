@@ -1,6 +1,8 @@
 TODO:
-	* Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
+	* Figure out why viper configuration is being weird and ignoring some config settings
+	* Accept the legacy path for creating new appraisals along with legacy POST params
+	* Import of "popular" and recent appraisals (partially done)
 	* Database backups (through local management HTTP API)
 
 	- Blueprint copy prices
-	-  Price breakdown page for each item. Why is it currently priced a certain way? This will be important for capital ships and BPOs and just give a good breakdown of prices per region
+	- Price breakdown page for each item. Why is it currently priced a certain way? This will be important for capital ships and BPOs and just give a good breakdown of prices per region
