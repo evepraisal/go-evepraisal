@@ -186,7 +186,7 @@ func RestoreLegacyFile(appraisalDB evepraisal.AppraisalDB, typeDB typedb.TypeDB,
 
 		marketName, ok := marketIDToName[marketID]
 		if !ok {
-			log.Printf("WARN: Could not find market ID (%s)", marketID)
+			log.Printf("WARN: Could not find market ID (%d)", marketID)
 			continue
 		}
 

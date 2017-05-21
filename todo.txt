@@ -1,8 +1,7 @@
 TODO:
+	* View stats for each appraisal + automatic deletion of old appraisals
 	* Import of "popular" and recent appraisals, a legacy "/e/<id>" endpoint to handle translating of IDs will be needed
-	* Price blueprint copies properly (or at least fail to price them)
-	* Database backups
+	* Database backups (through local management HTTP API)
 
-	- Automatic deletion of appraisals which hasn't been visted in a long time
 	- Blueprint copy prices
 	-  Price breakdown page for each item. Why is it currently priced a certain way? This will be important for capital ships and BPOs and just give a good breakdown of prices per region
