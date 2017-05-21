@@ -12,7 +12,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/golang/snappy"
-	"github.com/martinlindhe/base36"
 )
 
 type AppraisalDB struct {
@@ -73,13 +72,13 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 				return err
 			}
 
-			dbID = EncodeAppraisalIDFromUint64(id)
-			appraisal.ID, err = DecodeAppraisalID(dbID)
+			dbID = EncodeDBIDFromUint64(id)
+			appraisal.ID, err = DecodeDBID(dbID)
 			if err != nil {
 				return err
 			}
 		} else {
-			dbID, err = EncodeAppraisalID(appraisal.ID)
+			dbID, err = EncodeDBID(appraisal.ID)
 			if err != nil {
 				return err
 			}
@@ -99,7 +98,7 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 }
 
 func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
-	dbID, err := EncodeAppraisalID(appraisalID)
+	dbID, err := EncodeDBID(appraisalID)
 	if err != nil {
 		return nil, err
 	}
@@ -179,18 +178,18 @@ func (db *AppraisalDB) Close() error {
 	return db.db.Close()
 }
 
-func EncodeAppraisalID(appraisalID string) ([]byte, error) {
-	return EncodeAppraisalIDFromUint64(base36.Decode(appraisalID)), nil
+func EncodeDBID(appraisalID string) ([]byte, error) {
+	return EncodeDBIDFromUint64(evepraisal.AppraisalIDToUint64(appraisalID)), nil
 }
 
-func EncodeAppraisalIDFromUint64(appraisalID uint64) []byte {
+func EncodeDBIDFromUint64(appraisalID uint64) []byte {
 	dbID := make([]byte, 8)
 	binary.BigEndian.PutUint64(dbID, appraisalID)
 	return dbID
 }
 
-func DecodeAppraisalID(dbID []byte) (string, error) {
-	return strings.ToLower(base36.Encode(binary.BigEndian.Uint64(dbID))), nil
+func DecodeDBID(dbID []byte) (string, error) {
+	return strings.ToLower(evepraisal.Uint64ToAppraisalID(binary.BigEndian.Uint64(dbID))), nil
 }
 
 func (db *AppraisalDB) setLastUsedTime(dbID []byte) {
@@ -230,7 +229,7 @@ func (db *AppraisalDB) startReaper() {
 
 				log.Println(timestamp, time.Since(timestamp))
 				if time.Since(timestamp) > time.Hour*24*90 {
-					appraisalID, err := DecodeAppraisalID(key)
+					appraisalID, err := DecodeDBID(key)
 					if err != nil {
 						log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
 						continue
@@ -249,7 +248,7 @@ func (db *AppraisalDB) startReaper() {
 			b := tx.Bucket([]byte("appraisals"))
 			usedB := tx.Bucket([]byte("appraisals"))
 			for _, appraisalID := range unused {
-				dbID, err := EncodeAppraisalID(appraisalID)
+				dbID, err := EncodeDBID(appraisalID)
 				if err != nil {
 					log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
 					continue

@@ -30,6 +30,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.Get("/", ctx.HandleIndex)
 	router.Post("/", ctx.HandleAppraisal)
 	router.Get("/a/:appraisalID", ctx.HandleViewAppraisal)
+	router.Get("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
 	router.Get("/latest", ctx.HandleLatestAppraisals)
 	router.Get("/legal", ctx.HandleLegal)
 

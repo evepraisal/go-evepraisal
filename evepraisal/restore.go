@@ -42,7 +42,7 @@ func restoreMain() {
 	}
 
 	log.Println("New typedb")
-	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.tmp.db"), viper.GetString("type.static-file"), true)
+	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.db"), viper.GetString("type.static-file"), true)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}

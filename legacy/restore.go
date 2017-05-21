@@ -12,7 +12,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/evepraisal/go-evepraisal"
-	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
@@ -64,13 +63,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 			continue
 		}
 
-		id, err := bolt.DecodeAppraisalID(bolt.EncodeAppraisalIDFromUint64(appraisalIDInt))
-		if err != nil {
-			log.Printf("WARN: Could not parse appraisalID (%s): %s", record[0], err)
-			continue
-		}
-
-		appraisal.ID = id
+		appraisal.ID = evepraisal.Uint64ToAppraisalID(appraisalIDInt)
 		appraisal.Kind = strings.ToLower(record[1])
 		appraisal.Raw = record[2]
 

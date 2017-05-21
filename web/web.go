@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -82,7 +83,20 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	txn := ctx.app.TransactionLogger.StartWebTransaction("view_appraisal", w, r)
 	defer txn.End()
 
+	if vestigo.Param(r, "legacyAppraisalID") != "" {
+		legacyAppraisalIDStr := vestigo.Param(r, "legacyAppraisalID")
+		suffix := filepath.Ext(legacyAppraisalIDStr)
+		legacyAppraisalIDStr = strings.TrimSuffix(legacyAppraisalIDStr, suffix)
+		legacyAppraisalID, err := strconv.ParseUint(legacyAppraisalIDStr, 10, 64)
+		if err != nil {
+			ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+			return
+		}
+		vestigo.AddParam(r, "appraisalID", evepraisal.Uint64ToAppraisalID(legacyAppraisalID)+suffix)
+	}
+
 	appraisalID := vestigo.Param(r, "appraisalID")
+
 	if strings.HasSuffix(appraisalID, ".json") {
 		ctx.HandleViewAppraisalJSON(w, r)
 		return
