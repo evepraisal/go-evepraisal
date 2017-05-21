@@ -336,7 +336,7 @@ type LegacyKillmail struct {
 
 func (t LegacyKillmail) ToNewItems() []evepraisal.AppraisalItem {
 	items := []evepraisal.AppraisalItem{
-		evepraisal.AppraisalItem{Name: t.Victim.Destroyed, Quantity: 1},
+		{Name: t.Victim.Destroyed, Quantity: 1},
 	}
 	for _, dropped := range t.Dropped {
 		items = append(items,

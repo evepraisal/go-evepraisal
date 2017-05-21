@@ -7,8 +7,8 @@ var cargoScanTestCases = []Case{
 2 Gallente Shuttle`,
 		&CargoScan{
 			Items: []CargoScanItem{
-				CargoScanItem{Name: "Gallente Shuttle", Quantity: 2},
-				CargoScanItem{Name: "Minmatar Shuttle", Quantity: 1},
+				{Name: "Gallente Shuttle", Quantity: 2},
+				{Name: "Minmatar Shuttle", Quantity: 1},
 			},
 			lines: []int{0, 1},
 		},
@@ -22,7 +22,7 @@ var cargoScanTestCases = []Case{
 
 `,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Minmatar Shuttle", Quantity: 1}},
+			Items: []CargoScanItem{{Name: "Minmatar Shuttle", Quantity: 1}},
 			lines: []int{2},
 		},
 		Input{0: "", 1: "", 3: "", 4: ""},
@@ -31,7 +31,7 @@ var cargoScanTestCases = []Case{
 		"BPO",
 		`10 Plagioclase Mining Crystal I Blueprint (Original)`,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10}},
+			Items: []CargoScanItem{{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10}},
 			lines: []int{0},
 		},
 		Input{},
@@ -40,7 +40,7 @@ var cargoScanTestCases = []Case{
 		"BPC",
 		`10 Plagioclase Mining Crystal I Blueprint (Copy)`,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10, BPC: true}},
+			Items: []CargoScanItem{{Name: "Plagioclase Mining Crystal I Blueprint", Quantity: 10, BPC: true}},
 			lines: []int{0},
 		},
 		Input{},
@@ -49,7 +49,7 @@ var cargoScanTestCases = []Case{
 		"Single quote for thousands separators",
 		`12'000 Tengu`,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Tengu", Quantity: 12000}},
+			Items: []CargoScanItem{{Name: "Tengu", Quantity: 12000}},
 			lines: []int{0},
 		},
 		Input{},
@@ -59,7 +59,7 @@ var cargoScanTestCases = []Case{
 		`1 Tengu
 2 Tengu`,
 		&CargoScan{
-			Items: []CargoScanItem{CargoScanItem{Name: "Tengu", Quantity: 3}},
+			Items: []CargoScanItem{{Name: "Tengu", Quantity: 3}},
 			lines: []int{0, 1},
 		},
 		Input{},

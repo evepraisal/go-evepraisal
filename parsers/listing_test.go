@@ -6,7 +6,7 @@ var listingTestCases = []Case{
 		`Minmatar Shuttle`,
 		&Listing{
 			Items: []ListingItem{
-				ListingItem{Name: "Minmatar Shuttle", Quantity: 1},
+				{Name: "Minmatar Shuttle", Quantity: 1},
 			},
 			lines: []int{0},
 		},
@@ -17,7 +17,7 @@ var listingTestCases = []Case{
 		`10x Minmatar Shuttle`,
 		&Listing{
 			Items: []ListingItem{
-				ListingItem{Name: "Minmatar Shuttle", Quantity: 10},
+				{Name: "Minmatar Shuttle", Quantity: 10},
 			},
 			lines: []int{0},
 		},
@@ -28,7 +28,7 @@ var listingTestCases = []Case{
 		`Heavy Assault Missile Launcher II 10`,
 		&Listing{
 			Items: []ListingItem{
-				ListingItem{Name: "Heavy Assault Missile Launcher II", Quantity: 10},
+				{Name: "Heavy Assault Missile Launcher II", Quantity: 10},
 			},
 			lines: []int{0},
 		},
@@ -41,7 +41,7 @@ Tritanium 9'584'702
 Tritanium x 9'584'703
 9,584,704 x Tritanium`,
 		&Listing{
-			Items: []ListingItem{ListingItem{Name: "Tritanium", Quantity: 38338810}},
+			Items: []ListingItem{{Name: "Tritanium", Quantity: 38338810}},
 			lines: []int{0, 1, 2, 3},
 		},
 		Input{},
@@ -52,7 +52,7 @@ Tritanium x 9'584'703
  Tritanium
 Tritanium `,
 		&Listing{
-			Items: []ListingItem{ListingItem{Name: "Tritanium", Quantity: 3}},
+			Items: []ListingItem{{Name: "Tritanium", Quantity: 3}},
 			lines: []int{0, 1, 2},
 		},
 		Input{},

@@ -18,29 +18,29 @@ var HeuristicParserCases = []struct {
 	{
 		"example 1",
 		map[string]typedb.EveType{
-			"tritanium": typedb.EveType{},
+			"tritanium": {},
 		},
 		`177887021	Tritanium
 44461428	Pyerite`,
 		&HeuristicResult{Items: []HeuristicItem{
-			HeuristicItem{Name: "Tritanium", Quantity: 177887021}},
+			{Name: "Tritanium", Quantity: 177887021}},
 			lines: []int{0}},
 		Input{1: "44461428\tPyerite"},
 	}, {
 		"example 2 - dashes",
 		map[string]typedb.EveType{
-			"procurer":                         typedb.EveType{},
-			"medium shield extender i":         typedb.EveType{},
-			"ice harvester ii":                 typedb.EveType{},
-			"adaptive invulnerability field i": typedb.EveType{},
+			"procurer":                         {},
+			"medium shield extender i":         {},
+			"ice harvester ii":                 {},
+			"adaptive invulnerability field i": {},
 		},
 		`Procurer x 1- Medium Shield Extender I x 1- Ice Harvester II x 1- Ice Harvester II x 1- Adaptive Invulnerability Field I x 1`,
 		&HeuristicResult{
 			Items: []HeuristicItem{
-				HeuristicItem{Name: "Adaptive Invulnerability Field I", Quantity: 1},
-				HeuristicItem{Name: "Ice Harvester II", Quantity: 2},
-				HeuristicItem{Name: "Medium Shield Extender I", Quantity: 1},
-				HeuristicItem{Name: "Procurer", Quantity: 1}},
+				{Name: "Adaptive Invulnerability Field I", Quantity: 1},
+				{Name: "Ice Harvester II", Quantity: 2},
+				{Name: "Medium Shield Extender I", Quantity: 1},
+				{Name: "Procurer", Quantity: 1}},
 			lines: []int{0}},
 		Input{},
 	},

@@ -55,7 +55,7 @@ Warrior II (Drone Bay)`,
 				"corp":         "Victim's Corp Name",
 				"alliance":     "Victim's Alliance Name"},
 			Involved: []map[string]interface{}{
-				map[string]interface{}{
+				{
 					"killing_blow": true,
 					"corp":         "Ganker Corp",
 					"alliance":     "Ganker Alliance",
@@ -65,7 +65,7 @@ Warrior II (Drone Bay)`,
 					"security":     "-1.00",
 					"weapon":       "Mega Pulse Laser II",
 					"damage_done":  "14194"},
-				map[string]interface{}{
+				{
 					"weapon":      "Some tiny little gun",
 					"damage_done": "0",
 					"name":        "Ganker Name2",
@@ -75,11 +75,11 @@ Warrior II (Drone Bay)`,
 					"faction":     "Unknown",
 					"ship":        "Rifter"}},
 			Destroyed: []KillmailItem{
-				KillmailItem{Name: "Medium Armor Maintenance Bot I", Quantity: 3, Location: "Drone Bay"},
-				KillmailItem{Name: "Tengu Engineering - Capacitor Regeneration Matrix", Quantity: 1, Location: ""},
-				KillmailItem{Name: "Power Diagnostic System II", Quantity: 1, Location: "Cargo"},
+				{Name: "Medium Armor Maintenance Bot I", Quantity: 3, Location: "Drone Bay"},
+				{Name: "Tengu Engineering - Capacitor Regeneration Matrix", Quantity: 1, Location: ""},
+				{Name: "Power Diagnostic System II", Quantity: 1, Location: "Cargo"},
 			},
-			Dropped:   []KillmailItem{KillmailItem{Name: "Warrior II", Quantity: 1, Location: "Drone Bay"}},
+			Dropped:   []KillmailItem{{Name: "Warrior II", Quantity: 1, Location: "Drone Bay"}},
 			lineCount: 40,
 		},
 		nil,

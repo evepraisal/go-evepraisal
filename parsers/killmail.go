@@ -70,7 +70,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 		line := inputLines[offset]
 		if line == "Involved parties:" {
 			offset += 2
-			involved, involvedOffset, err := parsekillmailInvolved(inputLines[offset:len(inputLines)])
+			involved, involvedOffset, err := parsekillmailInvolved(inputLines[offset:])
 			if err != nil {
 				return nil, input
 			}
@@ -78,7 +78,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 			offset += involvedOffset
 		} else if line == "Destroyed items:" {
 			offset += 2
-			destroyed, destroyedOffset, err := parsekillmailItems(inputLines[offset:len(inputLines)])
+			destroyed, destroyedOffset, err := parsekillmailItems(inputLines[offset:])
 			if err != nil {
 				return nil, input
 			}
@@ -86,7 +86,7 @@ func ParseKillmail(input Input) (ParserResult, Input) {
 			offset += destroyedOffset
 		} else if line == "Dropped items:" {
 			offset += 2
-			dropped, droppedOffset, err := parsekillmailItems(inputLines[offset:len(inputLines)])
+			dropped, droppedOffset, err := parsekillmailItems(inputLines[offset:])
 			if err != nil {
 				return nil, input
 			}

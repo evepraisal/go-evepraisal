@@ -21,20 +21,20 @@ type CaseGroup struct {
 }
 
 var ParserTests = []CaseGroup{
-	CaseGroup{"assets", ParseAssets, assetListTestCases},
-	CaseGroup{"cargo_scans", ParseCargoScan, cargoScanTestCases},
-	CaseGroup{"contracts", ParseContract, contractTestCases},
-	CaseGroup{"dscan", ParseDScan, dscanTestCases},
-	CaseGroup{"listing", ParseListing, listingTestCases},
-	CaseGroup{"eft", ParseEFT, eftTestCases},
-	CaseGroup{"fitting", ParseFitting, fittingTestCases},
-	CaseGroup{"industry", ParseIndustry, industryTestCases},
-	CaseGroup{"loot_history", ParseLootHistory, lootHistoryTestCases},
-	CaseGroup{"pi", ParsePI, piTestCases},
-	CaseGroup{"survey_scanner", ParseSurveyScan, surveyScannerTestCases},
-	CaseGroup{"view_contents", ParseViewContents, viewContentsTestCases},
-	CaseGroup{"wallet", ParseWallet, walletTestCases},
-	CaseGroup{"killmail", ParseKillmail, killmailTestCases},
+	{"assets", ParseAssets, assetListTestCases},
+	{"cargo_scans", ParseCargoScan, cargoScanTestCases},
+	{"contracts", ParseContract, contractTestCases},
+	{"dscan", ParseDScan, dscanTestCases},
+	{"listing", ParseListing, listingTestCases},
+	{"eft", ParseEFT, eftTestCases},
+	{"fitting", ParseFitting, fittingTestCases},
+	{"industry", ParseIndustry, industryTestCases},
+	{"loot_history", ParseLootHistory, lootHistoryTestCases},
+	{"pi", ParsePI, piTestCases},
+	{"survey_scanner", ParseSurveyScan, surveyScannerTestCases},
+	{"view_contents", ParseViewContents, viewContentsTestCases},
+	{"wallet", ParseWallet, walletTestCases},
+	{"killmail", ParseKillmail, killmailTestCases},
 }
 
 func TestParsers(rt *testing.T) {

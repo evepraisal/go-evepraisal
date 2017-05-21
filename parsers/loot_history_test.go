@@ -5,7 +5,7 @@ var lootHistoryTestCases = []Case{
 		"Simple",
 		`03:21:19 Some dude has looted 5 x Garde II`,
 		&LootHistory{
-			Items: []LootItem{LootItem{Time: "03:21:19", PlayerName: "Some dude", Quantity: 5, Name: "Garde II"}},
+			Items: []LootItem{{Time: "03:21:19", PlayerName: "Some dude", Quantity: 5, Name: "Garde II"}},
 			lines: []int{0},
 		},
 		Input{},
@@ -16,8 +16,8 @@ var lootHistoryTestCases = []Case{
 04:22:20 Some dude has looted 5 x Garde II`,
 		&LootHistory{
 			Items: []LootItem{
-				LootItem{Time: "03:21:19", PlayerName: "Some dude", Quantity: 5, Name: "Garde II"},
-				LootItem{Time: "04:22:20", PlayerName: "Some dude", Quantity: 5, Name: "Garde II"},
+				{Time: "03:21:19", PlayerName: "Some dude", Quantity: 5, Name: "Garde II"},
+				{Time: "04:22:20", PlayerName: "Some dude", Quantity: 5, Name: "Garde II"},
 			},
 			lines: []int{0, 1},
 		},
@@ -27,7 +27,7 @@ var lootHistoryTestCases = []Case{
 		"Thousands Separator",
 		`03:21:19 A cool dude has looted 5'000 x Garde II`,
 		&LootHistory{
-			Items: []LootItem{LootItem{Time: "03:21:19", PlayerName: "A cool dude", Quantity: 5000, Name: "Garde II"}},
+			Items: []LootItem{{Time: "03:21:19", PlayerName: "A cool dude", Quantity: 5000, Name: "Garde II"}},
 			lines: []int{0},
 		},
 		Input{},
