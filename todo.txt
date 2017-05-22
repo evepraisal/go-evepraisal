@@ -1,4 +1,6 @@
 TODO:
+	* Re-use/save market preference
+	* Add perma-link
 	* Import of "popular" and recent appraisals (partially done)
 	* Database backups (through local management HTTP API)
 

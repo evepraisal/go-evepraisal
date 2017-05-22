@@ -2,7 +2,7 @@ package web
 
 import (
 	"encoding/json"
-	"html/template"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -10,33 +10,13 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/dustin/go-humanize"
+	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/legacy"
 	"github.com/husobee/vestigo"
 	"github.com/mash/go-accesslog"
 )
-
-type accessLogger struct {
-}
-
-func (l accessLogger) Log(record accesslog.LogRecord) {
-	log.Printf("%s %s %d (%s) - %d", record.Method, record.Uri, record.Status, record.Ip, record.Size)
-}
-
-var templateFuncs = template.FuncMap{
-	"commaf":          humanizeCommaf,
-	"comma":           humanize.Comma,
-	"prettybignumber": HumanLargeNumber,
-	"relativetime":    humanize.Time,
-	"timefmt":         func(t time.Time) string { return t.Format("2006-01-02 15:04:05") },
-
-	// Only for debugging
-	"spew": spew.Sdump,
-}
 
 type MainPageStruct struct {
 	Appraisal           *evepraisal.Appraisal
@@ -67,7 +47,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	market := r.FormValue("market")
 	marketID, err := strconv.ParseInt(market, 10, 64)
-	if err != nil {
+	if err == nil {
 		var ok bool
 		market, ok = legacy.MarketIDToName[marketID]
 		if !ok {
@@ -202,4 +182,41 @@ func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
 	txn := ctx.app.TransactionLogger.StartWebTransaction("view_legal", w, r)
 	defer txn.End()
 	ctx.render(w, "legal.html", "wat")
+}
+
+func (ctx *Context) HTTPHandler() http.Handler {
+	router := vestigo.NewRouter()
+	router.Get("/", ctx.HandleIndex)
+	router.Post("/appraisal", ctx.HandleAppraisal)
+	router.Post("/estimate", ctx.HandleAppraisal)
+	router.Get("/a/:appraisalID", ctx.HandleViewAppraisal)
+	router.Get("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
+	router.Get("/latest", ctx.HandleLatestAppraisals)
+	router.Get("/legal", ctx.HandleLegal)
+
+	vestigo.CustomNotFoundHandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		})
+
+	vestigo.CustomMethodNotAllowedHandlerFunc(func(allowedMethods string) func(w http.ResponseWriter, r *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
+			ctx.renderErrorPage(w, http.StatusInternalServerError, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
+		}
+	})
+
+	mux := http.NewServeMux()
+
+	// Route our bundled static files
+	var fs = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "/static/"}
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(fs)))
+
+	// Mount our web app router to root
+	mux.Handle("/", router)
+	err := ctx.Reload()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return accesslog.NewLoggingHandler(mux, accessLogger{})
 }

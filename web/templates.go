@@ -7,7 +7,22 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/dustin/go-humanize"
 )
+
+var templateFuncs = template.FuncMap{
+	"commaf":          humanizeCommaf,
+	"comma":           humanize.Comma,
+	"prettybignumber": HumanLargeNumber,
+	"relativetime":    humanize.Time,
+	"timefmt":         func(t time.Time) string { return t.Format("2006-01-02 15:04:05") },
+
+	// Only for debugging
+	"spew": spew.Sdump,
+}
 
 func (ctx *Context) Reload() error {
 	templates := make(map[string]*template.Template)

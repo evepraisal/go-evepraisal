@@ -1,14 +1,14 @@
 <div class="col-lg-4">
   <div class="panel panel-default form-group">
     <div class="panel-heading">Quick Estimate</div>
-    <form action="/" method="POST">
+    <form action="/appraisal" method="POST">
       <div class="panel-body">
         <div class="form-group">
-         <textarea class="form-control" name="body" rows="10" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v"></textarea>
+         <textarea class="form-control" name="raw_textarea" rows="10" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v"></textarea>
         </div>
         <div class="clearfix pull-right">
           <div class="form-inline">
-            <select id="raw_textarea" name="raw_textarea" class="form-control">
+            <select id="market" name="market" class="form-control">
               <option value="jita">Jita</option>
               <option value="universe">Universe</option>
               <option value="amarr">Amarr</option>
