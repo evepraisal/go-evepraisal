@@ -29,6 +29,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router := vestigo.NewRouter()
 	router.Get("/", ctx.HandleIndex)
 	router.Post("/", ctx.HandleAppraisal)
+	router.Post("/estimate", ctx.HandleAppraisal)
 	router.Get("/a/:appraisalID", ctx.HandleViewAppraisal)
 	router.Get("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
 	router.Get("/latest", ctx.HandleLatestAppraisals)

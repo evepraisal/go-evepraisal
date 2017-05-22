@@ -15,6 +15,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/dustin/go-humanize"
 	"github.com/evepraisal/go-evepraisal"
+	"github.com/evepraisal/go-evepraisal/legacy"
 	"github.com/husobee/vestigo"
 	"github.com/mash/go-accesslog"
 )
@@ -57,12 +58,25 @@ func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	txn := ctx.app.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
 	defer txn.End()
-	if len(r.FormValue("body")) > 200000 {
+
+	body := r.FormValue("raw_textarea")
+	if len(body) > 200000 {
 		ctx.renderErrorPage(w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
 		return
 	}
 
-	appraisal, err := ctx.app.StringToAppraisal(r.FormValue("market"), r.FormValue("body"))
+	market := r.FormValue("market")
+	marketID, err := strconv.ParseInt(market, 10, 64)
+	if err != nil {
+		var ok bool
+		market, ok = legacy.MarketIDToName[marketID]
+		if !ok {
+			ctx.renderErrorPage(w, http.StatusBadRequest, "Invalid input", "Market not found.")
+			return
+		}
+	}
+
+	appraisal, err := ctx.app.StringToAppraisal(market, body)
 	if err != nil {
 		ctx.renderErrorPage(w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
@@ -83,6 +97,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	txn := ctx.app.TransactionLogger.StartWebTransaction("view_appraisal", w, r)
 	defer txn.End()
 
+	// Legacy Logic
 	if vestigo.Param(r, "legacyAppraisalID") != "" {
 		legacyAppraisalIDStr := vestigo.Param(r, "legacyAppraisalID")
 		suffix := filepath.Ext(legacyAppraisalIDStr)

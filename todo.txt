@@ -1,5 +1,4 @@
 TODO:
-	* Figure out why viper configuration is being weird and ignoring some config settings
 	* Accept the legacy path for creating new appraisals along with legacy POST params
 	* Import of "popular" and recent appraisals (partially done)
 	* Database backups (through local management HTTP API)

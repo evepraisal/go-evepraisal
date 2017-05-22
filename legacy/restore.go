@@ -15,17 +15,6 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
-var (
-	marketIDToName = map[int64]string{
-		-1:       "universe",
-		30000142: "jita",
-		30002187: "amarr",
-		30002659: "dodixie",
-		30002510: "rens",
-		30002053: "hek",
-	}
-)
-
 func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.TypeDB, filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -177,7 +166,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 			continue
 		}
 
-		marketName, ok := marketIDToName[marketID]
+		marketName, ok := MarketIDToName[marketID]
 		if !ok {
 			log.Printf("WARN: Could not find market ID (%d)", marketID)
 			continue
