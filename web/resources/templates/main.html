@@ -6,7 +6,7 @@
   <div class="col-lg-8">
     {{if not .Appraisal}}
 
-      <div style="text-align:right"><h5>Over {{.TotalAppraisalCount}} Appraisals Performed</h5></div>
+      <div style="text-align:right"><h5>{{comma .TotalAppraisalCount}} appraisals performed so far!</h5></div>
       <h4>What do I do?</h4>
       <p>
          Find something in Eve Online that you want to price check like a contract, cargo scan result, etc. Press <strong>CTRL + A, CTRL + C</strong>, then click on the lovely box to the left or above this and press <strong>CTRL + V</strong>. Submit and you should see a price breakdown of all the items.

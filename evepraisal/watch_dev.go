@@ -17,7 +17,7 @@ func startEnvironmentWatchers(app *evepraisal.App) {
 		log.Fatalf("Not able to set up resource watcher: %s", err)
 	}
 
-	watcher.AddRecursive("resources/")
+	watcher.AddRecursive("web/resources/")
 	go func() {
 		for event := range watcher.Events {
 			switch event.Op {
