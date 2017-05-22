@@ -42,7 +42,7 @@ func restoreMain() {
 	}
 
 	log.Println("New typedb")
-	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.db"), viper.GetString("type.static-file"), true)
+	typeDB, err := staticdump.NewTypeDB(viper.GetString("type_db"), viper.GetString("type_static-file"), true)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}
@@ -60,7 +60,7 @@ func restoreMain() {
 			return err
 		}
 
-		req, _ := http.NewRequest("POST", "http://"+viper.GetString("management.http.addr")+"/restore", &buf)
+		req, _ := http.NewRequest("POST", "http://"+viper.GetString("management_addr")+"/restore", &buf)
 		req.Header.Add("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {

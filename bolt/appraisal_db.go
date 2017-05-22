@@ -227,7 +227,6 @@ func (db *AppraisalDB) startReaper() {
 					timestamp = time.Unix(0, 0)
 				}
 
-				log.Println(timestamp, time.Since(timestamp))
 				if time.Since(timestamp) > time.Hour*24*90 {
 					appraisalID, err := DecodeDBID(key)
 					if err != nil {

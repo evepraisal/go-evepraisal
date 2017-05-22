@@ -26,7 +26,7 @@ func appMain() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	cacheDB, err := bolt.NewCacheDB(viper.GetString("cache.db"))
+	cacheDB, err := bolt.NewCacheDB(viper.GetString("cache_db"))
 	if err != nil {
 		log.Fatalf("Unable to open cacheDB: %s", err)
 	}
@@ -37,7 +37,7 @@ func appMain() {
 		}
 	}()
 
-	priceDB, err := crest.NewPriceDB(cacheDB, viper.GetString("crest.baseurl"))
+	priceDB, err := crest.NewPriceDB(cacheDB, viper.GetString("crest_baseurl"))
 	if err != nil {
 		log.Fatalf("Couldn't start price database")
 	}
@@ -53,7 +53,7 @@ func appMain() {
 		log.Fatalf("Unable to create static data dir: %s", err)
 	}
 
-	typeDB, err := staticdump.NewTypeDB(viper.GetString("type.db"), viper.GetString("type.static-file"), false)
+	typeDB, err := staticdump.NewTypeDB(viper.GetString("type_db"), viper.GetString("type_static-file"), false)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}
@@ -64,7 +64,7 @@ func appMain() {
 		}
 	}()
 
-	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal.db"))
+	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal_db"))
 	if err != nil {
 		log.Fatalf("Couldn't start appraisal database: %s", err)
 	}
@@ -76,12 +76,12 @@ func appMain() {
 	}()
 
 	var txnLogger evepraisal.TransactionLogger
-	if viper.GetString("newrelic.license-key") == "" {
+	if viper.GetString("newrelic_license-key") == "" {
 		log.Println("Using no op transaction logger")
 		txnLogger = noop.NewTransactionLogger()
 	} else {
 		log.Println("Using new relic transaction logger")
-		txnLogger, err = newrelic.NewTransactionLogger(viper.GetString("newrelic.app-name"), viper.GetString("newrelic.license-key"))
+		txnLogger, err = newrelic.NewTransactionLogger(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
 		if err != nil {
 			log.Fatalf("Problem starting transaction logger: %s", err)
 		}
@@ -114,7 +114,7 @@ func appMain() {
 			}),
 	}
 
-	app.WebContext = web.NewContext(app, viper.GetString("web.extra-js"))
+	app.WebContext = web.NewContext(app, viper.GetString("extra-js"))
 
 	servers := mustStartServers(app.WebContext.HTTPHandler())
 	if err != nil {
@@ -132,9 +132,9 @@ func appMain() {
 
 	startEnvironmentWatchers(app)
 
-	log.Printf("Starting Management HTTP server (%s)", viper.GetString("management.http.addr"))
+	log.Printf("Starting Management HTTP server (%s)", viper.GetString("management_addr"))
 	mgmtServer := &http.Server{
-		Addr:    viper.GetString("management.http.addr"),
+		Addr:    viper.GetString("management_addr"),
 		Handler: management.HTTPHandler(app),
 	}
 	defer mgmtServer.Close()
@@ -154,17 +154,17 @@ func appMain() {
 func mustStartServers(handler http.Handler) []*http.Server {
 	servers := make([]*http.Server, 0)
 
-	if viper.GetString("web.https.addr") != "" {
-		log.Printf("Starting HTTPS server (%s) (%s)", viper.GetString("web.https.addr"), viper.GetStringSlice("web.https.domain-whitelist"))
+	if viper.GetString("https_addr") != "" {
+		log.Printf("Starting HTTPS server (%s) (%s)", viper.GetString("https_addr"), viper.GetStringSlice("https_domain-whitelist"))
 
 		autocertManager := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(viper.GetStringSlice("web.https.domain-whitelist")...),
-			Cache:      autocert.DirCache(viper.GetString("web.https.cert-cache-path")),
+			HostPolicy: autocert.HostWhitelist(viper.GetStringSlice("https_domain-whitelist")...),
+			Cache:      autocert.DirCache(viper.GetString("https_cert-cache-path")),
 		}
 
 		server := &http.Server{
-			Addr:      viper.GetString("web.https.addr"),
+			Addr:      viper.GetString("https_addr"),
 			Handler:   handler,
 			TLSConfig: &tls.Config{GetCertificate: autocertManager.GetCertificate},
 		}
@@ -181,11 +181,11 @@ func mustStartServers(handler http.Handler) []*http.Server {
 		time.Sleep(1 * time.Second)
 	}
 
-	if viper.GetString("web.http.addr") != "" {
-		log.Printf("Starting HTTP server (%s)", viper.GetString("web.http.addr"))
+	if viper.GetString("http_addr") != "" {
+		log.Printf("Starting HTTP server (%s)", viper.GetString("http_addr"))
 
 		server := &http.Server{
-			Addr:    viper.GetString("web.http.addr"),
+			Addr:    viper.GetString("http_addr"),
 			Handler: handler,
 		}
 		servers = append(servers, server)
