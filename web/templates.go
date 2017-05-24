@@ -24,6 +24,59 @@ var templateFuncs = template.FuncMap{
 	"spew": spew.Sdump,
 }
 
+type displayMarket struct {
+	Name        string
+	DisplayName string
+}
+
+var selectableMarkets = []displayMarket{
+	{Name: "jita", DisplayName: "Jita"},
+	{Name: "universe", DisplayName: "Universe"},
+	{Name: "amarr", DisplayName: "Amarr"},
+	{Name: "dodixie", DisplayName: "Dodixie"},
+	{Name: "rens", DisplayName: "Rens"},
+	{Name: "hek", DisplayName: "Hek"},
+}
+
+type PageRoot struct {
+	UI struct {
+		SelectedMarket       string
+		Markets              []displayMarket
+		BaseURL              string
+		BaseURLWithoutScheme string
+	}
+	Page interface{}
+}
+
+func (ctx *Context) render(r *http.Request, w http.ResponseWriter, templateName string, page interface{}) error {
+	tmpl, ok := ctx.templates[templateName]
+	if !ok {
+		return fmt.Errorf("Could not find template named '%s'", templateName)
+	}
+
+	root := PageRoot{Page: page}
+	root.UI.SelectedMarket = ctx.getDefaultMarket(r)
+	root.UI.Markets = selectableMarkets
+
+	root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.baseURL, "https://"), "http://")
+	root.UI.BaseURL = ctx.baseURL
+
+	err := tmpl.ExecuteTemplate(w, templateName, root)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	return nil
+}
+
+func (ctx *Context) renderErrorPage(r *http.Request, w http.ResponseWriter, statusCode int, title, message string) {
+	w.WriteHeader(statusCode)
+	ctx.render(r, w, "error.html", struct {
+		ErrorTitle   string
+		ErrorMessage string
+	}{title, message})
+}
+
 func (ctx *Context) Reload() error {
 	templates := make(map[string]*template.Template)
 	root := template.New("root").Funcs(templateFuncs)
@@ -69,25 +122,4 @@ func (ctx *Context) Reload() error {
 
 	ctx.templates = templates
 	return nil
-}
-
-func (ctx *Context) render(w http.ResponseWriter, templateName string, input interface{}) error {
-	tmpl, ok := ctx.templates[templateName]
-	if !ok {
-		return fmt.Errorf("Could not find template named '%s'", templateName)
-	}
-	err := tmpl.ExecuteTemplate(w, templateName, input)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
-	}
-	return nil
-}
-
-func (ctx *Context) renderErrorPage(w http.ResponseWriter, statusCode int, title, message string) {
-	w.WriteHeader(statusCode)
-	ctx.render(w, "error.html", struct {
-		ErrorTitle   string
-		ErrorMessage string
-	}{title, message})
 }

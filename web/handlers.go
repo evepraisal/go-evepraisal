@@ -14,6 +14,7 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/legacy"
+	"github.com/gorilla/context"
 	"github.com/husobee/vestigo"
 	"github.com/mash/go-accesslog"
 )
@@ -29,10 +30,10 @@ func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	total, err := ctx.app.AppraisalDB.TotalAppraisals()
 	if err != nil {
-		ctx.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
-	ctx.render(w, "main.html", MainPageStruct{TotalAppraisalCount: total})
+	ctx.render(r, w, "main.html", MainPageStruct{TotalAppraisalCount: total})
 }
 
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +42,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	body := r.FormValue("raw_textarea")
 	if len(body) > 200000 {
-		ctx.renderErrorPage(w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
 		return
 	}
 
@@ -51,26 +52,33 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		var ok bool
 		market, ok = legacy.MarketIDToName[marketID]
 		if !ok {
-			ctx.renderErrorPage(w, http.StatusBadRequest, "Invalid input", "Market not found.")
+			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Market not found.")
 			return
 		}
 	}
 
 	appraisal, err := ctx.app.StringToAppraisal(market, body)
 	if err != nil {
-		ctx.renderErrorPage(w, http.StatusBadRequest, "Invalid input", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
 
 	err = ctx.app.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
 		log.Printf("ERROR: saving appraisal: %s", err)
-		ctx.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 	log.Printf("[New appraisal] id=%s, market=%s, items=%d, unparsed=%d", appraisal.ID, appraisal.MarketName, len(appraisal.Items), len(appraisal.Unparsed))
 
-	err = ctx.render(w, "main.html", MainPageStruct{Appraisal: appraisal})
+	// Set new session variable
+	ctx.setDefaultMarket(r, w, market)
+
+	sort.Slice(appraisal.Items, func(i, j int) bool {
+		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
+	})
+
+	err = ctx.render(r, w, "main.html", MainPageStruct{Appraisal: appraisal})
 }
 
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +92,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		legacyAppraisalIDStr = strings.TrimSuffix(legacyAppraisalIDStr, suffix)
 		legacyAppraisalID, err := strconv.ParseUint(legacyAppraisalIDStr, 10, 64)
 		if err != nil {
-			ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 			return
 		}
 		vestigo.AddParam(r, "appraisalID", evepraisal.Uint64ToAppraisalID(legacyAppraisalID)+suffix)
@@ -104,18 +112,18 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 
 	appraisal, err := ctx.app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
-		ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
-		return appraisal.Items[i].SingleRepresentativePrice() > appraisal.Items[j].SingleRepresentativePrice()
+		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
-	ctx.render(w, "main.html", MainPageStruct{Appraisal: appraisal})
+	ctx.render(r, w, "main.html", MainPageStruct{Appraisal: appraisal})
 }
 
 func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
@@ -127,10 +135,10 @@ func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Reque
 
 	appraisal, err := ctx.app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
-		ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
@@ -147,10 +155,10 @@ func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Reques
 
 	appraisal, err := ctx.app.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
-		ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
@@ -171,17 +179,23 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 
 	appraisals, err := ctx.app.AppraisalDB.LatestAppraisals(int(limit), r.FormValue("kind"))
 	if err != nil {
-		ctx.renderErrorPage(w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
 
-	ctx.render(w, "latest.html", struct{ Appraisals []evepraisal.Appraisal }{appraisals})
+	ctx.render(r, w, "latest.html", struct{ Appraisals []evepraisal.Appraisal }{appraisals})
 }
 
 func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
 	txn := ctx.app.TransactionLogger.StartWebTransaction("view_legal", w, r)
 	defer txn.End()
-	ctx.render(w, "legal.html", "wat")
+	ctx.render(r, w, "legal.html", nil)
+}
+
+func (ctx *Context) HandleHelp(w http.ResponseWriter, r *http.Request) {
+	txn := ctx.app.TransactionLogger.StartWebTransaction("view_help", w, r)
+	defer txn.End()
+	ctx.render(r, w, "help.html", nil)
 }
 
 func (ctx *Context) HTTPHandler() http.Handler {
@@ -193,15 +207,16 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.Get("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
 	router.Get("/latest", ctx.HandleLatestAppraisals)
 	router.Get("/legal", ctx.HandleLegal)
+	router.Get("/help", ctx.HandleHelp)
 
 	vestigo.CustomNotFoundHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			ctx.renderErrorPage(w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		})
 
 	vestigo.CustomMethodNotAllowedHandlerFunc(func(allowedMethods string) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			ctx.renderErrorPage(w, http.StatusInternalServerError, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
+			ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
 		}
 	})
 
@@ -218,5 +233,10 @@ func (ctx *Context) HTTPHandler() http.Handler {
 		log.Fatal(err)
 	}
 
-	return accesslog.NewLoggingHandler(mux, accessLogger{})
+	// Wrap global handlers
+	handler := http.Handler(mux)
+	handler = accesslog.NewLoggingHandler(handler, accessLogger{})
+	handler = context.ClearHandler(handler)
+
+	return handler
 }

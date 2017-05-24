@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal"
@@ -114,7 +115,8 @@ func appMain() {
 			}),
 	}
 
-	app.WebContext = web.NewContext(app, viper.GetString("extra-js"))
+	baseURL := strings.TrimSuffix(viper.GetString("base-url"), "/")
+	app.WebContext = web.NewContext(app, baseURL, viper.GetString("extra-js"))
 
 	servers := mustStartServers(app.WebContext.HTTPHandler())
 	if err != nil {

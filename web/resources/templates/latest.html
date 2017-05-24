@@ -11,7 +11,7 @@
       <th colspan="2" class="text-center">Sell Value</th>
       <th colspan="2" class="text-center">Buy Value</th>
     </tr>
-    {{range $appraisal := .Appraisals}}
+    {{range $appraisal := .Page.Appraisals}}
     <tr>
       <td><a href="/a/{{$appraisal.ID}}">{{$appraisal.ID}}</a></td>
       <td>{{$appraisal.Kind}}</td>

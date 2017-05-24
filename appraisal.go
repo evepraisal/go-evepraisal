@@ -19,7 +19,7 @@ type Appraisal struct {
 	Totals     struct {
 		Buy    float64 `json:"buy"`
 		Sell   float64 `json:"sell"`
-		Volume int64   `json:"volume"`
+		Volume float64 `json:"volume"`
 	} `json:"totals"`
 	Items    []AppraisalItem `json:"items"`
 	Raw      string          `json:"raw"`
@@ -162,7 +162,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			items[i].Prices = prices
 			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
 			appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
-			appraisal.Totals.Volume += prices.All.Volume * items[i].Quantity
+			appraisal.Totals.Volume += t.Volume * float64(items[i].Quantity)
 		}
 	}
 	appraisal.Items = items

@@ -1,12 +1,12 @@
-{{define "title"}}{{.ErrorTitle}}{{end}}
+{{define "title"}}{{.Page.ErrorTitle}}{{end}}
 {{define "content"}}
 <div class="">
-  {{template "_paste-panel.html"}}
+  {{template "_paste-panel.html" .}}
 
   <div class="col-lg-8">
     <div class="jumbotron">
-	    <h1>{{ .ErrorTitle }}</h1>
-	    <p>{{ .ErrorMessage }}</p>
+	    <h1>{{ .Page.ErrorTitle }}</h1>
+	    <p>{{ .Page.ErrorMessage }}</p>
     </div>
   </div>
 </div>

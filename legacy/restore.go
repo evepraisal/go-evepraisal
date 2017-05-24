@@ -349,6 +349,7 @@ func ApplyPriceAndTypeInfo(appraisal *evepraisal.Appraisal, item *evepraisal.App
 		item.TypeID = eveType.ID
 		item.TypeName = eveType.Name
 		item.TypeVolume = eveType.Volume
+		appraisal.Totals.Volume += eveType.Volume * float64(item.Quantity)
 
 		lprice, found := priceMap[eveType.ID]
 		if found {
@@ -356,7 +357,6 @@ func ApplyPriceAndTypeInfo(appraisal *evepraisal.Appraisal, item *evepraisal.App
 			item.Prices = prices
 			appraisal.Totals.Buy += prices.Buy.Max * float64(item.Quantity)
 			appraisal.Totals.Sell += prices.Sell.Min * float64(item.Quantity)
-			appraisal.Totals.Volume += prices.All.Volume * item.Quantity
 		}
 	}
 }

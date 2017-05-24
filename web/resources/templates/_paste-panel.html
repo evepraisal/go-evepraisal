@@ -9,12 +9,9 @@
         <div class="clearfix pull-right">
           <div class="form-inline">
             <select id="market" name="market" class="form-control">
-              <option value="jita">Jita</option>
-              <option value="universe">Universe</option>
-              <option value="amarr">Amarr</option>
-              <option value="dodixie">Dodixie</option>
-              <option value="rens">Rens</option>
-              <option value="hek">Hek</option>
+            {{range $market := .UI.Markets}}
+              <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+            {{end}}
             </select>
             <button type="reset" class="btn">Reset</button>
             <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
