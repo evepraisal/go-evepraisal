@@ -60,15 +60,19 @@ func TestHeuristicParser(rt *testing.T) {
 }
 
 type StaticTypeDB struct {
-	typeDB map[string]typedb.EveType
+	typeNameMap map[string]typedb.EveType
 }
 
 func (db StaticTypeDB) GetType(typeName string) (typedb.EveType, bool) {
-	t, ok := db.typeDB[strings.ToLower(typeName)]
+	t, ok := db.typeNameMap[strings.ToLower(typeName)]
 	return t, ok
 }
 func (db StaticTypeDB) HasType(typeName string) bool {
 	_, ok := db.GetType(typeName)
 	return ok
+}
+
+func (db StaticTypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
+	return typedb.EveType{}, false
 }
 func (db StaticTypeDB) Close() error { return nil }
