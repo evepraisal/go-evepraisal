@@ -32,7 +32,11 @@
         {{range $i, $component := .Page.Components}}
         <tr>
           <td class="text-center">{{comma $component.Quantity}}</td>
-          <td><a href="/item/{{$component.Type.ID}}">{{$component.Type.Name}}</a></td>
+          <td>
+            <a href="/item/{{$component.Type.ID}}">
+              <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$component.Type.ID}}_32.png" alt="{{$component.Type.Name}}"></a>
+            <a href="/item/{{$component.Type.ID}}">{{$component.Type.Name}}</a>
+          </td>
           <td class="text-right">{{commaf $component.Prices.Sell.Min}}<br />{{commaf $component.Prices.Buy.Max}}</td>
           <td class="text-right">{{commaf $component.Totals.Sell}}<br />{{commaf $component.Totals.Buy}}</td>
         </tr>
