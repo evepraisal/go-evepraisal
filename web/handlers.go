@@ -177,6 +177,10 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 			totals.Sell += compPrices.Sell.Min * float64(comp.Quantity)
 			totals.Buy += compPrices.Buy.Max * float64(comp.Quantity)
 		}
+
+		sort.Slice(components, func(i, j int) bool {
+			return components[i].Totals().Sell > components[j].Totals().Sell
+		})
 		ctx.render(r, w, "view_item.html", struct {
 			PricingStrategy string
 			Components      []componentDetails
