@@ -9,7 +9,7 @@
 
     <link rel="icon" href="static/favicon.ico">
 
-    <title>{{template "title"}}</title>
+    <title>{{template "title" .}}</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/static/thirdparty/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -41,8 +41,10 @@
             </button>
             <a class="navbar-brand" href="/">Evepraisal</a>
           </div>
+
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
+              <li><a href="/latest">Latest</a></li>
               <li><a href="/help">Help</a></li>
             </ul>
           </div><!--/.nav-collapse -->

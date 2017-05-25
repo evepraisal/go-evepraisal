@@ -21,13 +21,15 @@ type TypeDB struct {
 	dir             string
 	loadUnpublished bool
 
-	typeMap map[string]typedb.EveType
+	typeNameMap map[string]typedb.EveType
+	typeIDMap   map[int64]typedb.EveType
 }
 
 func NewTypeDB(dir string, staticDumpURL string, loadUnpublished bool) (typedb.TypeDB, error) {
 
 	typeDB := &TypeDB{
-		typeMap:         make(map[string]typedb.EveType),
+		typeNameMap:     make(map[string]typedb.EveType),
+		typeIDMap:       make(map[int64]typedb.EveType),
 		staticDumpURL:   staticDumpURL,
 		dir:             dir,
 		loadUnpublished: loadUnpublished,
@@ -64,7 +66,12 @@ func (db *TypeDB) HasType(typeName string) bool {
 }
 
 func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
-	t, ok := db.typeMap[strings.ToLower(typeName)]
+	t, ok := db.typeNameMap[strings.ToLower(typeName)]
+	return t, ok
+}
+
+func (db *TypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
+	t, ok := db.typeIDMap[typeID]
 	return t, ok
 }
 
@@ -132,25 +139,44 @@ func (db *TypeDB) loadData() error {
 		}
 	}
 
-	typeMap := make(map[string]typedb.EveType)
+	typeNameMap := make(map[string]typedb.EveType)
+	typeIDMap := make(map[int64]typedb.EveType)
 	for typeID, t := range allTypes {
 		if !db.loadUnpublished && !t.Published {
 			continue
 		}
 
 		eveType := typedb.EveType{
-			ID:              typeID,
-			Name:            t.Name.En,
-			Volume:          t.Volume,
-			BaseComponenets: resolveBaseComponents(blueprintsByProductType, typeID, 1, 5),
+			ID:             typeID,
+			Name:           t.Name.En,
+			Volume:         t.Volume,
+			BaseComponents: flattenComponents(resolveBaseComponents(blueprintsByProductType, typeID, 1, 5)),
 		}
 
-		typeMap[strings.ToLower(t.Name.En)] = eveType
+		typeNameMap[strings.ToLower(t.Name.En)] = eveType
+		typeIDMap[typeID] = eveType
 	}
 
-	db.typeMap = typeMap
+	db.typeNameMap = typeNameMap
+	db.typeIDMap = typeIDMap
 
 	return nil
+}
+
+func flattenComponents(components []typedb.Component) []typedb.Component {
+	m := make(map[typedb.Component]int64)
+	for _, component := range components {
+		qty := component.Quantity
+		component.Quantity = 0
+		m[component] += qty
+	}
+
+	s := make([]typedb.Component, 0, len(m))
+	for component, qty := range m {
+		component.Quantity = qty
+		s = append(s, component)
+	}
+	return s
 }
 
 func resolveBaseComponents(blueprintsByProductType map[int64][]Blueprint, typeID int64, multiplier int64, left int) []typedb.Component {

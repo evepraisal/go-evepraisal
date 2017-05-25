@@ -10,20 +10,22 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
+type Totals struct {
+	Buy    float64 `json:"buy"`
+	Sell   float64 `json:"sell"`
+	Volume float64 `json:"volume"`
+}
+
 type Appraisal struct {
-	ID         string `json:"id"`
-	Created    int64  `json:"created"`
-	Kind       string `json:"kind"`
-	MarketID   int    `json:"market_id"`
-	MarketName string `json:"market_name"`
-	Totals     struct {
-		Buy    float64 `json:"buy"`
-		Sell   float64 `json:"sell"`
-		Volume float64 `json:"volume"`
-	} `json:"totals"`
-	Items    []AppraisalItem `json:"items"`
-	Raw      string          `json:"raw"`
-	Unparsed map[int]string  `json:"unparsed"`
+	ID         string          `json:"id"`
+	Created    int64           `json:"created"`
+	Kind       string          `json:"kind"`
+	MarketID   int             `json:"market_id"`
+	MarketName string          `json:"market_name"`
+	Totals     Totals          `json:"totals"`
+	Items      []AppraisalItem `json:"items"`
+	Raw        string          `json:"raw"`
+	Unparsed   map[int]string  `json:"unparsed"`
 }
 
 func (appraisal *Appraisal) CreatedTime() time.Time {
@@ -156,8 +158,8 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 				return prices
 			}
 
-			if prices.Sell.Volume == 0 && len(t.BaseComponenets) > 0 {
-				prices = priceByComponents(t.BaseComponenets)
+			if prices.Sell.Volume <= 10 && len(t.BaseComponents) > 0 {
+				prices = priceByComponents(t.BaseComponents)
 			}
 			items[i].Prices = prices
 			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)

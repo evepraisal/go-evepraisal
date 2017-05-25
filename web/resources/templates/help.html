@@ -1,6 +1,8 @@
 {{define "title"}}Evepraisal Help{{end}}
 {{define "content"}}
-{{template "_paste-panel.html" .}}
+<div class="col-lg-4">
+  {{template "_paste-panel.html" .}}
+</div>
 <div class="col-lg-8">
   <h4>What is this?</h4>
   <p>This is a tool for Eve Online aimed at being able to quickly price check items in bulk. </p>
@@ -13,14 +15,14 @@
 
   <h4>Caveats/Known Issues</h4>
   <ul>
-    <li>There's no reliable way to get prices of blueprint copies (BPCs). Due to this, I don't even try to guess a price for them.</li>
+    <li>There's no reliable way to get prices of blueprint copies (BPCs). Due to this, evepraisal doesn't even try to guess a price for them.</li>
     <li>Non-english formats don't always work properly.</li>
   </ul>
 
   <h4>How do I contact you?</h4>
   <ul>
     <li>Send an in-game mail to: <a href="https://gate.eveonline.com/Profile/Magerawr" target="_blank">Magerawr</a></li>
-    <li>Open an <a href="https://github.com/sudorandom/go-evepraisal/issues?state=open" target="_blank">issue on github</a></li>
+    <li>Open an <a href="https://github.com/evepraisal/go-evepraisal/issues?state=open" target="_blank">issue on github</a></li>
   </ul>
   <p>I get a lot of mail so I don't have the time to respond to everyone.</p>
 </div>

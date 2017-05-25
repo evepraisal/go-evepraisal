@@ -1,23 +1,21 @@
-<div class="col-lg-4">
-  <div class="panel panel-default form-group">
-    <div class="panel-heading">Quick Estimate</div>
-    <form action="/appraisal" method="POST">
-      <div class="panel-body">
-        <div class="form-group">
-         <textarea class="form-control" name="raw_textarea" rows="10" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v"></textarea>
-        </div>
-        <div class="clearfix pull-right">
-          <div class="form-inline">
-            <select id="market" name="market" class="form-control">
-            {{range $market := .UI.Markets}}
-              <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
-            {{end}}
-            </select>
-            <button type="reset" class="btn">Reset</button>
-            <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
-          </div>
+<div class="panel panel-default form-group">
+  <div class="panel-heading">Quick Estimate</div>
+  <form action="/appraisal" method="POST">
+    <div class="panel-body">
+      <div class="form-group">
+       <textarea class="form-control" name="raw_textarea" rows="10" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v"></textarea>
+      </div>
+      <div class="clearfix pull-right">
+        <div class="form-inline">
+          <select id="market" name="market" class="form-control">
+          {{range $market := .UI.Markets}}
+            <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+          {{end}}
+          </select>
+          <button type="reset" class="btn">Reset</button>
+          <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>
