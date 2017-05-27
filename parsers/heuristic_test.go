@@ -88,4 +88,9 @@ func (db StaticTypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
 	t, ok := db.typeIDMap[typeID]
 	return t, ok
 }
+
+func (db StaticTypeDB) Search(s string) []typedb.EveType {
+	return nil
+}
+
 func (db StaticTypeDB) Close() error { return nil }

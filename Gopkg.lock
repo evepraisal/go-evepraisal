@@ -1,10 +1,28 @@
-memo = "1d9419280267b3a372b6ed65e6d5db62a9830857d7a2b0daf7bdcfa90f9ddd8e"
+memo = "1387a19f36d120b201080fef71e5588d244974d750c7fcc244e09053bb5c4a2d"
 
 [[projects]]
   branch = "master"
   name = "github.com/BurntSushi/toml"
   packages = ["."]
   revision = "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
+
+[[projects]]
+  name = "github.com/blevesearch/bleve"
+  packages = [".","analysis","analysis/analyzers/standard_analyzer","analysis/datetime_parsers/datetime_optional","analysis/datetime_parsers/flexible_go","analysis/language/en","analysis/token_filters/lower_case_filter","analysis/token_filters/porter","analysis/token_filters/stop_tokens_filter","analysis/tokenizers/unicode","document","index","index/store","index/store/boltdb","index/store/gtreap","index/upside_down","numeric_util","registry","search","search/collectors","search/facets","search/highlight","search/highlight/fragment_formatters/html","search/highlight/fragmenters/simple","search/highlight/highlighters/html","search/highlight/highlighters/simple","search/scorers","search/searchers"]
+  revision = "97393d027342f43b17da2f02c090a4e728ac929f"
+  version = "v0.5.0"
+
+[[projects]]
+  name = "github.com/blevesearch/go-porterstemmer"
+  packages = ["."]
+  revision = "b4dd94e38f29620fe0f97ae4b0f6994b0d5d75f0"
+  version = "v1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/blevesearch/segment"
+  packages = ["."]
+  revision = "762005e7a34fd909a84586299f1dd457371d36ee"
 
 [[projects]]
   branch = "master"
@@ -34,6 +52,36 @@ memo = "1d9419280267b3a372b6ed65e6d5db62a9830857d7a2b0daf7bdcfa90f9ddd8e"
   name = "github.com/elazarl/go-bindata-assetfs"
   packages = ["."]
   revision = "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "9f174c986221c608fb5143bd623b6076a71feae3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  revision = "553a641470496b2327abcac10b36396bd98e45c9"
+
+[[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
+  version = "v1.1"
 
 [[projects]]
   name = "github.com/gregjones/httpcache"
@@ -122,6 +170,12 @@ memo = "1d9419280267b3a372b6ed65e6d5db62a9830857d7a2b0daf7bdcfa90f9ddd8e"
   revision = "3c0ff861e3d9906ecc4ebfb7e41557d44d3e277b"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/steveyen/gtreap"
+  packages = ["."]
+  revision = "0abe01ef9be25c4aedc174758ec2d917314d6d70"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   revision = "4d4bfba8f1d1027c4fdbe371823030df51419987"
@@ -131,6 +185,12 @@ memo = "1d9419280267b3a372b6ed65e6d5db62a9830857d7a2b0daf7bdcfa90f9ddd8e"
   name = "golang.org/x/crypto"
   packages = ["acme","acme/autocert"]
   revision = "3543873453996aaab2fc6b3928a35fc5ca2b5afb"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  revision = "48359f4f600b3a2d5cf657458e3f940021631a56"
 
 [[projects]]
   branch = "master"
