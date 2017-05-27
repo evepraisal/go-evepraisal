@@ -2,7 +2,8 @@
 {{define "content"}}
 {{template "_view_item_header.html" .}}
 
-<div class="row">
+<div class="row col-lg-12">
+  {{if .Page.Summaries}}
   <ul class="nav nav-tabs" role="tablist">
   {{ range $i, $summary := .Page.Summaries }}
     <li class="nav-item{{if eq $i 0}} active{{end}}">
@@ -23,6 +24,9 @@
       </div>
     {{end}}
   </div>
+  {{else}}
+  <div class="text-center">No market data found for this type.</div>
+  {{end}}
 </div>
 {{end}}
 {{template "_layout.html" .}}

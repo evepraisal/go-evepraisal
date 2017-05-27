@@ -1,0 +1,60 @@
+<div class="row col-lg-12">
+  <h4>Market Pricing</h4>
+  <p>Evepraisal looks at a recent (around 5 minute delayed) market orders to estimate prices for items. For <strong>sell orders</strong> the minimum value is used because that is the lowest price that you can get if you purchase items from a sell order. For <strong>buy orders</strong> the maximum value is used because that is the highest price that you can get when selling items to a buy order.</p>
+
+  <div class="col-lg-6">
+    <h5>{{comma .Prices.Sell.OrderCount}} Sell Orders / {{comma .Prices.Sell.Volume}} units</h5>
+    <table class="table">
+      <tbody>
+        <tr class="active">
+          <th>Min</th>
+          <td class="text-right">{{commaf .Prices.Sell.Min}} ISK</td>
+        </tr>
+        <tr>
+          <th>Median</th>
+          <td class="text-right">{{commaf .Prices.Sell.Median}} ISK</td>
+        </tr>
+        <tr>
+          <th>Average</th>
+          <td class="text-right">{{commaf .Prices.Sell.Average}} ISK</td>
+        </tr>
+        <tr>
+          <th>90th Percentile</th>
+          <td class="text-right">{{commaf .Prices.Sell.Percentile}} ISK</td>
+        </tr>
+        <tr>
+          <th>Standard Deviation</th>
+          <td class="text-right">{{commaf .Prices.Sell.Stddev}} ISK</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-lg-6">
+    <h5>{{comma .Prices.Buy.OrderCount}} Buy orders / {{comma .Prices.Buy.Volume}} units</h5>
+    <table class="table">
+      <tbody>
+        <tr class="active">
+          <th>Max</th>
+          <td class="text-right">{{commaf .Prices.Buy.Max}} ISK</td>
+        </tr>
+        <tr>
+          <th>Median</th>
+          <td class="text-right">{{commaf .Prices.Buy.Median}} ISK</td>
+        </tr>
+        <tr>
+          <th>Average</th>
+          <td class="text-right">{{commaf .Prices.Buy.Average}} ISK</td>
+        </tr>
+        <tr>
+          <th>90th Percentile</th>
+          <td class="text-right">{{commaf .Prices.Buy.Percentile}} ISK</td>
+        </tr>
+        <tr>
+          <th>Standard Deviation</th>
+          <td class="text-right">{{commaf .Prices.Buy.Stddev}} ISK</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

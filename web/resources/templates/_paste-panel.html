@@ -22,6 +22,9 @@
 
 <script type="text/javascript">
 $("body").bind("paste", function(e){
-    $("textarea#raw_textarea").val(e.originalEvent.clipboardData.getData('text'));
+    console.log();
+    if ( !$(e.originalEvent.target).is( "input" ) ) {
+      $("textarea#raw_textarea").val(e.originalEvent.clipboardData.getData('text'));
+    }
 } );
 </script>

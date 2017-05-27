@@ -3,16 +3,23 @@ package bolt
 import (
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	// Imported to register boltdb with bleve
+	"github.com/blevesearch/bleve"
+	_ "github.com/blevesearch/bleve/index/store/boltdb"
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/golang/snappy"
 )
 
 type TypeDB struct {
-	db *bolt.DB
+	db    *bolt.DB
+	index bleve.Index
 }
 
 func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
@@ -51,7 +58,23 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 		}
 	}
 
-	return &TypeDB{db: db}, err
+	var index bleve.Index
+	if _, err := os.Stat(filename + ".index"); os.IsNotExist(err) {
+		mapping := bleve.NewIndexMapping()
+		index, err = bleve.New(filename+".index", mapping)
+		if err != nil {
+			return nil, err
+		}
+	} else if err == nil {
+		index, err = bleve.Open(filename + ".index")
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, err
+	}
+
+	return &TypeDB{db: db, index: index}, err
 }
 
 func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
@@ -130,7 +153,7 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 	encodedEveTypeID := make([]byte, 8)
 	binary.BigEndian.PutUint64(encodedEveTypeID, uint64(eveType.ID))
 
-	return db.db.Update(func(tx *bolt.Tx) error {
+	err = db.db.Update(func(tx *bolt.Tx) error {
 		byName := tx.Bucket([]byte("types_by_name"))
 		err := byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
 		if err != nil {
@@ -145,8 +168,36 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+
+	return db.index.Index(strconv.FormatInt(eveType.ID, 10), eveType.Name)
+}
+
+func (db *TypeDB) Search(s string) []typedb.EveType {
+	q := bleve.NewFuzzyQuery(s)
+	searchRequest := bleve.NewSearchRequest(q)
+	searchResults, err := db.index.Search(searchRequest)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	results := make([]typedb.EveType, len(searchResults.Hits))
+	for i, result := range searchResults.Hits {
+		id, _ := strconv.ParseInt(result.ID, 10, 64)
+		t, _ := db.GetTypeByID(id)
+		results[i] = t
+	}
+
+	return results
 }
 
 func (db *TypeDB) Close() error {
-	return db.db.Close()
+	err := db.db.Close()
+	if err != nil {
+		return err
+	}
+	return db.index.Close()
 }

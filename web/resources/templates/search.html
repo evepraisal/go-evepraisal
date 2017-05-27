@@ -1,0 +1,19 @@
+{{define "title"}}Search results{{end}}
+{{define "content"}}
+<div class="row col-lg-12">
+  {{if .Page.Results}}
+  <table class="table table-sm table-condensed table-striped">
+  {{range $i, $result := .Page.Results}}
+    <tr>
+      <td width="32"><a href="/item/{{$result.ID}}"><img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$result.ID}}_32.png" alt="{{$result.Name}}"></a></td>
+      <td><a href="/item/{{$result.ID}}">{{$result.Name}}</a></td>
+    </tr>
+  {{end}}
+  </table>
+  {{else}}
+    <p class="text-center">No results</p>
+  {{end}}
+</div>
+{{end}}
+
+{{template "_layout.html" .}}
