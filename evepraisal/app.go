@@ -122,7 +122,11 @@ func appMain() {
 			}),
 	}
 
-	app.WebContext = web.NewContext(app, strings.TrimSuffix(viper.GetString("base-url"), "/"), viper.GetString("extra-js"))
+	app.WebContext = web.NewContext(
+		app,
+		strings.TrimSuffix(viper.GetString("base-url"), "/"),
+		viper.GetString("extra-js"),
+		viper.GetString("ad-block"))
 
 	servers := mustStartServers(app.WebContext.HTTPHandler())
 	if err != nil {

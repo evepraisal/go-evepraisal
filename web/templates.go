@@ -97,6 +97,7 @@ func (ctx *Context) Reload() error {
 	}
 
 	root.New("extra-javascript").Parse(ctx.extraJS)
+	root.New("ad-block").Parse(ctx.adBlock)
 
 	for _, path := range AssetNames() {
 		baseName := filepath.Base(path)

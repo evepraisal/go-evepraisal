@@ -10,15 +10,15 @@ import (
 
 var HeuristicParserCases = []struct {
 	name   string
-	types  map[string]typedb.EveType
+	types  []typedb.EveType
 	in     string
 	result ParserResult
 	left   Input
 }{
 	{
 		"example 1",
-		map[string]typedb.EveType{
-			"tritanium": {},
+		[]typedb.EveType{
+			{Name: "Tritanium"},
 		},
 		`177887021	Tritanium
 44461428	Pyerite`,
@@ -28,11 +28,11 @@ var HeuristicParserCases = []struct {
 		Input{1: "44461428\tPyerite"},
 	}, {
 		"example 2 - dashes",
-		map[string]typedb.EveType{
-			"procurer":                         {},
-			"medium shield extender i":         {},
-			"ice harvester ii":                 {},
-			"adaptive invulnerability field i": {},
+		[]typedb.EveType{
+			{Name: "Procurer"},
+			{Name: "Medium Shield Extender I"},
+			{Name: "Ice Harvester II"},
+			{Name: "Adaptive Invulnerability Field I"},
 		},
 		`Procurer x 1- Medium Shield Extender I x 1- Ice Harvester II x 1- Ice Harvester II x 1- Adaptive Invulnerability Field I x 1`,
 		&HeuristicResult{
@@ -49,9 +49,14 @@ var HeuristicParserCases = []struct {
 func TestHeuristicParser(rt *testing.T) {
 	for _, c := range HeuristicParserCases {
 		rt.Run(c.name, func(t *testing.T) {
-			p := HeuristicParser{
-				typeDB: StaticTypeDB{c.types},
+			db := StaticTypeDB{
+				typeNameMap: make(map[string]typedb.EveType),
+				typeIDMap:   make(map[int64]typedb.EveType),
 			}
+			for _, t := range c.types {
+				db.PutType(t)
+			}
+			p := HeuristicParser{typeDB: db}
 			result, rest := p.Parse(StringToInput(c.in))
 			assert.Equal(t, c.result, result, "results should be the same")
 			assert.Equal(t, c.left, rest, "the rest should be the same")
@@ -61,6 +66,13 @@ func TestHeuristicParser(rt *testing.T) {
 
 type StaticTypeDB struct {
 	typeNameMap map[string]typedb.EveType
+	typeIDMap   map[int64]typedb.EveType
+}
+
+func (db StaticTypeDB) PutType(t typedb.EveType) error {
+	db.typeNameMap[strings.ToLower(t.Name)] = t
+	db.typeIDMap[t.ID] = t
+	return nil
 }
 
 func (db StaticTypeDB) GetType(typeName string) (typedb.EveType, bool) {
@@ -68,11 +80,12 @@ func (db StaticTypeDB) GetType(typeName string) (typedb.EveType, bool) {
 	return t, ok
 }
 func (db StaticTypeDB) HasType(typeName string) bool {
-	_, ok := db.GetType(typeName)
+	_, ok := db.GetType(strings.ToLower(typeName))
 	return ok
 }
 
 func (db StaticTypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
-	return typedb.EveType{}, false
+	t, ok := db.typeIDMap[typeID]
+	return t, ok
 }
 func (db StaticTypeDB) Close() error { return nil }
