@@ -23,7 +23,6 @@ func main() {
 		case *os.PathError:
 			log.Println("No config file found, using defaults")
 		default:
-			log.Fatalf("Fatal error config file: %s", err)
 		}
 	}
 

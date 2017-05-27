@@ -7,7 +7,7 @@ ifeq ($(ENV), dev)
 	BUILD_OPTS?=-tags dev
 	BINDATA_FLAGS?=-debug
 else
-	BUILD_OPTS?=-tags prod
+	BUILD_OPTS?=
 endif
 
 GOOS?=$(shell go env GOOS)

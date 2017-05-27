@@ -1,3 +1,17 @@
+//  Copyright (c) 2014 Couchbase, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 		http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package bleve
 
 import (
@@ -11,7 +25,8 @@ import (
 	"github.com/blevesearch/bleve/document"
 	"github.com/blevesearch/bleve/index"
 	"github.com/blevesearch/bleve/index/store"
-	"github.com/blevesearch/bleve/numeric_util"
+	"github.com/blevesearch/bleve/mapping"
+	"github.com/blevesearch/bleve/numeric"
 	"github.com/blevesearch/bleve/search"
 )
 
@@ -377,8 +392,8 @@ func TestIndexAliasEmpty(t *testing.T) {
 }
 
 func TestIndexAliasMulti(t *testing.T) {
-	score1, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(1.0), 0)
-	score2, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(2.0), 0)
+	score1, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(1.0), 0)
+	score2, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(2.0), 0)
 	ei1Count := uint64(7)
 	ei1 := &stubIndex{
 		err:            nil,
@@ -518,8 +533,8 @@ func TestIndexAliasMulti(t *testing.T) {
 
 // TestMultiSearchNoError
 func TestMultiSearchNoError(t *testing.T) {
-	score1, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(1.0), 0)
-	score2, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(2.0), 0)
+	score1, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(1.0), 0)
+	score2, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(2.0), 0)
 	ei1 := &stubIndex{err: nil, searchResult: &SearchResult{
 		Status: &SearchStatus{
 			Total:      1,
@@ -707,13 +722,18 @@ func TestMultiSearchSecondPage(t *testing.T) {
 // 2. no searchers finish before the timeout
 // 3. no searches finish before cancellation
 func TestMultiSearchTimeout(t *testing.T) {
-	score1, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(1.0), 0)
-	score2, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(2.0), 0)
+	score1, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(1.0), 0)
+	score2, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(2.0), 0)
+	var ctx context.Context
 	ei1 := &stubIndex{
 		name: "ei1",
 		checkRequest: func(req *SearchRequest) error {
-			time.Sleep(50 * time.Millisecond)
-			return nil
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(50 * time.Millisecond):
+				return nil
+			}
 		},
 		err: nil,
 		searchResult: &SearchResult{
@@ -736,8 +756,12 @@ func TestMultiSearchTimeout(t *testing.T) {
 	ei2 := &stubIndex{
 		name: "ei2",
 		checkRequest: func(req *SearchRequest) error {
-			time.Sleep(50 * time.Millisecond)
-			return nil
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(50 * time.Millisecond):
+				return nil
+			}
 		},
 		err: nil,
 		searchResult: &SearchResult{
@@ -759,7 +783,7 @@ func TestMultiSearchTimeout(t *testing.T) {
 		}}
 
 	// first run with absurdly long time out, should succeed
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
 	query := NewTermQuery("test")
 	sr := NewSearchRequest(query)
 	res, err := MultiSearch(ctx, sr, ei1, ei2)
@@ -806,7 +830,8 @@ func TestMultiSearchTimeout(t *testing.T) {
 	}
 
 	// now run a search again with a normal timeout, but cancel it first
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 	cancel()
 	res, err = MultiSearch(ctx, sr, ei1, ei2)
 	if err != nil {
@@ -836,9 +861,10 @@ func TestMultiSearchTimeout(t *testing.T) {
 // TestMultiSearchTimeoutPartial tests the case where some indexes exceed
 // the timeout, while others complete successfully
 func TestMultiSearchTimeoutPartial(t *testing.T) {
-	score1, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(1.0), 0)
-	score2, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(2.0), 0)
-	score3, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(3.0), 0)
+	score1, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(1.0), 0)
+	score2, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(2.0), 0)
+	score3, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(3.0), 0)
+	var ctx context.Context
 	ei1 := &stubIndex{
 		name: "ei1",
 		err:  nil,
@@ -883,8 +909,12 @@ func TestMultiSearchTimeoutPartial(t *testing.T) {
 	ei3 := &stubIndex{
 		name: "ei3",
 		checkRequest: func(req *SearchRequest) error {
-			time.Sleep(50 * time.Millisecond)
-			return nil
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(50 * time.Millisecond):
+				return nil
+			}
 		},
 		err: nil,
 		searchResult: &SearchResult{
@@ -907,7 +937,7 @@ func TestMultiSearchTimeoutPartial(t *testing.T) {
 
 	// ei3 is set to take >50ms, so run search with timeout less than
 	// this, this should return partial results
-	ctx, _ := context.WithTimeout(context.Background(), 25*time.Millisecond)
+	ctx, _ = context.WithTimeout(context.Background(), 25*time.Millisecond)
 	query := NewTermQuery("test")
 	sr := NewSearchRequest(query)
 	expected := &SearchResult{
@@ -949,10 +979,11 @@ func TestMultiSearchTimeoutPartial(t *testing.T) {
 }
 
 func TestIndexAliasMultipleLayer(t *testing.T) {
-	score1, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(1.0), 0)
-	score2, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(2.0), 0)
-	score3, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(3.0), 0)
-	score4, _ := numeric_util.NewPrefixCodedInt64(numeric_util.Float64ToInt64(4.0), 0)
+	score1, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(1.0), 0)
+	score2, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(2.0), 0)
+	score3, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(3.0), 0)
+	score4, _ := numeric.NewPrefixCodedInt64(numeric.Float64ToInt64(4.0), 0)
+	var ctx context.Context
 	ei1 := &stubIndex{
 		name: "ei1",
 		err:  nil,
@@ -976,8 +1007,12 @@ func TestIndexAliasMultipleLayer(t *testing.T) {
 	ei2 := &stubIndex{
 		name: "ei2",
 		checkRequest: func(req *SearchRequest) error {
-			time.Sleep(50 * time.Millisecond)
-			return nil
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(50 * time.Millisecond):
+				return nil
+			}
 		},
 		err: nil,
 		searchResult: &SearchResult{
@@ -1001,8 +1036,12 @@ func TestIndexAliasMultipleLayer(t *testing.T) {
 	ei3 := &stubIndex{
 		name: "ei3",
 		checkRequest: func(req *SearchRequest) error {
-			time.Sleep(50 * time.Millisecond)
-			return nil
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(50 * time.Millisecond):
+				return nil
+			}
 		},
 		err: nil,
 		searchResult: &SearchResult{
@@ -1052,7 +1091,7 @@ func TestIndexAliasMultipleLayer(t *testing.T) {
 	// search across aliasTop should still get results from ei1 and ei4
 	// total should still be 4
 
-	ctx, _ := context.WithTimeout(context.Background(), 25*time.Millisecond)
+	ctx, _ = context.WithTimeout(context.Background(), 25*time.Millisecond)
 	query := NewTermQuery("test")
 	sr := NewSearchRequest(query)
 	expected := &SearchResult{
@@ -1269,7 +1308,7 @@ func (i *stubIndex) Close() error {
 	return i.err
 }
 
-func (i *stubIndex) Mapping() *IndexMapping {
+func (i *stubIndex) Mapping() mapping.IndexMapping {
 	return nil
 }
 

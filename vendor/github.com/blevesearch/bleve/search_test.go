@@ -1,16 +1,22 @@
 //  Copyright (c) 2014 Couchbase, Inc.
-//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//  except in compliance with the License. You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
-//  Unless required by applicable law or agreed to in writing, software distributed under the
-//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-//  either express or implied. See the License for the specific language governing permissions
-//  and limitations under the License.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 		http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package bleve
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -177,4 +183,146 @@ func TestUnmarshalingSearchResult(t *testing.T) {
 	if len(rv.Status.Errors) != 1 {
 		t.Errorf("expected 1 error, got %d", len(rv.Status.Errors))
 	}
+}
+
+func TestFacetNumericDateRangeRequests(t *testing.T) {
+	var drMissingErr = fmt.Errorf("date range query must specify either start, end or both for range name 'testName'")
+	var nrMissingErr = fmt.Errorf("numeric range query must specify either min, max or both for range name 'testName'")
+	var drNrErr = fmt.Errorf("facet can only conain numeric ranges or date ranges, not both")
+	var drNameDupErr = fmt.Errorf("date ranges contains duplicate name 'testName'")
+	var nrNameDupErr = fmt.Errorf("numeric ranges contains duplicate name 'testName'")
+	value := float64(5)
+
+	tests := []struct {
+		facet  *FacetRequest
+		result error
+	}{
+		{
+			facet: &FacetRequest{
+				Field: "Date_Range_Success_With_StartEnd",
+				Size:  1,
+				DateTimeRanges: []*dateTimeRange{
+					&dateTimeRange{Name: "testName", Start: time.Unix(0, 0), End: time.Now()},
+				},
+			},
+			result: nil,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Date_Range_Success_With_Start",
+				Size:  1,
+				DateTimeRanges: []*dateTimeRange{
+					&dateTimeRange{Name: "testName", Start: time.Unix(0, 0)},
+				},
+			},
+			result: nil,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Date_Range_Success_With_End",
+				Size:  1,
+				DateTimeRanges: []*dateTimeRange{
+					&dateTimeRange{Name: "testName", End: time.Now()},
+				},
+			},
+			result: nil,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Numeric_Range_Success_With_MinMax",
+				Size:  1,
+				NumericRanges: []*numericRange{
+					&numericRange{Name: "testName", Min: &value, Max: &value},
+				},
+			},
+			result: nil,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Numeric_Range_Success_With_Min",
+				Size:  1,
+				NumericRanges: []*numericRange{
+					&numericRange{Name: "testName", Min: &value},
+				},
+			},
+			result: nil,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Numeric_Range_Success_With_Max",
+				Size:  1,
+				NumericRanges: []*numericRange{
+					&numericRange{Name: "testName", Max: &value},
+				},
+			},
+			result: nil,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Date_Range_Missing_Failure",
+				Size:  1,
+				DateTimeRanges: []*dateTimeRange{
+					&dateTimeRange{Name: "testName2", Start: time.Unix(0, 0)},
+					&dateTimeRange{Name: "testName1", End: time.Now()},
+					&dateTimeRange{Name: "testName"},
+				},
+			},
+			result: drMissingErr,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Numeric_Range_Missing_Failure",
+				Size:  1,
+				NumericRanges: []*numericRange{
+					&numericRange{Name: "testName2", Min: &value},
+					&numericRange{Name: "testName1", Max: &value},
+					&numericRange{Name: "testName"},
+				},
+			},
+			result: nrMissingErr,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Numeric_And_DateRanges_Failure",
+				Size:  1,
+				NumericRanges: []*numericRange{
+					&numericRange{Name: "testName", Max: &value},
+				},
+				DateTimeRanges: []*dateTimeRange{
+					&dateTimeRange{Name: "testName", End: time.Now()},
+				},
+			},
+			result: drNrErr,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Numeric_Range_Name_Repeat_Failure",
+				Size:  1,
+				NumericRanges: []*numericRange{
+					&numericRange{Name: "testName", Min: &value},
+					&numericRange{Name: "testName", Max: &value},
+				},
+			},
+			result: nrNameDupErr,
+		},
+		{
+			facet: &FacetRequest{
+				Field: "Date_Range_Name_Repeat_Failure",
+				Size:  1,
+				DateTimeRanges: []*dateTimeRange{
+					&dateTimeRange{Name: "testName", Start: time.Unix(0, 0)},
+					&dateTimeRange{Name: "testName", End: time.Now()},
+				},
+			},
+			result: drNameDupErr,
+		},
+	}
+
+	for _, test := range tests {
+		result := test.facet.Validate()
+		if !reflect.DeepEqual(result, test.result) {
+			t.Errorf("expected %#v, got %#v", test.result, result)
+		}
+	}
+
 }

@@ -11,6 +11,7 @@ import (
 
 	// Imported to register boltdb with bleve
 	"github.com/blevesearch/bleve"
+	_ "github.com/blevesearch/bleve/analysis/analyzer/standard"
 	_ "github.com/blevesearch/bleve/index/store/boltdb"
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal/typedb"
@@ -61,6 +62,7 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	var index bleve.Index
 	if _, err := os.Stat(filename + ".index"); os.IsNotExist(err) {
 		mapping := bleve.NewIndexMapping()
+		mapping.DefaultAnalyzer = "standard"
 		index, err = bleve.New(filename+".index", mapping)
 		if err != nil {
 			return nil, err
@@ -176,7 +178,17 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 }
 
 func (db *TypeDB) Search(s string) []typedb.EveType {
-	q := bleve.NewFuzzyQuery(s)
+	searchString := strings.ToLower(s)
+	q1 := bleve.NewTermQuery(searchString)
+	q1.SetBoost(10)
+
+	q2 := bleve.NewPrefixQuery(searchString)
+	q2.SetBoost(5)
+
+	q3 := bleve.NewFuzzyQuery(searchString)
+
+	q := bleve.NewDisjunctionQuery(q1, q2, q3)
+
 	searchRequest := bleve.NewSearchRequest(q)
 	searchResults, err := db.index.Search(searchRequest)
 	if err != nil {

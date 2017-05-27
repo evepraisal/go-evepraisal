@@ -23,7 +23,7 @@ func startEnvironmentWatchers(app *evepraisal.App) {
 			switch event.Op {
 			case fsnotify.Create, fsnotify.Remove, fsnotify.Rename:
 				log.Println("Detected new, removed or renamed resources, shutting down")
-				os.Exit(0)
+				os.Exit(1)
 			case fsnotify.Write:
 				log.Println("Detected resource changes, reloading templates")
 				err := app.WebContext.Reload()

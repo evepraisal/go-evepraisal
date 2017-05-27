@@ -1,11 +1,16 @@
 //  Copyright (c) 2014 Couchbase, Inc.
-//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//  except in compliance with the License. You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
-//  Unless required by applicable law or agreed to in writing, software distributed under the
-//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-//  either express or implied. See the License for the specific language governing permissions
-//  and limitations under the License.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 		http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package bleve
 
@@ -17,6 +22,7 @@ import (
 	"os"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -24,12 +30,13 @@ import (
 
 	"golang.org/x/net/context"
 
-	"strconv"
-
-	"github.com/blevesearch/bleve/analysis/analyzers/keyword_analyzer"
+	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/document"
 	"github.com/blevesearch/bleve/index"
 	"github.com/blevesearch/bleve/index/store/null"
+	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search"
+	"github.com/blevesearch/bleve/search/query"
 )
 
 func TestCrud(t *testing.T) {
@@ -345,33 +352,13 @@ func TestClosedIndex(t *testing.T) {
 }
 
 type slowQuery struct {
-	actual Query
+	actual query.Query
 	delay  time.Duration
 }
 
-func (s *slowQuery) Boost() float64 {
-	return s.actual.Boost()
-}
-
-func (s *slowQuery) SetBoost(b float64) Query {
-	return s.actual.SetBoost(b)
-}
-
-func (s *slowQuery) Field() string {
-	return s.actual.Field()
-}
-
-func (s *slowQuery) SetField(f string) Query {
-	return s.actual.SetField(f)
-}
-
-func (s *slowQuery) Searcher(i index.IndexReader, m *IndexMapping, explain bool) (search.Searcher, error) {
+func (s *slowQuery) Searcher(i index.IndexReader, m mapping.IndexMapping, options search.SearcherOptions) (search.Searcher, error) {
 	time.Sleep(s.delay)
-	return s.actual.Searcher(i, m, explain)
-}
-
-func (s *slowQuery) Validate() error {
-	return s.actual.Validate()
+	return s.actual.Searcher(i, m, options)
 }
 
 func TestSlowSearch(t *testing.T) {
@@ -992,7 +979,7 @@ func TestKeywordSearchBug207(t *testing.T) {
 	}()
 
 	f := NewTextFieldMapping()
-	f.Analyzer = keyword_analyzer.Name
+	f.Analyzer = keyword.Name
 
 	m := NewIndexMapping()
 	m.DefaultMapping = NewDocumentMapping()
@@ -1112,6 +1099,7 @@ func TestTermVectorArrayPositions(t *testing.T) {
 	// search for this document in all field
 	tq := NewTermQuery("second")
 	tsr := NewSearchRequest(tq)
+	tsr.IncludeLocations = true
 	results, err := index.Search(tsr)
 	if err != nil {
 		t.Fatal(err)
@@ -1126,12 +1114,14 @@ func TestTermVectorArrayPositions(t *testing.T) {
 		t.Fatalf("expected at least one location array position")
 	}
 	if results.Hits[0].Locations["Messages"]["second"][0].ArrayPositions[0] != 1 {
-		t.Fatalf("expected array position 1, got %f", results.Hits[0].Locations["Messages"]["second"][0].ArrayPositions[0])
+		t.Fatalf("expected array position 1, got %d", results.Hits[0].Locations["Messages"]["second"][0].ArrayPositions[0])
 	}
 
 	// repeat search for this document in Messages field
-	tq2 := NewTermQuery("third").SetField("Messages")
+	tq2 := NewTermQuery("third")
+	tq2.SetField("Messages")
 	tsr = NewSearchRequest(tq2)
+	tsr.IncludeLocations = true
 	results, err = index.Search(tsr)
 	if err != nil {
 		t.Fatal(err)
@@ -1146,7 +1136,7 @@ func TestTermVectorArrayPositions(t *testing.T) {
 		t.Fatalf("expected at least one location array position")
 	}
 	if results.Hits[0].Locations["Messages"]["third"][0].ArrayPositions[0] != 2 {
-		t.Fatalf("expected array position 2, got %f", results.Hits[0].Locations["Messages"]["third"][0].ArrayPositions[0])
+		t.Fatalf("expected array position 2, got %d", results.Hits[0].Locations["Messages"]["third"][0].ArrayPositions[0])
 	}
 
 	err = index.Close()
@@ -1297,9 +1287,9 @@ func TestDateTimeFieldMappingIssue287(t *testing.T) {
 	}
 
 	// search range across all docs
-	start := now.Add(-4 * time.Hour).Format(time.RFC3339)
-	end := now.Format(time.RFC3339)
-	sreq := NewSearchRequest(NewDateRangeQuery(&start, &end))
+	start := now.Add(-4 * time.Hour)
+	end := now
+	sreq := NewSearchRequest(NewDateRangeQuery(start, end))
 	sres, err := index.Search(sreq)
 	if err != nil {
 		t.Fatal(err)
@@ -1309,9 +1299,9 @@ func TestDateTimeFieldMappingIssue287(t *testing.T) {
 	}
 
 	// search range includes only oldest
-	start = now.Add(-4 * time.Hour).Format(time.RFC3339)
-	end = now.Add(-121 * time.Minute).Format(time.RFC3339)
-	sreq = NewSearchRequest(NewDateRangeQuery(&start, &end))
+	start = now.Add(-4 * time.Hour)
+	end = now.Add(-121 * time.Minute)
+	sreq = NewSearchRequest(NewDateRangeQuery(start, end))
 	sres, err = index.Search(sreq)
 	if err != nil {
 		t.Fatal(err)
@@ -1324,9 +1314,9 @@ func TestDateTimeFieldMappingIssue287(t *testing.T) {
 	}
 
 	// search range includes only newest
-	start = now.Add(-61 * time.Minute).Format(time.RFC3339)
-	end = now.Format(time.RFC3339)
-	sreq = NewSearchRequest(NewDateRangeQuery(&start, &end))
+	start = now.Add(-61 * time.Minute)
+	end = now
+	sreq = NewSearchRequest(NewDateRangeQuery(start, end))
 	sres, err = index.Search(sreq)
 	if err != nil {
 		t.Fatal(err)
@@ -1380,8 +1370,10 @@ func TestDocumentFieldArrayPositionsBug295(t *testing.T) {
 	}
 
 	// search for it in the messages field
-	tq := NewTermQuery("bleve").SetField("Messages")
+	tq := NewTermQuery("bleve")
+	tq.SetField("Messages")
 	tsr := NewSearchRequest(tq)
+	tsr.IncludeLocations = true
 	results, err := index.Search(tsr)
 	if err != nil {
 		t.Fatal(err)
@@ -1402,6 +1394,7 @@ func TestDocumentFieldArrayPositionsBug295(t *testing.T) {
 	// search for it in all
 	tq = NewTermQuery("bleve")
 	tsr = NewSearchRequest(tq)
+	tsr.IncludeLocations = true
 	results, err = index.Search(tsr)
 	if err != nil {
 		t.Fatal(err)
@@ -1454,7 +1447,9 @@ func TestBooleanFieldMappingIssue109(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sreq := NewSearchRequest(NewBoolFieldQuery(true).SetField("Bool"))
+	q := NewBoolFieldQuery(true)
+	q.SetField("Bool")
+	sreq := NewSearchRequest(q)
 	sres, err := index.Search(sreq)
 	if err != nil {
 		t.Fatal(err)
@@ -1463,7 +1458,9 @@ func TestBooleanFieldMappingIssue109(t *testing.T) {
 		t.Errorf("expected 1 results, got %d", sres.Total)
 	}
 
-	sreq = NewSearchRequest(NewBoolFieldQuery(false).SetField("Bool"))
+	q = NewBoolFieldQuery(false)
+	q.SetField("Bool")
+	sreq = NewSearchRequest(q)
 	sres, err = index.Search(sreq)
 	if err != nil {
 		t.Fatal(err)
@@ -1717,7 +1714,8 @@ func TestBug408(t *testing.T) {
 		t.Fatalf("expected %d documents in index, got %d", numToTest, cnt)
 	}
 
-	q := NewTermQuery(matchUserID).SetField("user_id")
+	q := NewTermQuery(matchUserID)
+	q.SetField("user_id")
 	searchReq := NewSearchRequestOptions(q, math.MaxInt32, 0, false)
 	results, err := index.Search(searchReq)
 	if err != nil {
@@ -1731,5 +1729,78 @@ func TestBug408(t *testing.T) {
 		if _, found := matchingDocIds[result.ID]; !found {
 			t.Fatalf("document with ID %s not in results as expected", result.ID)
 		}
+	}
+}
+
+func TestIndexAdvancedCountMatchSearch(t *testing.T) {
+	defer func() {
+		err := os.RemoveAll("testidx")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	index, err := New("testidx", NewIndexMapping())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(i int) {
+			b := index.NewBatch()
+			for j := 0; j < 200; j++ {
+				id := fmt.Sprintf("%d", (i*200)+j)
+
+				doc := &document.Document{
+					ID: id,
+					Fields: []document.Field{
+						document.NewTextField("body", []uint64{}, []byte("match")),
+					},
+					CompositeFields: []*document.CompositeField{
+						document.NewCompositeField("_all", true, []string{}, []string{}),
+					},
+				}
+
+				err := b.IndexAdvanced(doc)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			err := index.Batch(b)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+
+	// search for something that should match all documents
+	sr, err := index.Search(NewSearchRequest(NewMatchQuery("match")))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// get the index document count
+	dc, err := index.DocCount()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// make sure test is working correctly, doc count should 2000
+	if dc != 2000 {
+		t.Errorf("expected doc count 2000, got %d", dc)
+	}
+
+	// make sure our search found all the documents
+	if dc != sr.Total {
+		t.Errorf("expected search result total %d to match doc count %d", sr.Total, dc)
+	}
+
+	err = index.Close()
+	if err != nil {
+		t.Fatal(err)
 	}
 }

@@ -1,3 +1,17 @@
+//  Copyright (c) 2014 Couchbase, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 		http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package search
 
 import (
@@ -110,6 +124,11 @@ func TestNumericFacetResultsMerge(t *testing.T) {
 	medhi := 6.0
 	hihigher := 9.0
 
+	// why second copy? the pointers may be different, but values the same
+	lowmed2 := 3.0
+	medhi2 := 6.0
+	hihigher2 := 9.0
+
 	fr1 := &FacetResult{
 		Field:   "rating",
 		Total:   100,
@@ -147,18 +166,18 @@ func TestNumericFacetResultsMerge(t *testing.T) {
 		NumericRanges: []*NumericRangeFacet{
 			{
 				Name:  "low",
-				Max:   &lowmed,
+				Max:   &lowmed2,
 				Count: 25,
 			},
 			{
 				Name:  "med",
-				Max:   &lowmed,
-				Min:   &medhi,
+				Max:   &lowmed2,
+				Min:   &medhi2,
 				Count: 22,
 			},
 			{
 				Name:  "highest",
-				Min:   &hihigher,
+				Min:   &hihigher2,
 				Count: 3,
 			},
 		},

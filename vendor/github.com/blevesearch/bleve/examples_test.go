@@ -1,11 +1,16 @@
 //  Copyright (c) 2014 Couchbase, Inc.
-//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//  except in compliance with the License. You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
-//  Unless required by applicable law or agreed to in writing, software distributed under the
-//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-//  either express or implied. See the License for the specific language governing permissions
-//  and limitations under the License.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 		http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package bleve
 
@@ -15,12 +20,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search"
-	"github.com/blevesearch/bleve/search/highlight/highlighters/ansi"
+	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 )
 
-var mapping *IndexMapping
-var example_index Index
+var indexMapping mapping.IndexMapping
+var exampleIndex Index
 var err error
 
 func TestMain(m *testing.M) {
@@ -29,8 +35,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	toRun := m.Run()
-	if example_index != nil {
-		err = example_index.Close()
+	if exampleIndex != nil {
+		err = exampleIndex.Close()
 		if err != nil {
 			panic(err)
 		}
@@ -43,12 +49,12 @@ func TestMain(m *testing.M) {
 }
 
 func ExampleNew() {
-	mapping = NewIndexMapping()
-	example_index, err = New("path_to_index", mapping)
+	indexMapping = NewIndexMapping()
+	exampleIndex, err = New("path_to_index", indexMapping)
 	if err != nil {
 		panic(err)
 	}
-	count, err := example_index.DocCount()
+	count, err := exampleIndex.DocCount()
 	if err != nil {
 		panic(err)
 	}
@@ -71,17 +77,17 @@ func ExampleIndex_indexing() {
 	}{Name: "great nameless one", Created: time.Now(), Age: 25}
 
 	// index some data
-	err = example_index.Index("document id 1", data)
+	err = exampleIndex.Index("document id 1", data)
 	if err != nil {
 		panic(err)
 	}
-	err = example_index.Index("document id 2", data2)
+	err = exampleIndex.Index("document id 2", data2)
 	if err != nil {
 		panic(err)
 	}
 
 	// 2 documents have been indexed
-	count, err := example_index.DocCount()
+	count, err := exampleIndex.DocCount()
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +103,7 @@ func ExampleNewMatchQuery() {
 	// finds documents with fields fully matching the given query text
 	query := NewMatchQuery("named one")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -111,7 +117,7 @@ func ExampleNewMatchAllQuery() {
 	// finds all documents in the index
 	query := NewMatchAllQuery()
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -125,7 +131,7 @@ func ExampleNewMatchNoneQuery() {
 	// matches no documents in the index
 	query := NewMatchNoneQuery()
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -139,7 +145,7 @@ func ExampleNewMatchPhraseQuery() {
 	// finds all documents with the given phrase in the index
 	query := NewMatchPhraseQuery("nameless one")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -155,18 +161,18 @@ func ExampleNewNumericRangeQuery() {
 	data := struct{ Priority float64 }{Priority: float64(15)}
 	data2 := struct{ Priority float64 }{Priority: float64(10)}
 
-	err = example_index.Index("document id 3", data)
+	err = exampleIndex.Index("document id 3", data)
 	if err != nil {
 		panic(err)
 	}
-	err = example_index.Index("document id 4", data2)
+	err = exampleIndex.Index("document id 4", data2)
 	if err != nil {
 		panic(err)
 	}
 
 	query := NewNumericRangeQuery(&value1, &value2)
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -184,7 +190,7 @@ func ExampleNewNumericRangeInclusiveQuery() {
 
 	query := NewNumericRangeInclusiveQuery(&value1, &value2, &v1incl, &v2incl)
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -198,7 +204,7 @@ func ExampleNewPhraseQuery() {
 	// finds all documents with the given phrases in the given field in the index
 	query := NewPhraseQuery([]string{"nameless", "one"}, "Name")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -212,7 +218,7 @@ func ExampleNewPrefixQuery() {
 	// finds all documents with terms having the given prefix in the index
 	query := NewPrefixQuery("name")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -225,7 +231,7 @@ func ExampleNewPrefixQuery() {
 func ExampleNewQueryStringQuery() {
 	query := NewQueryStringQuery("+one -great")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -238,7 +244,7 @@ func ExampleNewQueryStringQuery() {
 func ExampleNewTermQuery() {
 	query := NewTermQuery("great")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -253,7 +259,7 @@ func ExampleNewFacetRequest() {
 	query := NewMatchAllQuery()
 	searchRequest := NewSearchRequest(query)
 	searchRequest.AddFacet("facet name", facet)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -276,7 +282,7 @@ func ExampleFacetRequest_AddDateTimeRange() {
 	query := NewMatchAllQuery()
 	searchRequest := NewSearchRequest(query)
 	searchRequest.AddFacet("facet name", facet)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -295,7 +301,7 @@ func ExampleFacetRequest_AddNumericRange() {
 	query := NewMatchAllQuery()
 	searchRequest := NewSearchRequest(query)
 	searchRequest.AddFacet("facet name", facet)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -310,7 +316,7 @@ func ExampleNewHighlight() {
 	query := NewMatchQuery("nameless")
 	searchRequest := NewSearchRequest(query)
 	searchRequest.Highlight = NewHighlight()
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -324,7 +330,7 @@ func ExampleNewHighlightWithStyle() {
 	query := NewMatchQuery("nameless")
 	searchRequest := NewSearchRequest(query)
 	searchRequest.Highlight = NewHighlightWithStyle(ansi.Name)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -339,7 +345,7 @@ func ExampleSearchRequest_AddFacet() {
 	query := NewMatchAllQuery()
 	searchRequest := NewSearchRequest(query)
 	searchRequest.AddFacet("facet name", facet)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -360,7 +366,7 @@ func ExampleNewSearchRequest() {
 	// finds documents with fields fully matching the given query text
 	query := NewMatchQuery("named one")
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -371,13 +377,13 @@ func ExampleNewSearchRequest() {
 }
 
 func ExampleNewBooleanQuery() {
-	must := make([]Query, 1)
-	mustNot := make([]Query, 1)
-	must[0] = NewMatchQuery("one")
-	mustNot[0] = NewMatchQuery("great")
-	query := NewBooleanQuery(must, nil, mustNot)
+	must := NewMatchQuery("one")
+	mustNot := NewMatchQuery("great")
+	query := NewBooleanQuery()
+	query.AddMust(must)
+	query.AddMustNot(mustNot)
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -387,42 +393,12 @@ func ExampleNewBooleanQuery() {
 	// document id 1
 }
 
-func ExampleNewBooleanQueryMinShould() {
-	should := make([]Query, 2)
-	should[0] = NewMatchQuery("great")
-	should[1] = NewMatchQuery("one")
-	query := NewBooleanQueryMinShould(nil, should, nil, float64(2))
-	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(searchResults.Hits[0].ID)
-	// Output:
-	// document id 2
-}
-
 func ExampleNewConjunctionQuery() {
-	conjuncts := make([]Query, 2)
-	conjuncts[0] = NewMatchQuery("great")
-	conjuncts[1] = NewMatchQuery("one")
-	query := NewConjunctionQuery(conjuncts)
+	conjunct1 := NewMatchQuery("great")
+	conjunct2 := NewMatchQuery("one")
+	query := NewConjunctionQuery(conjunct1, conjunct2)
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(searchResults.Hits[0].ID)
-	// Output:
-	// document id 2
-}
-
-func ExampleNewMatchQueryOperator() {
-	query := NewMatchQueryOperator("great one", MatchQueryOperatorAnd)
-	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -433,12 +409,11 @@ func ExampleNewMatchQueryOperator() {
 }
 
 func ExampleNewDisjunctionQuery() {
-	disjuncts := make([]Query, 2)
-	disjuncts[0] = NewMatchQuery("great")
-	disjuncts[1] = NewMatchQuery("named")
-	query := NewDisjunctionQuery(disjuncts)
+	disjunct1 := NewMatchQuery("great")
+	disjunct2 := NewMatchQuery("named")
+	query := NewDisjunctionQuery(disjunct1, disjunct2)
 	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -448,72 +423,12 @@ func ExampleNewDisjunctionQuery() {
 	// 2
 }
 
-func ExampleNewDisjunctionQueryMin() {
-	disjuncts := make([]Query, 2)
-	disjuncts[0] = NewMatchQuery("great")
-	disjuncts[1] = NewMatchQuery("named")
-	query := NewDisjunctionQueryMin(disjuncts, float64(2))
-	searchRequest := NewSearchRequest(query)
-	searchResults, err := example_index.Search(searchRequest)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(len(searchResults.Hits))
-	// Output:
-	// 0
-}
-
-// Examples for Mapping related functions
-
-func ExampleDocumentMapping_AddSubDocumentMapping() {
-	// adds a document mapping for a property in a document
-	// useful for mapping nested documents
-	documentMapping := NewDocumentMapping()
-	subDocumentMapping := NewDocumentMapping()
-	documentMapping.AddSubDocumentMapping("Property", subDocumentMapping)
-
-	fmt.Println(len(documentMapping.Properties))
-	// Output:
-	// 1
-}
-
-func ExampleDocumentMapping_AddFieldMapping() {
-	// you can only add field mapping to those properties which already have a document mapping
-	documentMapping := NewDocumentMapping()
-	subDocumentMapping := NewDocumentMapping()
-	documentMapping.AddSubDocumentMapping("Property", subDocumentMapping)
-
-	fieldMapping := NewTextFieldMapping()
-	fieldMapping.Analyzer = "en"
-	subDocumentMapping.AddFieldMapping(fieldMapping)
-
-	fmt.Println(len(documentMapping.Properties["Property"].Fields))
-	// Output:
-	// 1
-}
-
-func ExampleDocumentMapping_AddFieldMappingsAt() {
-	// you can only add field mapping to those properties which already have a document mapping
-	documentMapping := NewDocumentMapping()
-	subDocumentMapping := NewDocumentMapping()
-	documentMapping.AddSubDocumentMapping("NestedProperty", subDocumentMapping)
-
-	fieldMapping := NewTextFieldMapping()
-	fieldMapping.Analyzer = "en"
-	documentMapping.AddFieldMappingsAt("NestedProperty", fieldMapping)
-
-	fmt.Println(len(documentMapping.Properties["NestedProperty"].Fields))
-	// Output:
-	// 1
-}
-
 func ExampleSearchRequest_SortBy() {
 	// find docs containing "one", order by Age instead of score
 	query := NewMatchQuery("one")
 	searchRequest := NewSearchRequest(query)
 	searchRequest.SortBy([]string{"Age"})
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -535,7 +450,7 @@ func ExampleSearchRequest_SortByCustom() {
 			Missing: search.SortFieldMissingFirst,
 		},
 	})
-	searchResults, err := example_index.Search(searchRequest)
+	searchResults, err := exampleIndex.Search(searchRequest)
 	if err != nil {
 		panic(err)
 	}

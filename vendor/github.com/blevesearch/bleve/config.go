@@ -1,11 +1,16 @@
 //  Copyright (c) 2014 Couchbase, Inc.
-//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
-//  except in compliance with the License. You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
-//  Unless required by applicable law or agreed to in writing, software distributed under the
-//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-//  either express or implied. See the License for the specific language governing permissions
-//  and limitations under the License.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 		http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package bleve
 
@@ -15,12 +20,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/blevesearch/bleve/analysis/datetime_parsers/datetime_optional"
 	"github.com/blevesearch/bleve/index"
 	"github.com/blevesearch/bleve/index/store/gtreap"
-	"github.com/blevesearch/bleve/index/upside_down"
+	"github.com/blevesearch/bleve/index/upsidedown"
 	"github.com/blevesearch/bleve/registry"
-	"github.com/blevesearch/bleve/search/highlight/highlighters/html"
+	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
 )
 
 var bleveExpVar = expvar.NewMap("bleve")
@@ -31,7 +35,6 @@ type configuration struct {
 	DefaultKVStore         string
 	DefaultMemKVStore      string
 	DefaultIndexType       string
-	QueryDateTimeParser    string
 	SlowSearchLogThreshold time.Duration
 	analysisQueue          *index.AnalysisQueue
 }
@@ -66,10 +69,7 @@ func init() {
 	Config.DefaultMemKVStore = gtreap.Name
 
 	// default index
-	Config.DefaultIndexType = upside_down.Name
-
-	// default query date time parser
-	Config.QueryDateTimeParser = datetime_optional.Name
+	Config.DefaultIndexType = upsidedown.Name
 
 	bootDuration := time.Since(bootStart)
 	bleveExpVar.Add("bootDuration", int64(bootDuration))
