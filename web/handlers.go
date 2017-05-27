@@ -127,6 +127,15 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	ctx.render(r, w, "appraisal.html", MainPageStruct{Appraisal: appraisal})
 }
 
+type viewItemMarketSummary struct {
+	MarketName        string
+	MarketDisplayName string
+	PricingStrategy   string
+	Prices            evepraisal.Prices
+	Components        []componentDetails
+	Totals            evepraisal.Totals
+}
+
 type componentDetails struct {
 	Type     typedb.EveType
 	Quantity int64
@@ -157,52 +166,53 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prices, ok := ctx.app.PriceDB.GetPrice("jita", typeID)
-	if !ok {
-		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-		return
-	}
-
-	if prices.Sell.Volume < 10 && len(item.BaseComponents) > 0 {
-		components := make([]componentDetails, len(item.BaseComponents))
-		totals := evepraisal.Totals{}
-		for i, comp := range item.BaseComponents {
-			compType, _ := ctx.app.TypeDB.GetTypeByID(comp.TypeID)
-			compPrices, _ := ctx.app.PriceDB.GetPrice("jita", comp.TypeID)
-			components[i] = componentDetails{
-				Type:     compType,
-				Quantity: comp.Quantity,
-				Prices:   compPrices,
-			}
-			totals.Sell += compPrices.Sell.Min * float64(comp.Quantity)
-			totals.Buy += compPrices.Buy.Max * float64(comp.Quantity)
+	summaries := make([]viewItemMarketSummary, 0)
+	for _, market := range selectableMarkets {
+		prices, ok := ctx.app.PriceDB.GetPrice(market.Name, typeID)
+		if !ok {
+			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+			return
 		}
 
-		sort.Slice(components, func(i, j int) bool {
-			return components[i].Totals().Sell > components[j].Totals().Sell
-		})
-		ctx.render(r, w, "view_item.html", struct {
-			PricingStrategy string
-			Components      []componentDetails
-			Type            typedb.EveType
-			Totals          evepraisal.Totals
-		}{
-			PricingStrategy: "component",
-			Components:      components,
-			Type:            item,
-			Totals:          totals,
-		})
-	} else {
-		ctx.render(r, w, "view_item.html", struct {
-			PricingStrategy string
-			Type            typedb.EveType
-			Prices          evepraisal.Prices
-		}{
-			PricingStrategy: "market",
-			Type:            item,
-			Prices:          prices,
-		})
+		if prices.Sell.Volume < 10 && len(item.BaseComponents) > 0 {
+			components := make([]componentDetails, len(item.BaseComponents))
+			totals := evepraisal.Totals{}
+			for i, comp := range item.BaseComponents {
+				compType, _ := ctx.app.TypeDB.GetTypeByID(comp.TypeID)
+				compPrices, _ := ctx.app.PriceDB.GetPrice(market.Name, comp.TypeID)
+				components[i] = componentDetails{
+					Type:     compType,
+					Quantity: comp.Quantity,
+					Prices:   compPrices,
+				}
+				totals.Sell += compPrices.Sell.Min * float64(comp.Quantity)
+				totals.Buy += compPrices.Buy.Max * float64(comp.Quantity)
+			}
+
+			sort.Slice(components, func(i, j int) bool {
+				return components[i].Totals().Sell > components[j].Totals().Sell
+			})
+			summaries = append(summaries, viewItemMarketSummary{
+				MarketName:        market.Name,
+				MarketDisplayName: market.DisplayName,
+				PricingStrategy:   "component",
+				Totals:            totals,
+				Components:        components,
+			})
+		} else {
+			summaries = append(summaries, viewItemMarketSummary{
+				MarketName:        market.Name,
+				MarketDisplayName: market.DisplayName,
+				PricingStrategy:   "market",
+				Prices:            prices,
+			})
+		}
 	}
+
+	ctx.render(r, w, "view_item.html", struct {
+		Type      typedb.EveType
+		Summaries []viewItemMarketSummary
+	}{Type: item, Summaries: summaries})
 }
 
 func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {

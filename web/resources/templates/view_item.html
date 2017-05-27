@@ -1,112 +1,28 @@
 {{define "title"}}{{.Page.Type.Name}} pricing - Evepraisal{{end}}
 {{define "content"}}
-<div class="media">
-  <div class="media-body">
-    <h4 class="mt-0">
-      <img class="media-image" src="https://image.eveonline.com/Type/{{.Page.Type.ID}}_64.png" alt="{{.Page.Type.Name}}" /> {{.Page.Type.Name}}
+{{template "_view_item_header.html" .}}
 
-      <small>
-        <a href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank">Eve Info</a> |
-        <a href="https://eve-central.com/home/quicklook.html?typeid={{.Page.Type.ID}}" target="_blank">Eve Central</a>
-      </small>
-    </h4>
+<div class="row">
+  <ul class="nav nav-tabs" role="tablist">
+  {{ range $i, $summary := .Page.Summaries }}
+    <li class="nav-item{{if eq $i 0}} active{{end}}">
+        <a class="nav-link{{if eq $i 0}} active{{end}}" data-toggle="tab" href="#{{$summary.MarketName}}" role="tab">{{$summary.MarketDisplayName}}</a>
+    </li>
+    {{end}}
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    {{ range $i, $summary := .Page.Summaries }}
+      <div class="tab-pane{{if eq $i 0}} active{{end}}" id="{{$summary.MarketName}}" role="tabpanel">
+        {{if eq $summary.PricingStrategy "component"}}
+          {{template "_view_item_component.html" $summary}}
+        {{else}}
+          {{template "_view_item_market.html" $summary}}
+        {{end}}
+      </div>
+    {{end}}
   </div>
 </div>
-
-{{if eq .Page.PricingStrategy "component" }}
-  <div class="row">
-    <h4>Component Pricing</h4>
-    <h5><span class="nowrap">{{ prettybignumber .Page.Totals.Sell }} <small>estimated sell value</small></span>
-      <span class="nowrap">{{ prettybignumber .Page.Totals.Buy }} <small>estimated buy value</small></span></h5>
-    <p>Because the market volume of this item is so low, the pricing is based on pricing of the materials needed to make it.</p>
-    <table class="table table-sm table-condensed table-striped">
-      <thead>
-        <tr>
-          <th class="text-center">Qty</th>
-          <th>Item</th>
-          <th class="text-right">Single (sell)<br>Single (buy)</th>
-          <th class="text-right">Total (sell)<br>Total (buy)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range $i, $component := .Page.Components}}
-        <tr>
-          <td class="text-center">{{comma $component.Quantity}}</td>
-          <td>
-            <a href="/item/{{$component.Type.ID}}">
-              <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$component.Type.ID}}_32.png" alt="{{$component.Type.Name}}"></a>
-            <a href="/item/{{$component.Type.ID}}">{{$component.Type.Name}}</a>
-          </td>
-          <td class="text-right">{{commaf $component.Prices.Sell.Min}}<br />{{commaf $component.Prices.Buy.Max}}</td>
-          <td class="text-right">{{commaf $component.Totals.Sell}}<br />{{commaf $component.Totals.Buy}}</td>
-        </tr>
-        {{end}}
-      </tbody>
-    </table>
-  </div>
-</ul>
-{{else}}
-  <div class="row col-lg-12">
-    <h4>Market Pricing</h4>
-    <p>Evepraisal looks at a recent (around 5 minute delayed) market orders to estimate prices for items. For <strong>sell orders</strong> the minimum value is used because that is the lowest price that you can get if you purchase items from a sell order. For <strong>buy orders</strong> the maximum value is used because that is the highest price that you can get when selling items to a buy order.</p>
-  </div>
-  <div class="row">
-    <div class="col-lg-6">
-      <h5>{{comma .Page.Prices.Sell.OrderCount}} Sell Orders / {{comma .Page.Prices.Sell.Volume}} units</h5>
-      <table class="table">
-        <tbody>
-          <tr class="active">
-            <th>Min</th>
-            <td class="text-right">{{commaf .Page.Prices.Sell.Min}} ISK</td>
-          </tr>
-          <tr>
-            <th>Median</th>
-            <td class="text-right">{{commaf .Page.Prices.Sell.Median}} ISK</td>
-          </tr>
-          <tr>
-            <th>Average</th>
-            <td class="text-right">{{commaf .Page.Prices.Sell.Average}} ISK</td>
-          </tr>
-          <tr>
-            <th>90th Percentile</th>
-            <td class="text-right">{{commaf .Page.Prices.Sell.Percentile}} ISK</td>
-          </tr>
-          <tr>
-            <th>Standard Deviation</th>
-            <td class="text-right">{{commaf .Page.Prices.Sell.Stddev}} ISK</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="col-lg-6">
-      <h5>{{comma .Page.Prices.Buy.OrderCount}} Buy orders / {{comma .Page.Prices.Buy.Volume}} units</h5>
-      <table class="table">
-        <tbody>
-          <tr class="active">
-            <th>Max</th>
-            <td class="text-right">{{commaf .Page.Prices.Buy.Max}} ISK</td>
-          </tr>
-          <tr>
-            <th>Median</th>
-            <td class="text-right">{{commaf .Page.Prices.Buy.Median}} ISK</td>
-          </tr>
-          <tr>
-            <th>Average</th>
-            <td class="text-right">{{commaf .Page.Prices.Buy.Average}} ISK</td>
-          </tr>
-          <tr>
-            <th>90th Percentile</th>
-            <td class="text-right">{{commaf .Page.Prices.Buy.Percentile}} ISK</td>
-          </tr>
-          <tr>
-            <th>Standard Deviation</th>
-            <td class="text-right">{{commaf .Page.Prices.Buy.Stddev}} ISK</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-{{end}}
 {{end}}
 {{template "_layout.html" .}}

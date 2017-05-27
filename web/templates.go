@@ -34,7 +34,6 @@ var selectableMarkets = []displayMarket{
 	{Name: "universe", DisplayName: "Universe"},
 	{Name: "amarr", DisplayName: "Amarr"},
 	{Name: "dodixie", DisplayName: "Dodixie"},
-	{Name: "rens", DisplayName: "Rens"},
 	{Name: "hek", DisplayName: "Hek"},
 }
 

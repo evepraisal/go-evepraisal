@@ -23,7 +23,6 @@ func (ctx *Context) getDefaultMarket(r *http.Request) string {
 
 	val, ok := session.Values["market"]
 	if !ok {
-		log.Println("Use default")
 		return defaultMarket
 	}
 	market, ok := val.(string)
