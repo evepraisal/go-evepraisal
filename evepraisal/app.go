@@ -27,6 +27,7 @@ func appMain() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
+	log.Println("Starting cache DB")
 	cacheDB, err := bolt.NewCacheDB(viper.GetString("cache_db"))
 	if err != nil {
 		log.Fatalf("Unable to open cacheDB: %s", err)
@@ -38,6 +39,26 @@ func appMain() {
 		}
 	}()
 
+	log.Println("Checking for type data")
+	if _, err := os.Stat(viper.GetString("type_db")); os.IsNotExist(err) {
+		loadTypes()
+	} else if err != nil {
+		log.Fatalf("Unable to check type db file path: %s", err)
+	}
+
+	log.Println("Starting type DB")
+	typeDB, err := bolt.NewTypeDB(viper.GetString("type_db"), false)
+	if err != nil {
+		log.Fatalf("Couldn't start type database: %s", err)
+	}
+	defer func() {
+		err := typeDB.Close()
+		if err != nil {
+			log.Fatalf("Problem closing typeDB: %s", err)
+		}
+	}()
+
+	log.Println("Starting price DB")
 	priceDB, err := crest.NewPriceDB(cacheDB, viper.GetString("crest_baseurl"))
 	if err != nil {
 		log.Fatalf("Couldn't start price database")
@@ -49,22 +70,7 @@ func appMain() {
 		}
 	}()
 
-	err = os.MkdirAll("db/static", 0700)
-	if err != nil {
-		log.Fatalf("Unable to create static data dir: %s", err)
-	}
-
-	typeDB, err := staticdump.NewTypeDB(viper.GetString("type_db"), viper.GetString("type_static-file"), false)
-	if err != nil {
-		log.Fatalf("Couldn't start type database: %s", err)
-	}
-	defer func() {
-		err := typeDB.Close()
-		if err != nil {
-			log.Fatalf("Problem closing typeDB: %s", err)
-		}
-	}()
-
+	log.Println("Starting appraisal DB")
 	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal_db"))
 	if err != nil {
 		log.Fatalf("Couldn't start appraisal database: %s", err)
@@ -76,6 +82,7 @@ func appMain() {
 		}
 	}()
 
+	log.Println("Starting txn logger")
 	var txnLogger evepraisal.TransactionLogger
 	if viper.GetString("newrelic_license-key") == "" {
 		log.Println("Using no op transaction logger")
@@ -115,8 +122,7 @@ func appMain() {
 			}),
 	}
 
-	baseURL := strings.TrimSuffix(viper.GetString("base-url"), "/")
-	app.WebContext = web.NewContext(app, baseURL, viper.GetString("extra-js"))
+	app.WebContext = web.NewContext(app, strings.TrimSuffix(viper.GetString("base-url"), "/"), viper.GetString("extra-js"))
 
 	servers := mustStartServers(app.WebContext.HTTPHandler())
 	if err != nil {
@@ -203,4 +209,24 @@ func mustStartServers(handler http.Handler) []*http.Server {
 	}
 
 	return servers
+}
+
+func loadTypes() {
+	types, err := staticdump.LoadTypes(viper.GetString("type_static-cache"), viper.GetString("type_static-file"))
+	if err != nil {
+		log.Fatalf("Unable to load types from static data: %s", err)
+	}
+
+	typeDB, err := bolt.NewTypeDB(viper.GetString("type_db"), true)
+	if err != nil {
+		log.Fatalf("Couldn't start type database: %s", err)
+	}
+	defer typeDB.Close()
+
+	for _, t := range types {
+		err = typeDB.PutType(t)
+		if err != nil {
+			log.Fatalf("Cannot insert type: %s", err)
+		}
+	}
 }

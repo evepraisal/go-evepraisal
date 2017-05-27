@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/evepraisal/go-evepraisal"
+	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/legacy"
-	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/spf13/viper"
 )
 
@@ -42,7 +42,7 @@ func restoreMain() {
 	}
 
 	log.Println("New typedb")
-	typeDB, err := staticdump.NewTypeDB(viper.GetString("type_db"), viper.GetString("type_static-file"), true)
+	typeDB, err := bolt.NewTypeDB(viper.GetString("type_db"), false)
 	if err != nil {
 		log.Fatalf("Couldn't start type database: %s", err)
 	}
