@@ -23,7 +23,7 @@
 <script type="text/javascript">
 $("body").bind("paste", function(e){
     console.log();
-    if ( !$(e.originalEvent.target).is( "input" ) ) {
+    if ( !$(e.originalEvent.target).is( "input" ) && !$(e.originalEvent.target).is( "textarea" ) ) {
       $("textarea#raw_textarea").val(e.originalEvent.clipboardData.getData('text'));
     }
 } );

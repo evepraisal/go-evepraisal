@@ -90,11 +90,11 @@
       });
 
       $('.typeahead').typeahead({
-          minLength: 3,
-        }, {
-        display: 'name',
-        minLength: 2,
-        source: searchAutocomplete
+          minLength: 2,
+        },
+        {
+          display: 'name',
+          source: searchAutocomplete
       });
 
       $('.typeahead').bind('typeahead:select', function(event, suggestion) {
