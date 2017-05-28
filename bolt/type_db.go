@@ -179,6 +179,14 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 
 func (db *TypeDB) Search(s string) []typedb.EveType {
 	searchString := strings.ToLower(s)
+
+	// First try an exact match
+	t, ok := db.GetType(searchString)
+	if ok {
+		return []typedb.EveType{t}
+	}
+
+	// Then try a real search
 	q1 := bleve.NewTermQuery(searchString)
 	q1.SetBoost(10)
 
@@ -187,6 +195,7 @@ func (db *TypeDB) Search(s string) []typedb.EveType {
 
 	q3 := bleve.NewFuzzyQuery(searchString)
 
+	// TODO: None of these seem to handle multiple words in the query
 	q := bleve.NewDisjunctionQuery(q1, q2, q3)
 
 	searchRequest := bleve.NewSearchRequest(q)

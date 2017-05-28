@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
@@ -16,6 +17,9 @@ func (ctx *Context) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	defer txn.End()
 
 	results := ctx.app.TypeDB.Search(r.FormValue("q"))
+	if len(results) == 1 {
+		http.Redirect(w, r, fmt.Sprintf("/item/%d", results[0].ID), http.StatusPermanentRedirect)
+	}
 	ctx.render(r, w, "search.html", SearchPage{Results: results})
 }
 
