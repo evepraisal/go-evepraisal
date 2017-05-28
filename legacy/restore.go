@@ -38,7 +38,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 			return err
 		}
 
-		// Don't import prive appraisals
+		// Don't import private appraisals
 		if record[8] == "f" {
 			continue
 		}
