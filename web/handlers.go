@@ -44,6 +44,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.Get("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
 	router.Get("/item/:typeID", ctx.HandleViewItem)
 	router.Get("/search", ctx.HandleSearch)
+	router.Get("/search.json", ctx.HandleSearchJSON)
 	router.Get("/latest", ctx.HandleLatestAppraisals)
 	router.Get("/legal", ctx.HandleLegal)
 	router.Get("/help", ctx.HandleHelp)

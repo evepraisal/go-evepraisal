@@ -44,7 +44,7 @@
 
           <form class="navbar-form navbar-right" action="/search" method="GET" role="search">
             <div class="form-group">
-              <input type="text" class="form-control" name="q" placeholder="Search">
+              <input type="text" class="form-control typeahead" id="search" name="q" placeholder="Search">
             </div>
             <button type="submit" class="btn btn-default">Submit</button>
           </form>
@@ -75,6 +75,34 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/static/thirdparty/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="/static/thirdparty/jquery.tablesorter.min.js"></script>
+    <script src="/static/thirdparty/typeahead.js/bloodhound.min.js"></script>
+    <script src="/static/thirdparty/typeahead.js/typeahead.jquery.js"></script>
+
+    <script type="text/javascript">
+    $(function() {
+      var searchAutocomplete = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+          url: '/search.json?q=%QUERY',
+          wildcard: '%QUERY'
+        }
+      });
+
+      $('.typeahead').typeahead({
+          minLength: 3,
+        }, {
+        display: 'name',
+        minLength: 2,
+        source: searchAutocomplete
+      });
+
+      $('.typeahead').bind('typeahead:select', function(event, suggestion) {
+        window.location.href = "/item/"+ suggestion.id;
+        event.preventDefault()
+      });
+    });
+    </script>
 
     {{template "extra-javascript"}}
 
