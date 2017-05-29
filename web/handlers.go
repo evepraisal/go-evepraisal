@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/context"
 	"github.com/husobee/vestigo"
@@ -62,9 +63,16 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	mux := http.NewServeMux()
 
+	setCacheHeaders := func(h http.Handler) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Cache-Control", "max-age=86400")
+			h.ServeHTTP(w, r)
+		}
+	}
+
 	// Route our bundled static files
 	var fs = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "/static/"}
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(fs)))
+	mux.Handle("/static/", setCacheHeaders(http.StripPrefix("/static/", http.FileServer(fs))))
 
 	// Mount our web app router to root
 	mux.Handle("/", router)
@@ -77,6 +85,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	handler := http.Handler(mux)
 	handler = accesslog.NewLoggingHandler(handler, accessLogger{})
 	handler = context.ClearHandler(handler)
+	handler = gziphandler.GzipHandler(handler)
 
 	return handler
 }

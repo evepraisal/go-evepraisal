@@ -9,8 +9,14 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/NYTimes/gziphandler"
+  packages = ["."]
+  revision = "22d4470af89e09998fc16b35029df973932df4ae"
+
+[[projects]]
+  branch = "master"
   name = "github.com/blevesearch/bleve"
-  packages = [".","analysis","analysis/analyzer/simple","analysis/analyzer/standard","analysis/datetime/flexible","analysis/datetime/optional","analysis/lang/en","analysis/token/lowercase","analysis/token/porter","analysis/token/stop","analysis/tokenizer/character","analysis/tokenizer/letter","analysis/tokenizer/unicode","document","geo","index","index/store","index/store/boltdb","index/store/gtreap","index/upsidedown","mapping","numeric","registry","search","search/collector","search/facet","search/highlight","search/highlight/format/html","search/highlight/fragmenter/simple","search/highlight/highlighter/html","search/highlight/highlighter/simple","search/query","search/scorer","search/searcher"]
+  packages = [".","analysis","analysis/analyzer/standard","analysis/datetime/flexible","analysis/datetime/optional","analysis/lang/en","analysis/token/lowercase","analysis/token/porter","analysis/token/stop","analysis/tokenizer/unicode","document","geo","index","index/store","index/store/boltdb","index/store/gtreap","index/upsidedown","mapping","numeric","registry","search","search/collector","search/facet","search/highlight","search/highlight/format/html","search/highlight/fragmenter/simple","search/highlight/highlighter/html","search/highlight/highlighter/simple","search/query","search/scorer","search/searcher"]
   revision = "cd5b307cdeda85d36bc75e44349e096cf165f242"
 
 [[projects]]
@@ -213,6 +219,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bb264b9dae40348b8efc6cf23b0386f9b426337e12995441fc625a7d9258556f"
+  inputs-digest = "4f4092afa84915c121e1d6a1269fc88a3e2364a8a061928153c3647cd5de71d8"
   solver-name = "gps-cdcl"
   solver-version = 1

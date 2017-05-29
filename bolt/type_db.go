@@ -193,9 +193,8 @@ func (db *TypeDB) Search(s string) []typedb.EveType {
 	q2 := bleve.NewPrefixQuery(searchString)
 	q2.SetBoost(5)
 
-	q3 := bleve.NewFuzzyQuery(searchString)
+	q3 := bleve.NewMatchPhraseQuery(searchString)
 
-	// TODO: None of these seem to handle multiple words in the query
 	q := bleve.NewDisjunctionQuery(q1, q2, q3)
 
 	searchRequest := bleve.NewSearchRequest(q)
