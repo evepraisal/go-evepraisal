@@ -7,8 +7,8 @@
     <thead>
       <tr>
         <th>Item</th>
-        <th class="text-center">Quantity</th>
-        <th class="text-center">Market Volume</th>
+        <th class="text-right">Quantity</th>
+        <th class="text-right">Market Volume</th>
         <th class="text-right">Single (sell)<br>Single (buy)</th>
         <th class="text-right">Total (sell)<br>Total (buy)</th>
       </tr>
@@ -21,8 +21,8 @@
             <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$component.Type.ID}}_32.png" alt="{{$component.Type.Name}}"></a>
           <a href="/item/{{$component.Type.ID}}">{{$component.Type.Name}}</a>
         </td>
-        <td class="text-center">{{comma $component.Quantity}}</td>
-        <td class="text-center">{{comma $component.Prices.All.Volume}}</td>
+        <td class="text-right">{{comma $component.Quantity}}</td>
+        <td class="text-right">{{comma $component.Prices.All.Volume}}</td>td>
         <td class="text-right">{{commaf $component.Prices.Sell.Min}}<br />{{commaf $component.Prices.Buy.Max}}</td>
         <td class="text-right">{{commaf $component.Totals.Sell}}<br />{{commaf $component.Totals.Buy}}</td>
       </tr>

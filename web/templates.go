@@ -20,6 +20,10 @@ var templateFuncs = template.FuncMap{
 	"relativetime":    humanize.Time,
 	"timefmt":         func(t time.Time) string { return t.Format("2006-01-02 15:04:05") },
 
+	// Math
+	"divide":   func(a, b int64) float64 { return float64(a) / float64(b) },
+	"multiply": func(a, b float64) float64 { return a * b },
+
 	// Only for debugging
 	"spew": spew.Sdump,
 }
