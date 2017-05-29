@@ -60,6 +60,7 @@ func (ctx *Context) render(r *http.Request, w http.ResponseWriter, templateName 
 	root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.baseURL, "https://"), "http://")
 	root.UI.BaseURL = ctx.baseURL
 
+	w.Header().Add("Content-Type", "text/html")
 	err := tmpl.ExecuteTemplate(w, templateName, root)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
