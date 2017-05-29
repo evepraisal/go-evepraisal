@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -36,6 +37,15 @@ func (ctx *Context) HandleHelp(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "help.html", nil)
 }
 
+func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
+	txn := ctx.app.TransactionLogger.StartWebTransaction("view_robots", w, r)
+	defer txn.End()
+
+	w.Header().Add("Content-Type", "text/plain")
+	io.WriteString(`User-agent: *
+Disallow:`)
+}
+
 func (ctx *Context) HTTPHandler() http.Handler {
 	router := vestigo.NewRouter()
 	router.Get("/", ctx.HandleIndex)
@@ -49,6 +59,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.Get("/latest", ctx.HandleLatestAppraisals)
 	router.Get("/legal", ctx.HandleLegal)
 	router.Get("/help", ctx.HandleHelp)
+	router.Get("/robots.txt", ctx.HandleRobots)
 
 	vestigo.CustomNotFoundHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
