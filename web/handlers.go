@@ -42,7 +42,7 @@ func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
 	defer txn.End()
 
 	w.Header().Add("Content-Type", "text/plain")
-	io.WriteString(`User-agent: *
+	io.WriteString(w, `User-agent: *
 Disallow:`)
 }
 
