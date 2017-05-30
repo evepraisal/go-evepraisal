@@ -35,3 +35,20 @@
 .tt-suggestion p {
     margin: 0;
 }
+
+.fileUpload {
+    position: relative;
+    overflow: hidden;
+    margin: 1px;
+}
+.fileUpload input.upload {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0);
+}

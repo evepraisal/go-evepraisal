@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -23,7 +24,27 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	txn := ctx.app.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
 	defer txn.End()
 
-	body := r.FormValue("raw_textarea")
+	r.ParseMultipartForm(20 * 1000)
+
+	var body string
+
+	f, _, err := r.FormFile("uploadappraisal")
+
+	if err == http.ErrMissingFile {
+		body = r.FormValue("raw_textarea")
+	} else if err != nil {
+		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		return
+	} else {
+		defer f.Close()
+		bodyBytes, err := ioutil.ReadAll(f)
+		if err != nil {
+			ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+			return
+		}
+		body = string(bodyBytes)
+	}
+
 	if len(body) > 200000 {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
 		return

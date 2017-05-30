@@ -15,6 +15,9 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 	var err error
 	limit, err = strconv.ParseInt(r.FormValue("limit"), 10, 64)
 	if err != nil {
+		limit = 20
+	}
+	if limit > 100 {
 		limit = 100
 	}
 
