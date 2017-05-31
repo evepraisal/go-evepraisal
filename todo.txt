@@ -1,8 +1,5 @@
 TODO:
-	* Use a boltdb-backed store for types and rely on bloom filters to keep negative results fast
 	* Import of "popular" and recent appraisals (partially done)
 	* Database backups (through local management HTTP API)
 
 	- Blueprint copy prices
-	- Add all markets to item pricing page
-	- Add an autocomplete text box for users to find item price pages
