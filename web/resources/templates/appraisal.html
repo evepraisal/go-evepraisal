@@ -47,6 +47,7 @@
       </thead>
       <tbody>
       {{range $i, $item := .Page.Appraisal.Items}}
+      {{ if (or $.Page.ShowFull (lt $i 100)) }}
         <tr class="{{if eq $item.TypeID 0}}danger{{else if eq $item.Prices.All.Volume 0}}info{{end}}">
           <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
           <td>
@@ -60,7 +61,7 @@
               {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}
             </a>
           </td>
-          <td class="numeric-cell text-right" >{{commaf $item.TypeVolume }}</td>
+          <td class="numeric-cell text-right" data-sort-volume="-{{$item.SingleRepresentativePrice | printf "%f"}}">{{commaf $item.TypeVolume }}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
             {{commaf $item.Prices.Sell.Min}}<br />
             {{commaf $item.Prices.Buy.Max}}</td>
@@ -73,8 +74,14 @@
           </td>
         </tr>
       {{end}}
+      {{end}}
       </tbody>
       <tfoot>
+        {{if (or $.Page.ShowFull (ge (len .Page.Appraisal.Items) 100))}}
+        <tr>
+          <td class="text-center bg-danger text-white" colspan="6">There are too many results to show. <a href="/a/{{.Page.Appraisal.ID}}?full=true">Click here to see all <strong>{{.Page.Appraisal.Items | len }}</strong> results.</a> Warning: The page might be slow.</td>
+        </tr>
+        {{end}}
         <tr>
           <td></td>
           <td colspan="3" class="text-right">Total Volume:<br/>
@@ -90,7 +97,7 @@
     </table>
 
     <script type="text/javascript">
-      window.history.pushState({}, "", "/a/{{.Page.Appraisal.ID}}");
+      window.history.replaceState({}, "", "/a/{{.Page.Appraisal.ID}}");
       $(document).ready(function() {
         $("#results").tablesorter({
           textExtraction : function(node, table, cellIndex){

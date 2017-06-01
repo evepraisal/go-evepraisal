@@ -1,5 +1,7 @@
 TODO:
-	* Import of "popular" and recent appraisals (partially done)
-	* Database backups (through local management HTTP API)
-
-	- Blueprint copy prices
+    - Add total number of unpriced items (because no order volume or BPCs) somewhere
+    - Blueprint copy prices
+      - (price of item - price of materials) * number of runs * 0.8
+    - Add beta link
+    - Import of "popular" and recent appraisals (partially done)
+    - Database backups (through local management HTTP API)

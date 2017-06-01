@@ -18,6 +18,7 @@ import (
 
 type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal
+	ShowFull  bool
 }
 
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +83,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
-	err = ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
+	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
 }
 
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +128,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
-	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
+	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
 }
 
 func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
