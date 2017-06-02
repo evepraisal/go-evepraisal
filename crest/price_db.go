@@ -18,6 +18,9 @@ type PriceDB struct {
 	baseURL string
 
 	priceMap map[string]map[int64]evepraisal.Prices
+
+	stop chan bool
+	wg   *sync.WaitGroup
 }
 
 type MarketOrder struct {
@@ -66,6 +69,8 @@ func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, e
 		cache:   cache,
 		client:  client,
 		baseURL: baseURL,
+		stop:    make(chan bool),
+		wg:      &sync.WaitGroup{},
 	}
 
 	priceMap := priceDB.freshPriceMap()
@@ -80,11 +85,17 @@ func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, e
 	}
 	priceDB.priceMap = priceMap
 
+	priceDB.wg.Add(1)
 	go func() {
 		for {
+			defer priceDB.wg.Done()
 			start := time.Now()
 			priceDB.runOnce()
-			time.Sleep((5 * time.Minute) - time.Since(start))
+			select {
+			case <-time.After((5 * time.Minute) - time.Since(start)):
+			case <-priceDB.stop:
+				return
+			}
 		}
 	}()
 
@@ -103,7 +114,8 @@ func (p *PriceDB) GetPrice(market string, typeID int64) (evepraisal.Prices, bool
 }
 
 func (p *PriceDB) Close() error {
-	// TODO: cleanup worker
+	close(p.stop)
+	p.wg.Wait()
 	return nil
 }
 
@@ -147,6 +159,8 @@ func (p *PriceDB) freshPriceMap() map[string]map[int64]evepraisal.Prices {
 
 func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
+	finished := make(chan bool, 1)
+	errChannel := make(chan error, 1)
 
 	l := &sync.Mutex{}
 	requestAndProcess := func(url string) (error, string) {
@@ -173,8 +187,8 @@ func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs
 			for {
 				err, next := requestAndProcess(url)
 				if err != nil {
-					// TODO: Retry
-					log.Println("WARNING: Failed to fetch market orders", err)
+					errChannel <- fmt.Errorf("Failed to fetch market orders: %s", err)
+					return
 				}
 
 				if next == "" {
@@ -185,7 +199,19 @@ func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs
 			}
 		}(regionID)
 	}
-	wg.Wait()
+
+	go func() {
+		wg.Wait()
+		close(finished)
+	}()
+
+	select {
+	case <-finished:
+	case err := <-errChannel:
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	log.Println("Performing aggregates on order data")
 	// Calculate aggregates that we care about:

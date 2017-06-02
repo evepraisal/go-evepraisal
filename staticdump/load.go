@@ -69,6 +69,7 @@ type Type struct {
 	}
 	Published bool
 	Volume    float64
+	BasePrice float64
 }
 
 type Blueprint struct {
@@ -130,6 +131,7 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 			ID:             typeID,
 			Name:           t.Name.En,
 			Volume:         t.Volume,
+			BasePrice:      t.BasePrice,
 			BaseComponents: flattenComponents(resolveBaseComponents(blueprintsByProductType, typeID, 1, 5)),
 		}
 		types = append(types, eveType)

@@ -208,12 +208,6 @@ func (db *AppraisalDB) setLastUsedTime(dbID []byte) {
 func (db *AppraisalDB) startReaper() {
 	defer db.wg.Done()
 	for {
-		select {
-		case <-db.stop:
-			return
-		default:
-		}
-
 		log.Println("Start reaping unused appraisals")
 		unused := make([]string, 0)
 		err := db.db.View(func(tx *bolt.Tx) error {
@@ -270,6 +264,11 @@ func (db *AppraisalDB) startReaper() {
 		}
 
 		log.Printf("Done reaping unused appraisals, removed %d appraisals", len(unused))
-		time.Sleep(time.Hour)
+
+		select {
+		case <-db.stop:
+			return
+		case <-time.After(time.Hour):
+		}
 	}
 }
