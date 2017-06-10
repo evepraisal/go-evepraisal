@@ -15,14 +15,17 @@ type Context struct {
 	adBlock     string
 	templates   map[string]*template.Template
 	cookieStore *sessions.CookieStore
+	etags       map[string]string
 }
 
 func NewContext(app *evepraisal.App, baseURL string, extraJS string, adBlock string) *Context {
-	return &Context{
+	ctx := &Context{
 		app:         app,
 		baseURL:     baseURL,
 		extraJS:     extraJS,
 		adBlock:     adBlock,
 		cookieStore: sessions.NewCookieStore(securecookie.GenerateRandomKey(32)),
 	}
+	ctx.GenerateStaticEtags()
+	return ctx
 }
