@@ -73,9 +73,10 @@ func (i AppraisalItem) RepresentativePrice() float64 {
 }
 
 type Prices struct {
-	All  PriceStats `json:"all"`
-	Buy  PriceStats `json:"buy"`
-	Sell PriceStats `json:"sell"`
+	All     PriceStats `json:"all"`
+	Buy     PriceStats `json:"buy"`
+	Sell    PriceStats `json:"sell"`
+	Updated time.Time  `json:"updated"`
 }
 
 type PriceStats struct {

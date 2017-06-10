@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/viper"
 )
@@ -26,10 +28,13 @@ func main() {
 		}
 	}
 
-	log.Println("Config settings")
+	buf := bytes.NewBufferString("Config settings\n")
+	w := tabwriter.NewWriter(buf, 0, 0, 1, ' ', 0)
 	for k, v := range viper.AllSettings() {
-		log.Printf(" -  %s\t%s", k, v)
+		fmt.Fprintf(w, "\t%s\t%#v\n", k, v)
 	}
+	w.Flush()
+	log.Println(buf.String())
 
 	// Check for our subcommands
 	if len(os.Args) > 1 {

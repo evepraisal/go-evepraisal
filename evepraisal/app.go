@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -27,29 +28,20 @@ func appMain() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	log.Println("Starting cache DB")
-	cacheDB, err := bolt.NewCacheDB(viper.GetString("cache_db"))
-	if err != nil {
-		log.Fatalf("Unable to open cacheDB: %s", err)
-	}
-	defer func() {
-		err := cacheDB.Close()
-		if err != nil {
-			log.Fatalf("Problem closing cacheDB: %s", err)
-		}
-	}()
-
 	log.Println("Checking for type data")
-	if _, err := os.Stat(viper.GetString("type_db")); os.IsNotExist(err) {
-		loadTypes()
+	staticDumpURL := staticdump.MustFindLastStaticDumpURL()
+	staticDumpURLBase := filepath.Base(staticDumpURL)
+	typedbPath := filepath.Join(viper.GetString("db_path"), "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
+	if _, err := os.Stat(typedbPath); os.IsNotExist(err) {
+		loadTypes(typedbPath, staticDumpURL)
 	} else if err != nil {
 		log.Fatalf("Unable to check type db file path: %s", err)
 	}
 
 	log.Println("Starting type DB")
-	typeDB, err := bolt.NewTypeDB(viper.GetString("type_db"), false)
+	typeDB, err := bolt.NewTypeDB(typedbPath, false)
 	if err != nil {
-		log.Fatalf("Couldn't start type database: %s", err)
+		log.Fatalf("Couldn't start type database (%s) (read mode): %s", typedbPath, err)
 	}
 	defer func() {
 		err := typeDB.Close()
@@ -59,9 +51,9 @@ func appMain() {
 	}()
 
 	log.Println("Starting price DB")
-	priceDB, err := crest.NewPriceDB(cacheDB, viper.GetString("crest_baseurl"))
+	priceDB, err := bolt.NewPriceDB(filepath.Join(viper.GetString("db_path"), "prices"))
 	if err != nil {
-		log.Fatalf("Couldn't start price database")
+		log.Fatalf("Couldn't start price database: %s", err)
 	}
 	defer func() {
 		err := priceDB.Close()
@@ -70,8 +62,37 @@ func appMain() {
 		}
 	}()
 
+	httpCache, err := bolt.NewHTTPCache(filepath.Join(viper.GetString("db_path"), "httpcache"))
+	if err != nil {
+		log.Fatalf("Couldn't start httpCache: %s", err)
+	}
+	defer func() {
+		err := httpCache.Close()
+		if err != nil {
+			log.Fatalf("Problem closing httpCache: %s", err)
+		}
+	}()
+
+	defer func() {
+		err := priceDB.Close()
+		if err != nil {
+			log.Fatalf("Problem closing priceDB: %s", err)
+		}
+	}()
+
+	priceFetcher, err := crest.NewPriceFetcher(priceDB, viper.GetString("crest_baseurl"), httpCache)
+	if err != nil {
+		log.Fatalf("Couldn't start price fetcher: %s", err)
+	}
+	defer func() {
+		err := priceFetcher.Close()
+		if err != nil {
+			log.Fatalf("Problem closing priceDB: %s", err)
+		}
+	}()
+
 	log.Println("Starting appraisal DB")
-	appraisalDB, err := bolt.NewAppraisalDB(viper.GetString("appraisal_db"))
+	appraisalDB, err := bolt.NewAppraisalDB(filepath.Join(viper.GetString("db_path"), "appraisals"))
 	if err != nil {
 		log.Fatalf("Couldn't start appraisal database: %s", err)
 	}
@@ -99,7 +120,6 @@ func appMain() {
 		AppraisalDB:       appraisalDB,
 		PriceDB:           priceDB,
 		TypeDB:            typeDB,
-		CacheDB:           cacheDB,
 		TransactionLogger: txnLogger,
 		Parser: evepraisal.NewContextMultiParser(
 			typeDB,
@@ -172,7 +192,7 @@ func mustStartServers(handler http.Handler) []*http.Server {
 		autocertManager := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(viper.GetStringSlice("https_domain-whitelist")...),
-			Cache:      autocert.DirCache(viper.GetString("https_cert-cache-path")),
+			Cache:      autocert.DirCache(filepath.Join(viper.GetString("db_path"), "certs")),
 		}
 
 		server := &http.Server{
@@ -215,15 +235,15 @@ func mustStartServers(handler http.Handler) []*http.Server {
 	return servers
 }
 
-func loadTypes() {
-	types, err := staticdump.LoadTypes(viper.GetString("type_static-cache"), viper.GetString("type_static-file"))
+func loadTypes(staticCacheFile string, staticDumpURL string) {
+	types, err := staticdump.LoadTypes(staticCacheFile+".zip", staticDumpURL)
 	if err != nil {
 		log.Fatalf("Unable to load types from static data: %s", err)
 	}
 
-	typeDB, err := bolt.NewTypeDB(viper.GetString("type_db"), true)
+	typeDB, err := bolt.NewTypeDB(staticCacheFile, true)
 	if err != nil {
-		log.Fatalf("Couldn't start type database: %s", err)
+		log.Fatalf("Couldn't start type database (write mode): %s", err)
 	}
 	defer typeDB.Close()
 

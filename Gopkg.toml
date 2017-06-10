@@ -57,3 +57,7 @@
 [[constraint]]
   branch = "master"
   name = "gopkg.in/yaml.v2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/sethgrid/pester"

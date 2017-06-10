@@ -153,6 +153,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/sethgrid/pester"
+  packages = ["."]
+  revision = "4f4c0a67b6496764028e1ab9fd8dfb630282ed2f"
+
+[[projects]]
+  branch = "master"
   name = "github.com/spf13/cast"
   packages = ["."]
   revision = "ee815aaf958c707ad07547cd62150d973710f747"
@@ -219,6 +225,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4f4092afa84915c121e1d6a1269fc88a3e2364a8a061928153c3647cd5de71d8"
+  inputs-digest = "65d914486c10a0e77cba28b40b8e63720031a789b7fce0bd7b98c41a2bb6d71a"
   solver-name = "gps-cdcl"
   solver-version = 1

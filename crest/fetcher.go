@@ -1,27 +1,15 @@
 package crest
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/gregjones/httpcache"
+	"github.com/sethgrid/pester"
 )
-
-type PriceDB struct {
-	cache   evepraisal.CacheDB
-	client  *http.Client
-	baseURL string
-
-	priceMap map[string]map[int64]evepraisal.Prices
-
-	stop chan bool
-	wg   *sync.WaitGroup
-}
 
 type MarketOrder struct {
 	Buy           bool    `json:"buy"`
@@ -60,60 +48,50 @@ var SpecialRegions = []struct {
 	},
 }
 
-func NewPriceDB(cache evepraisal.CacheDB, baseURL string) (evepraisal.PriceDB, error) {
-	client := &http.Client{
-		Transport: httpcache.NewTransport(evepraisal.NewHTTPCache(cache)),
-	}
+type PriceFetcher struct {
+	db      evepraisal.PriceDB
+	client  *pester.Client
+	baseURL string
 
-	priceDB := &PriceDB{
-		cache:   cache,
+	stop chan bool
+	wg   *sync.WaitGroup
+}
+
+func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, cache httpcache.Cache) (*PriceFetcher, error) {
+	client := pester.New()
+	client.Transport = httpcache.NewTransport(cache)
+	client.Concurrency = 5
+	client.Timeout = 10 * time.Second
+	client.Backoff = pester.ExponentialJitterBackoff
+	client.MaxRetries = 10
+
+	priceFetcher := &PriceFetcher{
+		db:      priceDB,
 		client:  client,
 		baseURL: baseURL,
-		stop:    make(chan bool),
-		wg:      &sync.WaitGroup{},
+
+		stop: make(chan bool),
+		wg:   &sync.WaitGroup{},
 	}
 
-	priceMap := priceDB.freshPriceMap()
-	buf, err := cache.Get("price-map")
-	if err != nil {
-		log.Printf("WARN: Could not fetch initial price map value from cache: %s", err)
-	}
-
-	err = json.Unmarshal(buf, &priceMap)
-	if err != nil {
-		log.Printf("WARN: Could not unserialize initial price map value from cache: %s", err)
-	}
-	priceDB.priceMap = priceMap
-
-	priceDB.wg.Add(1)
+	priceFetcher.wg.Add(1)
 	go func() {
 		for {
-			defer priceDB.wg.Done()
+			defer priceFetcher.wg.Done()
 			start := time.Now()
-			priceDB.runOnce()
+			priceFetcher.runOnce()
 			select {
 			case <-time.After((5 * time.Minute) - time.Since(start)):
-			case <-priceDB.stop:
+			case <-priceFetcher.stop:
 				return
 			}
 		}
 	}()
 
-	return priceDB, nil
+	return priceFetcher, nil
 }
 
-func (p *PriceDB) GetPrice(market string, typeID int64) (evepraisal.Prices, bool) {
-	var prices evepraisal.Prices
-	locationPrices, ok := p.priceMap[market]
-	if !ok {
-		return prices, false
-	}
-
-	price, ok := locationPrices[typeID]
-	return price, ok
-}
-
-func (p *PriceDB) Close() error {
+func (p *PriceFetcher) Close() error {
 	close(p.stop)
 	p.wg.Wait()
 	return nil
@@ -127,28 +105,25 @@ type MarketOrderResponse struct {
 	} `json:"next"`
 }
 
-func (p *PriceDB) runOnce() {
+func (p *PriceFetcher) runOnce() {
 	log.Println("Fetch market data")
 	priceMap, err := p.FetchMarketData(p.client, p.baseURL, []int{10000002, 10000042, 10000027, 10000032, 10000043})
 	if err != nil {
 		log.Println("ERROR: fetching market data: ", err)
 		return
 	}
-	p.priceMap = priceMap
 
-	buf, err := json.Marshal(priceMap)
-	if err != nil {
-		log.Println("ERROR: serializing market data: ", err)
-	}
-
-	err = p.cache.Put("price-map", buf)
-	if err != nil {
-		log.Println("ERROR: saving market data: ", err)
-		return
+	for market, pmap := range priceMap {
+		for itemName, price := range pmap {
+			err = p.db.UpdatePrice(market, itemName, price)
+			if err != nil {
+				log.Printf("Error when updating price: %s", err)
+			}
+		}
 	}
 }
 
-func (p *PriceDB) freshPriceMap() map[string]map[int64]evepraisal.Prices {
+func (p *PriceFetcher) freshPriceMap() map[string]map[int64]evepraisal.Prices {
 	priceMap := make(map[string]map[int64]evepraisal.Prices)
 	for _, region := range SpecialRegions {
 		priceMap[region.name] = make(map[int64]evepraisal.Prices)
@@ -157,10 +132,11 @@ func (p *PriceDB) freshPriceMap() map[string]map[int64]evepraisal.Prices {
 	return priceMap
 }
 
-func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
+func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
 	finished := make(chan bool, 1)
 	errChannel := make(chan error, 1)
+	fetchStart := time.Now()
 
 	l := &sync.Mutex{}
 	requestAndProcess := func(url string) (error, string) {
@@ -233,10 +209,13 @@ func (p *PriceDB) FetchMarketData(client *http.Client, baseURL string, regionIDs
 					filteredOrders = append(filteredOrders, order)
 				}
 			}
-			newPriceMap[region.name][k] = getPriceAggregatesForOrders(filteredOrders)
+			agg := getPriceAggregatesForOrders(filteredOrders)
+			agg.Updated = fetchStart
+			newPriceMap[region.name][k] = agg
 		}
-
-		newPriceMap["universe"][k] = getPriceAggregatesForOrders(orders)
+		agg := getPriceAggregatesForOrders(orders)
+		agg.Updated = fetchStart
+		newPriceMap["universe"][k] = agg
 	}
 
 	log.Println("Finished performing aggregates on order data")

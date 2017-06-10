@@ -2,7 +2,7 @@ package web
 
 import (
 	"bytes"
-	"log"
+	"fmt"
 	"strconv"
 
 	"github.com/mash/go-accesslog"
@@ -37,7 +37,7 @@ func (l accessLogger) Log(record accesslog.LogRecord) {
 	buffer.WriteString("\"" + emptyDash(record.RequestHeader.Get("Referer")) + "\"")
 	buffer.WriteString(" ")
 	buffer.WriteString("\"" + emptyDash(record.RequestHeader.Get("User-Agent")) + "\"")
-	log.Println(buffer.String())
+	fmt.Println("access: " + buffer.String())
 }
 
 func emptyDash(s string) string {

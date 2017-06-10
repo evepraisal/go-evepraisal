@@ -39,6 +39,7 @@ var (
 
 type PriceDB interface {
 	GetPrice(market string, typeID int64) (Prices, bool)
+	UpdatePrice(market string, typeID int64, prices Prices) error
 	Close() error
 }
 

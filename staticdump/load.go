@@ -6,18 +6,51 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	"time"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
-func LoadTypes(cachedir string, staticDumpURL string) ([]typedb.EveType, error) {
-	err := os.MkdirAll(cachedir, 0700)
-	if err != nil {
-		log.Fatalf("Unable to create static data dir: %s", err)
-	}
+var userAgent = "go-evepraisal"
 
-	cachepath := filepath.Join(cachedir, filepath.Base(staticDumpURL))
+func MustFindLastStaticDumpURL() string {
+	url := FindLastStaticDumpURL()
+	if url == "" {
+		log.Fatalf("Could not find static dump URL")
+	}
+	return url
+}
+
+func FindLastStaticDumpURL() string {
+	i := 0
+	current := time.Now()
+	for i < 200 {
+		url := "https://cdn1.eveonline.com/data/sde/tranquility/sde-" + current.Format("20060102") + "-TRANQUILITY.zip"
+		req, err := http.NewRequest("HEAD", url, nil)
+		if err != nil {
+			log.Println("WARN: Unexpected building request: %s", err)
+		}
+		req.Header.Add("User-Agent", userAgent)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Println("WARN: Unexpected error during request: %s", err)
+		}
+
+		switch resp.StatusCode {
+		case 200:
+			return url
+		case 404:
+			current = current.Add(-24 * time.Hour)
+			continue
+		default:
+			log.Println("Unexpected response when trying to find last static dump: %s", resp.Status)
+		}
+	}
+	return ""
+}
+
+func LoadTypes(cachepath string, staticDumpURL string) ([]typedb.EveType, error) {
 	if _, err := os.Stat(cachepath); os.IsNotExist(err) {
 		log.Printf("Downloading static dump to %s", cachepath)
 		err := download(staticDumpURL, cachepath)
@@ -28,7 +61,7 @@ func LoadTypes(cachedir string, staticDumpURL string) ([]typedb.EveType, error) 
 		return nil, err
 	}
 
-	err = download(staticDumpURL, cachepath)
+	err := download(staticDumpURL, cachepath)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +80,8 @@ func download(staticDumpURL string, staticDataPath string) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Add("User-Agent", "go-evepraisal")
+
+	req.Header.Add("User-Agent", userAgent)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err

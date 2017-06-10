@@ -76,7 +76,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	setCacheHeaders := func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Cache-Control", "max-age=86400")
+			w.Header().Add("Cache-Control", "public, max-age=3600")
 			h.ServeHTTP(w, r)
 		}
 	}
