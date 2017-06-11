@@ -19,8 +19,10 @@ import (
 )
 
 type TypeDB struct {
-	db    *bolt.DB
-	index bleve.Index
+	db            *bolt.DB
+	index         bleve.Index
+	filename      string
+	indexFilename string
 }
 
 func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
@@ -60,7 +62,8 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	}
 
 	var index bleve.Index
-	if _, err := os.Stat(filename + ".index"); os.IsNotExist(err) {
+	indexFilename := filename + ".index"
+	if _, err := os.Stat(indexFilename); os.IsNotExist(err) {
 		mapping := bleve.NewIndexMapping()
 		mapping.DefaultAnalyzer = "standard"
 		index, err = bleve.New(filename+".index", mapping)
@@ -76,7 +79,7 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 		return nil, err
 	}
 
-	return &TypeDB{db: db, index: index}, err
+	return &TypeDB{db: db, index: index, filename: filename, indexFilename: indexFilename}, err
 }
 
 func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
@@ -212,6 +215,15 @@ func (db *TypeDB) Search(s string) []typedb.EveType {
 	}
 
 	return results
+}
+
+func (db *TypeDB) Delete() error {
+	err := os.RemoveAll(db.filename)
+	if err != nil {
+		return err
+	}
+
+	return os.RemoveAll(db.indexFilename)
 }
 
 func (db *TypeDB) Close() error {

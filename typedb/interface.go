@@ -6,6 +6,7 @@ type TypeDB interface {
 	GetTypeByID(typeID int64) (EveType, bool)
 	PutType(EveType) error
 	Search(s string) []EveType
+	Delete() error
 	Close() error
 }
 

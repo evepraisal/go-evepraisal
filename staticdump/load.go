@@ -28,13 +28,13 @@ func FindLastStaticDumpURL() string {
 		url := "https://cdn1.eveonline.com/data/sde/tranquility/sde-" + current.Format("20060102") + "-TRANQUILITY.zip"
 		req, err := http.NewRequest("HEAD", url, nil)
 		if err != nil {
-			log.Println("WARN: Unexpected building request: %s", err)
+			log.Printf("WARN: Unexpected building request: %s", err)
 		}
 		req.Header.Add("User-Agent", userAgent)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			log.Println("WARN: Unexpected error during request: %s", err)
+			log.Printf("WARN: Unexpected error during request: %s", err)
 		}
 
 		switch resp.StatusCode {
@@ -44,7 +44,7 @@ func FindLastStaticDumpURL() string {
 			current = current.Add(-24 * time.Hour)
 			continue
 		default:
-			log.Println("Unexpected response when trying to find last static dump: %s", resp.Status)
+			log.Printf("Unexpected response when trying to find last static dump: %s", resp.Status)
 		}
 	}
 	return ""
@@ -58,11 +58,6 @@ func LoadTypes(cachepath string, staticDumpURL string) ([]typedb.EveType, error)
 			return nil, err
 		}
 	} else if err != nil {
-		return nil, err
-	}
-
-	err := download(staticDumpURL, cachepath)
-	if err != nil {
 		return nil, err
 	}
 

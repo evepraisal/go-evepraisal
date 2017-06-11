@@ -19,6 +19,7 @@ import (
 	"github.com/evepraisal/go-evepraisal/noop"
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/staticdump"
+	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/evepraisal/go-evepraisal/web"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
@@ -27,28 +28,6 @@ import (
 func appMain() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
-
-	log.Println("Checking for type data")
-	staticDumpURL := staticdump.MustFindLastStaticDumpURL()
-	staticDumpURLBase := filepath.Base(staticDumpURL)
-	typedbPath := filepath.Join(viper.GetString("db_path"), "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
-	if _, err := os.Stat(typedbPath); os.IsNotExist(err) {
-		loadTypes(typedbPath, staticDumpURL)
-	} else if err != nil {
-		log.Fatalf("Unable to check type db file path: %s", err)
-	}
-
-	log.Println("Starting type DB")
-	typeDB, err := bolt.NewTypeDB(typedbPath, false)
-	if err != nil {
-		log.Fatalf("Couldn't start type database (%s) (read mode): %s", typedbPath, err)
-	}
-	defer func() {
-		err := typeDB.Close()
-		if err != nil {
-			log.Fatalf("Problem closing typeDB: %s", err)
-		}
-	}()
 
 	log.Println("Starting price DB")
 	priceDB, err := bolt.NewPriceDB(filepath.Join(viper.GetString("db_path"), "prices"))
@@ -119,9 +98,14 @@ func appMain() {
 	app := &evepraisal.App{
 		AppraisalDB:       appraisalDB,
 		PriceDB:           priceDB,
-		TypeDB:            typeDB,
 		TransactionLogger: txnLogger,
-		Parser: evepraisal.NewContextMultiParser(
+	}
+
+	log.Println("Starting type fetcher")
+	staticFetcher, err := staticdump.NewStaticFetcher(viper.GetString("db_path"), func(typeDB typedb.TypeDB) {
+		oldTypeDB := app.TypeDB
+		app.TypeDB = typeDB
+		app.Parser = evepraisal.NewContextMultiParser(
 			typeDB,
 			[]parsers.Parser{
 				parsers.ParseKillmail,
@@ -139,8 +123,30 @@ func appMain() {
 				parsers.ParseDScan,
 				parsers.NewContextListingParser(typeDB),
 				parsers.NewHeuristicParser(typeDB),
-			}),
+			})
+
+		if oldTypeDB != nil {
+			log.Println("closeing old typedb")
+			oldTypeDB.Close()
+			log.Println("closed old typedb")
+		}
+	})
+	if err != nil {
+		log.Fatalf("Couldn't start static fetcher: %s", err)
 	}
+	defer func() {
+		err := staticFetcher.Close()
+		if err != nil {
+			log.Fatalf("Problem closing static fetcher: %s", err)
+		}
+
+		if app.TypeDB != nil {
+			err = app.TypeDB.Close()
+			if err != nil {
+				log.Fatalf("Problem closing typeDB: %s", err)
+			}
+		}
+	}()
 
 	app.WebContext = web.NewContext(
 		app,
@@ -233,24 +239,4 @@ func mustStartServers(handler http.Handler) []*http.Server {
 	}
 
 	return servers
-}
-
-func loadTypes(staticCacheFile string, staticDumpURL string) {
-	types, err := staticdump.LoadTypes(staticCacheFile+".zip", staticDumpURL)
-	if err != nil {
-		log.Fatalf("Unable to load types from static data: %s", err)
-	}
-
-	typeDB, err := bolt.NewTypeDB(staticCacheFile, true)
-	if err != nil {
-		log.Fatalf("Couldn't start type database (write mode): %s", err)
-	}
-	defer typeDB.Close()
-
-	for _, t := range types {
-		err = typeDB.PutType(t)
-		if err != nil {
-			log.Fatalf("Cannot insert type: %s", err)
-		}
-	}
 }
