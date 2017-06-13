@@ -102,15 +102,18 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 			log.Println("Deleting new typedb because it was stopped before finishing")
 			err := typeDB.Delete()
 			if err != nil {
-				log.Print("Error deleting old typedb: %s", err)
+				log.Printf("Error deleting old typedb: %s", err)
 			}
 		}
 	}()
 
-	for _, t := range types {
-		select {
-		case <-f.stop:
-			return
+	for i, t := range types {
+		if i%1000 == 0 {
+			select {
+			case <-f.stop:
+				return
+			default:
+			}
 		}
 
 		err = typeDB.PutType(t)
