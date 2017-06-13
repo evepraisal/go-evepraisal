@@ -10,6 +10,10 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
+var (
+	ErrNoValidLinesFound = fmt.Errorf("No valid lines found")
+)
+
 type Totals struct {
 	Buy    float64 `json:"buy"`
 	Sell   float64 `json:"sell"`
@@ -79,6 +83,88 @@ type Prices struct {
 	Updated time.Time  `json:"updated"`
 }
 
+func (prices Prices) String() string {
+	return fmt.Sprintf("Sell = %fISK, Buy = %fISK", prices.Sell.Min, prices.Buy.Max)
+}
+
+func (prices Prices) Add(p Prices) Prices {
+	prices.All.Average += p.All.Average
+	prices.All.Max += p.All.Max
+	prices.All.Min += p.All.Min
+	prices.All.Median += p.All.Median
+	prices.All.Percentile += p.All.Percentile
+	prices.All.Stddev += p.All.Stddev
+	prices.All.Volume += p.All.Volume
+
+	prices.Buy.Average += p.Buy.Average
+	prices.Buy.Max += p.Buy.Max
+	prices.Buy.Min += p.Buy.Min
+	prices.Buy.Median += p.Buy.Median
+	prices.Buy.Percentile += p.Buy.Percentile
+	prices.Buy.Stddev += p.Buy.Stddev
+	prices.Buy.Volume += p.Buy.Volume
+
+	prices.Sell.Average += p.Sell.Average
+	prices.Sell.Max += p.Sell.Max
+	prices.Sell.Min += p.Sell.Min
+	prices.Sell.Median += p.Sell.Median
+	prices.Sell.Percentile += p.Sell.Percentile
+	prices.Sell.Stddev += p.Sell.Stddev
+	prices.Sell.Volume += p.Sell.Volume
+	return prices
+}
+
+func (prices Prices) Sub(p Prices) Prices {
+	prices.All.Average -= p.All.Average
+	prices.All.Max -= p.All.Max
+	prices.All.Min -= p.All.Min
+	prices.All.Median -= p.All.Median
+	prices.All.Percentile -= p.All.Percentile
+	prices.All.Stddev -= p.All.Stddev
+	prices.All.Volume += p.All.Volume
+
+	prices.Buy.Average -= p.Buy.Average
+	prices.Buy.Max -= p.Buy.Max
+	prices.Buy.Min -= p.Buy.Min
+	prices.Buy.Median -= p.Buy.Median
+	prices.Buy.Percentile -= p.Buy.Percentile
+	prices.Buy.Stddev -= p.Buy.Stddev
+	prices.Buy.Volume += p.Buy.Volume
+
+	prices.Sell.Average -= p.Sell.Average
+	prices.Sell.Max -= p.Sell.Max
+	prices.Sell.Min -= p.Sell.Min
+	prices.Sell.Median -= p.Sell.Median
+	prices.Sell.Percentile -= p.Sell.Percentile
+	prices.Sell.Stddev -= p.Sell.Stddev
+	prices.Sell.Volume += p.Sell.Volume
+	return prices
+}
+
+func (prices Prices) Mul(quantity float64) Prices {
+	prices.All.Average *= quantity
+	prices.All.Max *= quantity
+	prices.All.Min *= quantity
+	prices.All.Median *= quantity
+	prices.All.Percentile *= quantity
+	prices.All.Stddev *= quantity
+
+	prices.Buy.Average *= quantity
+	prices.Buy.Max *= quantity
+	prices.Buy.Min *= quantity
+	prices.Buy.Median *= quantity
+	prices.Buy.Percentile *= quantity
+	prices.Buy.Stddev *= quantity
+
+	prices.Sell.Average *= quantity
+	prices.Sell.Max *= quantity
+	prices.Sell.Min *= quantity
+	prices.Sell.Median *= quantity
+	prices.Sell.Percentile *= quantity
+	prices.Sell.Stddev *= quantity
+	return prices
+}
+
 type PriceStats struct {
 	Average    float64 `json:"avg"`
 	Max        float64 `json:"max"`
@@ -118,45 +204,46 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		items[i].TypeName = t.Name
 		items[i].TypeVolume = t.Volume
 
-		if !items[i].BPC {
+		priceByComponents := func(components []typedb.Component) Prices {
+			var prices Prices
+			for _, component := range components {
+				p, ok := app.PriceDB.GetPrice(market, component.TypeID)
+				if !ok {
+					continue
+				}
+				prices = prices.Add(p.Mul(float64(component.Quantity)))
+			}
+			return prices
+		}
+
+		if items[i].BPC {
+			// TODO: Fix this logic
+			// bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(t.Name, " Blueprint"))
+			// if !ok {
+			// 	log.Printf("WARN: parsed out name that isn't a type: %q", items[i].Name)
+			// 	continue
+			// }
+
+			// var marketPrices Prices
+			// for _, product := range bpType.BlueprintProducts {
+			// 	p, ok := app.PriceDB.GetPrice(market, product.TypeID)
+			// 	if !ok {
+			// 		log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
+			// 		continue
+			// 	}
+			// 	marketPrices = marketPrices.Add(p.Mul(float64(product.Quantity)))
+			// }
+
+			// // Assume Industry V (+10%) and misc costs (-1%)
+			// manufacturedPrices := priceByComponents(bpType.BaseComponents).Mul(0.91)
+			// prices := marketPrices.Sub(manufacturedPrices).Mul(float64(items[i].BPCRuns))
+			// items[i].Prices = prices
+			// appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
+			// appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
+		} else {
 			prices, ok := app.PriceDB.GetPrice(market, t.ID)
 			if !ok {
 				log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
-			}
-
-			priceByComponents := func(components []typedb.Component) Prices {
-				var prices Prices
-				for _, component := range components {
-					p, ok := app.PriceDB.GetPrice(market, component.TypeID)
-					if !ok {
-						continue
-					}
-					qty := float64(component.Quantity)
-					prices.All.Average += p.All.Average * qty
-					prices.All.Max += p.All.Max * qty
-					prices.All.Min += p.All.Min * qty
-					prices.All.Median += p.All.Median * qty
-					prices.All.Percentile += p.All.Percentile * qty
-					prices.All.Stddev += p.All.Stddev * qty
-					prices.All.Volume += p.All.Volume
-
-					prices.Buy.Average += p.Buy.Average * qty
-					prices.Buy.Max += p.Buy.Max * qty
-					prices.Buy.Min += p.Buy.Min * qty
-					prices.Buy.Median += p.Buy.Median * qty
-					prices.Buy.Percentile += p.Buy.Percentile * qty
-					prices.Buy.Stddev += p.Buy.Stddev * qty
-					prices.Buy.Volume += p.Buy.Volume
-
-					prices.Sell.Average += p.Sell.Average * qty
-					prices.Sell.Max += p.Sell.Max * qty
-					prices.Sell.Min += p.Sell.Min * qty
-					prices.Sell.Median += p.Sell.Median * qty
-					prices.Sell.Percentile += p.Sell.Percentile * qty
-					prices.Sell.Stddev += p.Sell.Stddev * qty
-					prices.Sell.Volume += p.Sell.Volume
-				}
-				return prices
 			}
 
 			if prices.Sell.Volume <= 10 && len(t.BaseComponents) > 0 {
@@ -165,8 +252,8 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			items[i].Prices = prices
 			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
 			appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
-			appraisal.Totals.Volume += t.Volume * float64(items[i].Quantity)
 		}
+		appraisal.Totals.Volume += t.Volume * float64(items[i].Quantity)
 	}
 	appraisal.Items = items
 
@@ -181,7 +268,7 @@ func findKind(result parsers.ParserResult) (string, error) {
 		return largestLinesParser, fmt.Errorf("unexpected type %T", r)
 	case *parsers.MultiParserResult:
 		if len(r.Results) == 0 {
-			return largestLinesParser, fmt.Errorf("No valid lines found")
+			return largestLinesParser, ErrNoValidLinesFound
 		}
 		for _, subResult := range r.Results {
 			if len(subResult.Lines()) > largestLines {

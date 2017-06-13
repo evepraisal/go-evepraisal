@@ -157,16 +157,31 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 		}
 
 		eveType := typedb.EveType{
-			ID:             typeID,
-			Name:           t.Name.En,
-			Volume:         t.Volume,
-			BasePrice:      t.BasePrice,
-			BaseComponents: flattenComponents(resolveBaseComponents(blueprintsByProductType, typeID, 1, 5)),
+			ID:                typeID,
+			Name:              t.Name.En,
+			Volume:            t.Volume,
+			BasePrice:         t.BasePrice,
+			BlueprintProducts: resolveBlueprintProducts(blueprintsByProductType, typeID),
+			BaseComponents:    flattenComponents(resolveBaseComponents(blueprintsByProductType, typeID, 1, 5)),
 		}
 		types = append(types, eveType)
 	}
 
 	return types, nil
+}
+
+func resolveBlueprintProducts(blueprintsByProductType map[int64][]Blueprint, typeID int64) []typedb.Component {
+	blueprints, ok := blueprintsByProductType[typeID]
+	if !ok || len(blueprints) == 0 {
+		return nil
+	}
+
+	bp := blueprints[0]
+	var components []typedb.Component
+	for _, material := range bp.Activities.Manufacturing.Products {
+		components = append(components, typedb.Component{Quantity: material.Quantity, TypeID: material.TypeID})
+	}
+	return components
 }
 
 func flattenComponents(components []typedb.Component) []typedb.Component {

@@ -11,12 +11,13 @@ type TypeDB interface {
 }
 
 type EveType struct {
-	ID             int64       `json:"id"`
-	GroupID        int64       `json:"group_id"`
-	Name           string      `json:"name"`
-	Volume         float64     `json:"volume"`
-	BasePrice      float64     `json:"base_price"`
-	BaseComponents []Component `json:"components"`
+	ID                int64       `json:"id"`
+	GroupID           int64       `json:"group_id"`
+	Name              string      `json:"name"`
+	Volume            float64     `json:"volume"`
+	BasePrice         float64     `json:"base_price"`
+	BlueprintProducts []Component `json:"blueprint_products,omitempty"`
+	BaseComponents    []Component `json:"components,omitempty"`
 }
 
 type Component struct {
