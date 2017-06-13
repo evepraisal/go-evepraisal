@@ -49,7 +49,7 @@ var HeuristicParserCases = []struct {
 func TestHeuristicParser(rt *testing.T) {
 	for _, c := range HeuristicParserCases {
 		rt.Run(c.name, func(t *testing.T) {
-			db := StaticTypeDB{
+			db := &StaticTypeDB{
 				typeNameMap: make(map[string]typedb.EveType),
 				typeIDMap:   make(map[int64]typedb.EveType),
 			}
@@ -69,28 +69,32 @@ type StaticTypeDB struct {
 	typeIDMap   map[int64]typedb.EveType
 }
 
-func (db StaticTypeDB) PutType(t typedb.EveType) error {
+func (db *StaticTypeDB) PutType(t typedb.EveType) error {
 	db.typeNameMap[strings.ToLower(t.Name)] = t
 	db.typeIDMap[t.ID] = t
 	return nil
 }
 
-func (db StaticTypeDB) GetType(typeName string) (typedb.EveType, bool) {
+func (db *StaticTypeDB) GetType(typeName string) (typedb.EveType, bool) {
 	t, ok := db.typeNameMap[strings.ToLower(typeName)]
 	return t, ok
 }
-func (db StaticTypeDB) HasType(typeName string) bool {
+func (db *StaticTypeDB) HasType(typeName string) bool {
 	_, ok := db.GetType(strings.ToLower(typeName))
 	return ok
 }
 
-func (db StaticTypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
+func (db *StaticTypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
 	t, ok := db.typeIDMap[typeID]
 	return t, ok
 }
 
-func (db StaticTypeDB) Search(s string) []typedb.EveType {
+func (db *StaticTypeDB) Search(s string) []typedb.EveType {
 	return nil
 }
 
-func (db StaticTypeDB) Close() error { return nil }
+func (db *StaticTypeDB) Delete() error {
+	return nil
+}
+
+func (db *StaticTypeDB) Close() error { return nil }
