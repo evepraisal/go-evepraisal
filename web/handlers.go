@@ -46,6 +46,10 @@ func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
 Disallow:`)
 }
 
+func (ctx *Context) HandleFavicon(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "static/favicon.ico", http.StatusPermanentRedirect)
+}
+
 func (ctx *Context) HTTPHandler() http.Handler {
 	router := vestigo.NewRouter()
 	router.Get("/", ctx.HandleIndex)
@@ -60,6 +64,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.Get("/legal", ctx.HandleLegal)
 	router.Get("/help", ctx.HandleHelp)
 	router.Get("/robots.txt", ctx.HandleRobots)
+	router.Get("/favicon.ico", ctx.HandleFavicon)
 
 	vestigo.CustomNotFoundHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {

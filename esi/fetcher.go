@@ -1,4 +1,4 @@
-package crest
+package esi
 
 import (
 	"fmt"
@@ -12,17 +12,17 @@ import (
 )
 
 type MarketOrder struct {
-	Buy           bool    `json:"buy"`
-	Issued        string  `json:"issued"`
+	ID            int64   `json:"order_id"`
+	Type          int64   `json:"type_id"`
+	StationID     int64   `json:"location_id"`
+	Volume        int64   `json:"volume_remain"`
+	MinVolume     int64   `json:"min_volume"`
 	Price         float64 `json:"price"`
-	Volume        int64   `json:"volume"`
+	Buy           bool    `json:"is_buy_order"`
 	Duration      int64   `json:"duration"`
-	ID            int64   `json:"id"`
-	MinVolume     int64   `json:"minVolume"`
+	Issued        string  `json:"issued"`
 	VolumeEntered int64   `json:"volumeEntered"`
 	Range         string  `json:"range"`
-	StationID     int64   `json:"stationID"`
-	Type          int64   `json:"type"`
 }
 
 var SpecialRegions = []struct {
@@ -97,14 +97,6 @@ func (p *PriceFetcher) Close() error {
 	return nil
 }
 
-type MarketOrderResponse struct {
-	TotalCount int           `json:"totalCount"`
-	Items      []MarketOrder `json:"items"`
-	Next       struct {
-		HREF string `json:"href"`
-	} `json:"next"`
-}
-
 func (p *PriceFetcher) runOnce() {
 	log.Println("Fetch market data")
 	priceMap, err := p.FetchMarketData(p.client, p.baseURL, []int{10000002, 10000042, 10000027, 10000032, 10000043})
@@ -139,19 +131,22 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 	fetchStart := time.Now()
 
 	l := &sync.Mutex{}
-	requestAndProcess := func(url string) (error, string) {
-		var r MarketOrderResponse
-		err := fetchURL(client, url, &r)
+	requestAndProcess := func(url string) (bool, error) {
+		var orders []MarketOrder
+		err := fetchURL(client, url, &orders)
 		if err != nil {
-			return err, ""
+			return false, err
 		}
 
 		l.Lock()
-		for _, order := range r.Items {
+		for _, order := range orders {
 			allOrdersByType[order.Type] = append(allOrdersByType[order.Type], order)
 		}
 		l.Unlock()
-		return nil, r.Next.HREF
+		if len(orders) == 0 {
+			return false, nil
+		}
+		return true, nil
 	}
 
 	wg := &sync.WaitGroup{}
@@ -159,19 +154,19 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 		wg.Add(1)
 		go func(regionID int) {
 			defer wg.Done()
-			url := fmt.Sprintf("%s/market/%d/orders/all/", baseURL, regionID)
+			page := 1
 			for {
-				err, next := requestAndProcess(url)
+				url := fmt.Sprintf("%s/markets/%d/orders/?datasource=tranquility&order_type=all&page=%d", baseURL, regionID, page)
+				hasMore, err := requestAndProcess(url)
 				if err != nil {
 					errChannel <- fmt.Errorf("Failed to fetch market orders: %s", err)
 					return
 				}
 
-				if next == "" {
+				if !hasMore {
 					break
-				} else {
-					url = next
 				}
+				page++
 			}
 		}(regionID)
 	}

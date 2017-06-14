@@ -1,4 +1,4 @@
-package crest
+package esi
 
 import (
 	"encoding/json"
@@ -23,7 +23,7 @@ func fetchURL(client *pester.Client, url string, r interface{}) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Error talking to crest: %s", resp.Status)
+		return fmt.Errorf("Error talking to esi: %s", resp.Status)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(r)

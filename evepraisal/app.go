@@ -13,7 +13,7 @@ import (
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/bolt"
-	"github.com/evepraisal/go-evepraisal/crest"
+	"github.com/evepraisal/go-evepraisal/esi"
 	"github.com/evepraisal/go-evepraisal/management"
 	"github.com/evepraisal/go-evepraisal/newrelic"
 	"github.com/evepraisal/go-evepraisal/noop"
@@ -59,7 +59,7 @@ func appMain() {
 		}
 	}()
 
-	priceFetcher, err := crest.NewPriceFetcher(priceDB, viper.GetString("crest_baseurl"), httpCache)
+	priceFetcher, err := esi.NewPriceFetcher(priceDB, viper.GetString("esi_baseurl"), httpCache)
 	if err != nil {
 		log.Fatalf("Couldn't start price fetcher: %s", err)
 	}
