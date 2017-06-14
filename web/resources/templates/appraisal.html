@@ -77,7 +77,7 @@
       {{end}}
       </tbody>
       <tfoot>
-        {{if (or $.Page.ShowFull (ge (len .Page.Appraisal.Items) 100))}}
+        {{if (and (not $.Page.ShowFull) (ge (len .Page.Appraisal.Items) 100))}}
         <tr>
           <td class="text-center bg-danger text-white" colspan="6">There are too many results to show. <a href="/a/{{.Page.Appraisal.ID}}?full=true">Click here to see all <strong>{{.Page.Appraisal.Items | len }}</strong> results.</a> Warning: The page might be slow.</td>
         </tr>
