@@ -11,12 +11,10 @@ import (
 	"github.com/gorilla/context"
 	"github.com/husobee/vestigo"
 	"github.com/mash/go-accesslog"
+	"github.com/newrelic/go-agent"
 )
 
 func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_index", w, r)
-	defer txn.End()
-
 	total, err := ctx.App.AppraisalDB.TotalAppraisals()
 	if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
@@ -26,21 +24,14 @@ func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_legal", w, r)
-	defer txn.End()
 	ctx.render(r, w, "legal.html", nil)
 }
 
 func (ctx *Context) HandleHelp(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_help", w, r)
-	defer txn.End()
 	ctx.render(r, w, "help.html", nil)
 }
 
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_robots", w, r)
-	defer txn.End()
-
 	w.Header().Add("Content-Type", "text/plain")
 	io.WriteString(w, `User-agent: *
 Disallow:`)
@@ -51,26 +42,35 @@ func (ctx *Context) HandleFavicon(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HTTPHandler() http.Handler {
+
 	router := vestigo.NewRouter()
-	router.Get("/", ctx.HandleIndex)
-	router.Post("/appraisal", ctx.HandleAppraisal)
-	router.Post("/estimate", ctx.HandleAppraisal)
-	router.Get("/a/:appraisalID", ctx.HandleViewAppraisal)
-	router.Get("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
-	router.Get("/item/:typeID", ctx.HandleViewItem)
-	router.Get("/search", ctx.HandleSearch)
-	router.Get("/search.json", ctx.HandleSearchJSON)
-	router.Get("/latest", ctx.HandleLatestAppraisals)
-	router.Get("/legal", ctx.HandleLegal)
-	router.Get("/help", ctx.HandleHelp)
-	router.Get("/robots.txt", ctx.HandleRobots)
-	router.Get("/favicon.ico", ctx.HandleFavicon)
+	addHandler := func(method string, pattern string, handler http.HandlerFunc) {
+		if ctx.App.NewRelicApplication != nil {
+			_, h := newrelic.WrapHandle(ctx.App.NewRelicApplication, pattern, http.HandlerFunc(handler))
+			handler = func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }
+		}
+		router.Add(method, pattern, handler)
+	}
+
+	addHandler("GET", "/", ctx.HandleIndex)
+	addHandler("POST", "/appraisal", ctx.HandleAppraisal)
+	addHandler("POST", "/estimate", ctx.HandleAppraisal)
+	addHandler("GET", "/a/:appraisalID", ctx.HandleViewAppraisal)
+	addHandler("GET", "/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
+	addHandler("GET", "/item/:typeID", ctx.HandleViewItem)
+	addHandler("GET", "/search", ctx.HandleSearch)
+	addHandler("GET", "/search.json", ctx.HandleSearchJSON)
+	addHandler("GET", "/latest", ctx.HandleLatestAppraisals)
+	addHandler("GET", "/legal", ctx.HandleLegal)
+	addHandler("GET", "/help", ctx.HandleHelp)
+	addHandler("GET", "/robots.txt", ctx.HandleRobots)
+	addHandler("GET", "/favicon.ico", ctx.HandleFavicon)
 
 	// Authenticated pages
-	router.Get("/login", ctx.HandleLogin)
-	router.Get("/logout", ctx.HandleLogout)
-	router.Get("/oauthcallback", ctx.HandleAuthCallback)
-	router.Get("/user/latest", ctx.HandleUserLatestAppraisals)
+	addHandler("GET", "/login", ctx.HandleLogin)
+	addHandler("GET", "/logout", ctx.HandleLogout)
+	addHandler("GET", "/oauthcallback", ctx.HandleAuthCallback)
+	addHandler("GET", "/user/latest", ctx.HandleUserLatestAppraisals)
 
 	vestigo.CustomNotFoundHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +79,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	vestigo.CustomMethodNotAllowedHandlerFunc(func(allowedMethods string) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
+			ctx.renderErrorPage(r, w, http.StatusMethodNotAllowed, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
 		}
 	})
 

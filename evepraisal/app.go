@@ -15,14 +15,13 @@ import (
 	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/esi"
 	"github.com/evepraisal/go-evepraisal/management"
-	"github.com/evepraisal/go-evepraisal/newrelic"
-	"github.com/evepraisal/go-evepraisal/noop"
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/evepraisal/go-evepraisal/web"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"github.com/newrelic/go-agent"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/oauth2"
@@ -85,23 +84,19 @@ func appMain() {
 		}
 	}()
 
-	log.Println("Starting txn logger")
-	var txnLogger evepraisal.TransactionLogger
-	if viper.GetString("newrelic_license-key") == "" {
-		log.Println("Using no op transaction logger")
-		txnLogger = noop.NewTransactionLogger()
-	} else {
-		log.Println("Using new relic transaction logger")
-		txnLogger, err = newrelic.NewTransactionLogger(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
-		if err != nil {
-			log.Fatalf("Problem starting transaction logger: %s", err)
-		}
+	app := &evepraisal.App{
+		AppraisalDB: appraisalDB,
+		PriceDB:     priceDB,
 	}
 
-	app := &evepraisal.App{
-		AppraisalDB:       appraisalDB,
-		PriceDB:           priceDB,
-		TransactionLogger: txnLogger,
+	if viper.GetString("newrelic_license-key") != "" {
+		newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
+		newRelicApplication, err := newrelic.NewApplication(newRelicConfig)
+		if err != nil {
+			log.Fatalf("Problem configuring new relic: %s", err)
+		}
+
+		app.NewRelicApplication = newRelicApplication
 	}
 
 	log.Println("Starting type fetcher")

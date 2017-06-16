@@ -22,9 +22,6 @@ type AppraisalPage struct {
 }
 
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
-	defer txn.End()
-
 	r.ParseMultipartForm(20 * 1000)
 
 	var body string
@@ -89,9 +86,6 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_appraisal", w, r)
-	defer txn.End()
-
 	// Legacy Logic
 	if vestigo.Param(r, "legacyAppraisalID") != "" {
 		legacyAppraisalIDStr := vestigo.Param(r, "legacyAppraisalID")
@@ -134,9 +128,6 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 }
 
 func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_appraisal_json", w, r)
-	defer txn.End()
-
 	appraisalID := vestigo.Param(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".json")
 
@@ -154,9 +145,6 @@ func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Reque
 }
 
 func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_appraisal_raw", w, r)
-	defer txn.End()
-
 	appraisalID := vestigo.Param(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
 

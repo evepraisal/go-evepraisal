@@ -8,9 +8,6 @@ import (
 )
 
 func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_latest_appraisals", w, r)
-	defer txn.End()
-
 	var limit int64
 	var err error
 	limit, err = strconv.ParseInt(r.FormValue("limit"), 10, 64)
@@ -31,9 +28,6 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 }
 
 func (ctx *Context) HandleUserLatestAppraisals(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_latest_user_appraisals", w, r)
-	defer txn.End()
-
 	user := ctx.GetCurrentUser(r)
 	if user == nil {
 		ctx.renderErrorPage(r, w, http.StatusUnauthorized, "Not logged in", "You need to be logged in to see this page")

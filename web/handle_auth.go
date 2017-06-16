@@ -20,9 +20,6 @@ func (ctx *Context) GetCurrentUser(r *http.Request) *evepraisal.User {
 }
 
 func (ctx *Context) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("login", w, r)
-	defer txn.End()
-
 	if ctx.OauthConfig == nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Feature Unavailable", "SSO is not configured")
 		return
@@ -32,9 +29,6 @@ func (ctx *Context) HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleLogout(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("logout", w, r)
-	defer txn.End()
-
 	if ctx.OauthConfig == nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Feature Unavailable", "SSO is not configured")
 		return
@@ -44,9 +38,6 @@ func (ctx *Context) HandleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("login_callback", w, r)
-	defer txn.End()
-
 	if ctx.OauthConfig == nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Feature Unavailable", "SSO is not configured")
 		return

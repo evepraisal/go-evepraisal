@@ -33,9 +33,6 @@ func (d componentDetails) Totals() evepraisal.Totals {
 }
 
 func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.App.TransactionLogger.StartWebTransaction("view_item", w, r)
-	defer txn.End()
-
 	typeIDStr := vestigo.Param(r, "typeID")
 	typeID, err := strconv.ParseInt(typeIDStr, 10, 64)
 	if err != nil {

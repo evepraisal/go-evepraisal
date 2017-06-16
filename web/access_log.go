@@ -20,7 +20,7 @@ func (l accessLogger) Log(record accesslog.LogRecord) {
 	var buffer bytes.Buffer
 	buffer.WriteString(emptyDash(record.Ip))
 	buffer.WriteString(" - ")
-	buffer.WriteString(emptyDash(record.Username))
+	buffer.WriteString(record.Username)
 	buffer.WriteString(" ")
 	buffer.WriteString("[" + record.Time.Format("02/Jan/2006:15:04:05 -0700") + "]")
 	buffer.WriteString(" \"")

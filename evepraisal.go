@@ -6,16 +6,17 @@ import (
 
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/typedb"
+	"github.com/newrelic/go-agent"
 )
 
 type App struct {
-	AppraisalDB       AppraisalDB
-	CacheDB           CacheDB
-	TypeDB            typedb.TypeDB
-	PriceDB           PriceDB
-	Parser            parsers.Parser
-	TransactionLogger TransactionLogger
-	WebContext        WebContext
+	AppraisalDB         AppraisalDB
+	CacheDB             CacheDB
+	TypeDB              typedb.TypeDB
+	PriceDB             PriceDB
+	Parser              parsers.Parser
+	WebContext          WebContext
+	NewRelicApplication newrelic.Application
 }
 
 type CacheDB interface {
@@ -51,6 +52,7 @@ type TransactionLogger interface {
 }
 
 type Transaction interface {
+	NoticeError(error) error
 	End() error
 }
 
