@@ -14,4 +14,7 @@ func init() {
 	viper.SetDefault("management_addr", "127.0.0.1:8090")
 	viper.SetDefault("extra-js", "")
 	viper.SetDefault("ad-block", "")
+	viper.SetDefault("sso-authorize-url", "https://login.eveonline.com/oauth/authorize")
+	viper.SetDefault("sso-token-url", "https://login.eveonline.com/oauth/token")
+	viper.SetDefault("sso-verify-url", "https://login.eveonline.com/oauth/verify")
 }

@@ -127,6 +127,7 @@ func (p *PriceFetcher) freshPriceMap() map[string]map[int64]evepraisal.Prices {
 func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
 	finished := make(chan bool, 1)
+	workerStop := make(chan bool, 1)
 	errChannel := make(chan error, 1)
 	fetchStart := time.Now()
 
@@ -156,6 +157,12 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 			defer wg.Done()
 			page := 1
 			for {
+				select {
+				case <-workerStop:
+					return
+				default:
+				}
+
 				url := fmt.Sprintf("%s/markets/%d/orders/?datasource=tranquility&order_type=all&page=%d", baseURL, regionID, page)
 				hasMore, err := requestAndProcess(url)
 				if err != nil {
@@ -180,6 +187,7 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 	case <-finished:
 	case err := <-errChannel:
 		if err != nil {
+			close(workerStop)
 			return nil, err
 		}
 	}

@@ -8,27 +8,39 @@ import (
 const defaultMarket = "jita"
 
 func (ctx *Context) setDefaultMarket(r *http.Request, w http.ResponseWriter, market string) {
-	session, _ := ctx.cookieStore.Get(r, "session-name")
-
-	session.Values["market"] = market
-
-	err := session.Save(r, w)
-	if err != nil {
-		log.Printf("Could not store default market: %s", err)
-	}
+	ctx.setSessionValue(r, w, "market", market)
 }
 
 func (ctx *Context) getDefaultMarket(r *http.Request) string {
-	session, _ := ctx.cookieStore.Get(r, "session-name")
+	market := ctx.getSessionValue(r, "market")
+	if market == nil {
+		return defaultMarket
+	}
 
-	val, ok := session.Values["market"]
+	strMarket, ok := market.(string)
 	if !ok {
 		return defaultMarket
 	}
-	market, ok := val.(string)
-	if !ok {
-		log.Printf("Default market is the wrong type: %T", val)
-		return defaultMarket
+
+	return strMarket
+}
+
+func (ctx *Context) setSessionValue(r *http.Request, w http.ResponseWriter, name string, value interface{}) {
+	session, _ := ctx.CookieStore.Get(r, "session")
+	session.Values[name] = value
+
+	err := session.Save(r, w)
+	if err != nil {
+		log.Printf("Could not store session value: %s", err)
 	}
-	return market
+}
+
+func (ctx *Context) getSessionValue(r *http.Request, name string) interface{} {
+	session, _ := ctx.CookieStore.Get(r, "session")
+	val, ok := session.Values[name]
+	if !ok {
+		return nil
+	}
+
+	return val
 }

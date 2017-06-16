@@ -14,10 +14,10 @@ import (
 )
 
 func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_index", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_index", w, r)
 	defer txn.End()
 
-	total, err := ctx.app.AppraisalDB.TotalAppraisals()
+	total, err := ctx.App.AppraisalDB.TotalAppraisals()
 	if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
@@ -26,19 +26,19 @@ func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_legal", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_legal", w, r)
 	defer txn.End()
 	ctx.render(r, w, "legal.html", nil)
 }
 
 func (ctx *Context) HandleHelp(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_help", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_help", w, r)
 	defer txn.End()
 	ctx.render(r, w, "help.html", nil)
 }
 
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_robots", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_robots", w, r)
 	defer txn.End()
 
 	w.Header().Add("Content-Type", "text/plain")
@@ -65,6 +65,12 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.Get("/help", ctx.HandleHelp)
 	router.Get("/robots.txt", ctx.HandleRobots)
 	router.Get("/favicon.ico", ctx.HandleFavicon)
+
+	// Authenticated pages
+	router.Get("/login", ctx.HandleLogin)
+	router.Get("/logout", ctx.HandleLogout)
+	router.Get("/oauthcallback", ctx.HandleAuthCallback)
+	router.Get("/user/latest", ctx.HandleUserLatestAppraisals)
 
 	vestigo.CustomNotFoundHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {

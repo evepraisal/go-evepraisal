@@ -33,7 +33,7 @@ func (d componentDetails) Totals() evepraisal.Totals {
 }
 
 func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_item", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_item", w, r)
 	defer txn.End()
 
 	typeIDStr := vestigo.Param(r, "typeID")
@@ -43,7 +43,7 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item, ok := ctx.app.TypeDB.GetTypeByID(typeID)
+	item, ok := ctx.App.TypeDB.GetTypeByID(typeID)
 	if !ok {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
@@ -51,7 +51,7 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 
 	summaries := make([]viewItemMarketSummary, 0)
 	for _, market := range selectableMarkets {
-		prices, ok := ctx.app.PriceDB.GetPrice(market.Name, typeID)
+		prices, ok := ctx.App.PriceDB.GetPrice(market.Name, typeID)
 		if !ok {
 			// No market data
 			continue
@@ -61,8 +61,8 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 			components := make([]componentDetails, len(item.BaseComponents))
 			totals := evepraisal.Totals{}
 			for i, comp := range item.BaseComponents {
-				compType, _ := ctx.app.TypeDB.GetTypeByID(comp.TypeID)
-				compPrices, _ := ctx.app.PriceDB.GetPrice(market.Name, comp.TypeID)
+				compType, _ := ctx.App.TypeDB.GetTypeByID(comp.TypeID)
+				compPrices, _ := ctx.App.PriceDB.GetPrice(market.Name, comp.TypeID)
 				components[i] = componentDetails{
 					Type:     compType,
 					Quantity: comp.Quantity,

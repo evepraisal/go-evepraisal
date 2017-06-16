@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/spf13/viper"
@@ -31,7 +32,11 @@ func main() {
 	buf := bytes.NewBufferString("Config settings\n")
 	w := tabwriter.NewWriter(buf, 0, 0, 1, ' ', 0)
 	for k, v := range viper.AllSettings() {
-		fmt.Fprintf(w, "\t%s\t%#v\n", k, v)
+		if strings.Contains(k, "key") || strings.Contains(k, "secret") {
+			fmt.Fprintf(w, "\t%s\tMASKED\n", k)
+		} else {
+			fmt.Fprintf(w, "\t%s\t%#v\n", k, v)
+		}
 	}
 	w.Flush()
 	log.Println(buf.String())

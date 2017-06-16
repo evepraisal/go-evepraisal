@@ -13,10 +13,10 @@ type SearchPage struct {
 }
 
 func (ctx *Context) HandleSearch(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("search", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("search", w, r)
 	defer txn.End()
 
-	results := ctx.app.TypeDB.Search(r.FormValue("q"))
+	results := ctx.App.TypeDB.Search(r.FormValue("q"))
 	if len(results) == 1 {
 		http.Redirect(w, r, fmt.Sprintf("/item/%d", results[0].ID), http.StatusPermanentRedirect)
 	}
@@ -24,10 +24,10 @@ func (ctx *Context) HandleSearch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleSearchJSON(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("search_json", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("search_json", w, r)
 	defer txn.End()
 
-	results := ctx.app.TypeDB.Search(r.FormValue("q"))
+	results := ctx.App.TypeDB.Search(r.FormValue("q"))
 	r.Header["Content-Type"] = []string{"application/json"}
 	json.NewEncoder(w).Encode(results)
 }

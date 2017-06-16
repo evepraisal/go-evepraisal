@@ -11,6 +11,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/dustin/go-humanize"
+	"github.com/evepraisal/go-evepraisal"
 )
 
 var templateFuncs = template.FuncMap{
@@ -47,6 +48,8 @@ type PageRoot struct {
 		Markets              []displayMarket
 		BaseURL              string
 		BaseURLWithoutScheme string
+		User                 *evepraisal.User
+		LoginEnabled         bool
 	}
 	Page interface{}
 }
@@ -60,9 +63,12 @@ func (ctx *Context) render(r *http.Request, w http.ResponseWriter, templateName 
 	root := PageRoot{Page: page}
 	root.UI.SelectedMarket = ctx.getDefaultMarket(r)
 	root.UI.Markets = selectableMarkets
-
-	root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.baseURL, "https://"), "http://")
-	root.UI.BaseURL = ctx.baseURL
+	root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
+	root.UI.BaseURL = ctx.BaseURL
+	if ctx.OauthConfig != nil {
+		root.UI.LoginEnabled = true
+		root.UI.User = ctx.GetCurrentUser(r)
+	}
 
 	w.Header().Add("Content-Type", "text/html")
 	err := tmpl.ExecuteTemplate(w, templateName, root)
@@ -100,8 +106,8 @@ func (ctx *Context) Reload() error {
 		}
 	}
 
-	root.New("extra-javascript").Parse(ctx.extraJS)
-	root.New("ad-block").Parse(ctx.adBlock)
+	root.New("extra-javascript").Parse(ctx.ExtraJS)
+	root.New("ad-block").Parse(ctx.AdBlock)
 
 	for _, path := range AssetNames() {
 		baseName := filepath.Base(path)

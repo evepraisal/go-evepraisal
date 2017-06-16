@@ -10,7 +10,7 @@ import (
 )
 
 type Context struct {
-	app *evepraisal.App
+	App *evepraisal.App
 }
 
 func (ctx *Context) HandleRestore(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (ctx *Context) HandleRestore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ctx.app.AppraisalDB.PutNewAppraisal(&appraisal)
+	err = ctx.App.AppraisalDB.PutNewAppraisal(&appraisal)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -30,7 +30,7 @@ func (ctx *Context) HandleRestore(w http.ResponseWriter, r *http.Request) {
 }
 
 func HTTPHandler(app *evepraisal.App) http.Handler {
-	ctx := Context{app: app}
+	ctx := Context{App: app}
 	router := vestigo.NewRouter()
 	// router.Get("/backup", )
 	router.Post("/restore", ctx.HandleRestore)

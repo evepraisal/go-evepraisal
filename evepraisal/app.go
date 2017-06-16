@@ -21,8 +21,11 @@ import (
 	"github.com/evepraisal/go-evepraisal/staticdump"
 	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/evepraisal/go-evepraisal/web"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
+	"golang.org/x/oauth2"
 )
 
 func appMain() {
@@ -148,11 +151,32 @@ func appMain() {
 		}
 	}()
 
-	app.WebContext = web.NewContext(
-		app,
-		strings.TrimSuffix(viper.GetString("base-url"), "/"),
-		viper.GetString("extra-js"),
-		viper.GetString("ad-block"))
+	webContext := web.NewContext(app)
+	webContext.BaseURL = strings.TrimSuffix(viper.GetString("base-url"), "/")
+	webContext.ExtraJS = viper.GetString("extra-js")
+	webContext.AdBlock = viper.GetString("ad-block")
+	if viper.GetString("cookie-auth-key") != "" {
+		webContext.CookieStore = sessions.NewCookieStore(
+			[]byte(viper.GetString("cookie-auth-key")),
+			[]byte(viper.GetString("cookie-encryption-key")))
+	} else {
+		webContext.CookieStore = sessions.NewCookieStore(securecookie.GenerateRandomKey(32))
+	}
+	if viper.GetString("sso-client-id") != "" {
+		webContext.OauthConfig = &oauth2.Config{
+			ClientID:     viper.GetString("sso-client-id"),
+			ClientSecret: viper.GetString("sso-client-secret"),
+			Scopes:       []string{},
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  viper.GetString("sso-authorize-url"),
+				TokenURL: viper.GetString("sso-token-url"),
+			},
+			RedirectURL: viper.GetString("base-url") + "/oauthcallback",
+		}
+		webContext.OauthVerifyURL = viper.GetString("sso-verify-url")
+	}
+
+	app.WebContext = webContext
 
 	servers := mustStartServers(app.WebContext.HTTPHandler())
 	if err != nil {

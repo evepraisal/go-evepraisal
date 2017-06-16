@@ -39,7 +39,12 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 		}
 
 		_, err = tx.CreateBucket([]byte("appraisals-last-used"))
-		if err != bolt.ErrBucketExists {
+		if err != nil && err != bolt.ErrBucketExists {
+			return err
+		}
+
+		_, err = tx.CreateBucket([]byte("appraisals-by-user"))
+		if err != nil && err != bolt.ErrBucketExists {
 			return err
 		}
 
@@ -64,10 +69,10 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 	var dbID []byte
 	err := db.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("appraisals"))
+		byIDBucket := tx.Bucket([]byte("appraisals"))
 		var err error
 		if appraisal.ID == "" {
-			id, err := b.NextSequence()
+			id, err := byIDBucket.NextSequence()
 			if err != nil {
 				return err
 			}
@@ -89,7 +94,16 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 			return err
 		}
 
-		return b.Put(dbID, snappy.Encode(nil, appraisalBytes))
+		err = byIDBucket.Put(dbID, snappy.Encode(nil, appraisalBytes))
+		if err != nil {
+			return err
+		}
+
+		if appraisal.User != nil {
+			byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
+			return byUserBucket.Put(append([]byte(fmt.Sprintf("%s:", appraisal.User.CharacterOwnerHash)), dbID...), dbID)
+		}
+		return nil
 	})
 	if err != nil {
 		go db.setLastUsedTime(dbID)
@@ -122,6 +136,7 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 	})
 
 	go db.setLastUsedTime(dbID)
+	appraisal.User = nil
 
 	return appraisal, err
 }
@@ -147,6 +162,44 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 			if kind != "" && appraisal.Kind != kind {
 				continue
 			}
+			appraisal.User = nil
+
+			appraisals = append(appraisals, appraisal)
+
+			if len(appraisals) >= reqCount {
+				break
+			}
+		}
+
+		return nil
+	})
+
+	return appraisals, err
+}
+
+func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string) ([]evepraisal.Appraisal, error) {
+	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	err := db.db.View(func(tx *bolt.Tx) error {
+		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
+		byIDBucket := tx.Bucket([]byte("appraisals"))
+		c := byUserBucket.Cursor()
+		c.Seek([]byte(fmt.Sprintf("%s;", user.CharacterOwnerHash)))
+		for key, val := c.Prev(); strings.HasPrefix(string(key), user.CharacterOwnerHash); key, val = c.Prev() {
+			buf, err := snappy.Decode(nil, byIDBucket.Get(val))
+			if err != nil {
+				return fmt.Errorf("Error when decoding: %s", err)
+			}
+
+			appraisal := evepraisal.Appraisal{}
+			err = json.Unmarshal(buf, &appraisal)
+			if err != nil {
+				return err
+			}
+
+			if kind != "" && appraisal.Kind != kind {
+				continue
+			}
+			appraisal.User = nil
 
 			appraisals = append(appraisals, appraisal)
 
@@ -172,24 +225,32 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	return total, err
 }
 
+func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
+	return db.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("appraisals"))
+		lastUsedB := tx.Bucket([]byte("appraisals-last-used"))
+		dbID, err := EncodeDBID(appraisalID)
+		if err != nil {
+			return err
+		}
+
+		err = b.Delete(dbID)
+		if err != nil {
+			return err
+		}
+
+		err = lastUsedB.Delete(dbID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (db *AppraisalDB) Close() error {
 	close(db.stop)
 	db.wg.Wait()
 	return db.db.Close()
-}
-
-func EncodeDBID(appraisalID string) ([]byte, error) {
-	return EncodeDBIDFromUint64(evepraisal.AppraisalIDToUint64(appraisalID)), nil
-}
-
-func EncodeDBIDFromUint64(appraisalID uint64) []byte {
-	dbID := make([]byte, 8)
-	binary.BigEndian.PutUint64(dbID, appraisalID)
-	return dbID
-}
-
-func DecodeDBID(dbID []byte) (string, error) {
-	return strings.ToLower(evepraisal.Uint64ToAppraisalID(binary.BigEndian.Uint64(dbID))), nil
 }
 
 func (db *AppraisalDB) setLastUsedTime(dbID []byte) {
@@ -237,30 +298,11 @@ func (db *AppraisalDB) startReaper() {
 			log.Printf("ERROR: Problem querying for unused appraisals: %s", err)
 		}
 
-		err = db.db.Update(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte("appraisals"))
-			usedB := tx.Bucket([]byte("appraisals"))
-			for _, appraisalID := range unused {
-				dbID, err := EncodeDBID(appraisalID)
-				if err != nil {
-					log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
-					continue
-				}
-
-				err = b.Delete(dbID)
-				if err != nil {
-					return err
-				}
-
-				err = usedB.Delete(dbID)
-				if err != nil {
-					return err
-				}
+		for _, appraisalID := range unused {
+			err = db.DeleteAppraisal(appraisalID)
+			if err != nil {
+				log.Printf("ERROR: Problem removing unused appraisals: %s", err)
 			}
-			return nil
-		})
-		if err != nil {
-			log.Printf("ERROR: Problem removing unused appraisals: %s", err)
 		}
 
 		log.Printf("Done reaping unused appraisals, removed %d appraisals", len(unused))
@@ -271,4 +313,18 @@ func (db *AppraisalDB) startReaper() {
 		case <-time.After(time.Hour):
 		}
 	}
+}
+
+func EncodeDBID(appraisalID string) ([]byte, error) {
+	return EncodeDBIDFromUint64(evepraisal.AppraisalIDToUint64(appraisalID)), nil
+}
+
+func EncodeDBIDFromUint64(appraisalID uint64) []byte {
+	dbID := make([]byte, 8)
+	binary.BigEndian.PutUint64(dbID, appraisalID)
+	return dbID
+}
+
+func DecodeDBID(dbID []byte) (string, error) {
+	return strings.ToLower(evepraisal.Uint64ToAppraisalID(binary.BigEndian.Uint64(dbID))), nil
 }

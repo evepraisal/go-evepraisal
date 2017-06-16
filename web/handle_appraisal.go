@@ -22,7 +22,7 @@ type AppraisalPage struct {
 }
 
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("create_appraisal", w, r)
 	defer txn.End()
 
 	r.ParseMultipartForm(20 * 1000)
@@ -62,13 +62,15 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	appraisal, err := ctx.app.StringToAppraisal(market, body)
+	appraisal, err := ctx.App.StringToAppraisal(market, body)
 	if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
 
-	err = ctx.app.AppraisalDB.PutNewAppraisal(appraisal)
+	appraisal.User = ctx.GetCurrentUser(r)
+
+	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
 		log.Printf("ERROR: saving appraisal: %s", err)
 		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
@@ -87,7 +89,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_appraisal", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_appraisal", w, r)
 	defer txn.End()
 
 	// Legacy Logic
@@ -115,7 +117,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	appraisal, err := ctx.app.AppraisalDB.GetAppraisal(appraisalID)
+	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
@@ -132,13 +134,13 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 }
 
 func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_appraisal_json", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_appraisal_json", w, r)
 	defer txn.End()
 
 	appraisalID := vestigo.Param(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".json")
 
-	appraisal, err := ctx.app.AppraisalDB.GetAppraisal(appraisalID)
+	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
@@ -152,13 +154,13 @@ func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Reque
 }
 
 func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
-	txn := ctx.app.TransactionLogger.StartWebTransaction("view_appraisal_raw", w, r)
+	txn := ctx.App.TransactionLogger.StartWebTransaction("view_appraisal_raw", w, r)
 	defer txn.End()
 
 	appraisalID := vestigo.Param(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
 
-	appraisal, err := ctx.app.AppraisalDB.GetAppraisal(appraisalID)
+	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
