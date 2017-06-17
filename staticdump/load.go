@@ -33,7 +33,7 @@ func FindLastStaticDumpURL(client *pester.Client) (string, error) {
 		}
 
 		switch resp.StatusCode {
-		case 200:
+		case 200, 304:
 			return url, nil
 		case 404:
 			current = current.Add(-24 * time.Hour)

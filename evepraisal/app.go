@@ -98,6 +98,13 @@ func appMain() {
 		PriceDB:     priceDB,
 	}
 
+	log.Println("Starting type fetcher")
+	staticdumpHTTPClient := pester.New()
+	staticdumpHTTPClient.Concurrency = 1
+	staticdumpHTTPClient.Timeout = 10 * time.Second
+	staticdumpHTTPClient.Backoff = pester.ExponentialJitterBackoff
+	staticdumpHTTPClient.MaxRetries = 10
+
 	if viper.GetString("newrelic_license-key") != "" {
 		newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
 		newRelicApplication, err := newrelic.NewApplication(newRelicConfig)
@@ -107,10 +114,10 @@ func appMain() {
 
 		app.NewRelicApplication = newRelicApplication
 		httpClient.Transport = NewRoundTripper(newRelicApplication, httpClient.Transport)
+		staticdumpHTTPClient.Transport = NewRoundTripper(newRelicApplication, nil)
 	}
 
-	log.Println("Starting type fetcher")
-	staticFetcher, err := staticdump.NewStaticFetcher(httpClient, viper.GetString("db_path"), func(typeDB typedb.TypeDB) {
+	staticFetcher, err := staticdump.NewStaticFetcher(staticdumpHTTPClient, viper.GetString("db_path"), func(typeDB typedb.TypeDB) {
 		oldTypeDB := app.TypeDB
 		app.TypeDB = typeDB
 		app.Parser = evepraisal.NewContextMultiParser(
@@ -271,6 +278,10 @@ func mustStartServers(handler http.Handler) []*http.Server {
 }
 
 func NewRoundTripper(newrelicApp newrelic.Application, original http.RoundTripper) http.RoundTripper {
+	if original == nil {
+		original = http.DefaultTransport
+	}
+
 	return roundTripperFunc(func(request *http.Request) (*http.Response, error) {
 		txn := newrelicApp.StartTransaction("http", nil, nil)
 		segment := newrelic.StartExternalSegment(txn, request)
