@@ -2,6 +2,8 @@ package staticdump
 
 import (
 	"archive/zip"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -9,51 +11,44 @@ import (
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
+	"github.com/sethgrid/pester"
 )
 
 var userAgent = "go-evepraisal"
 
-func MustFindLastStaticDumpURL() string {
-	url := FindLastStaticDumpURL()
-	if url == "" {
-		log.Fatalf("Could not find static dump URL")
-	}
-	return url
-}
-
-func FindLastStaticDumpURL() string {
+func FindLastStaticDumpURL(client *pester.Client) (string, error) {
 	i := 0
 	current := time.Now()
 	for i < 200 {
 		url := "https://cdn1.eveonline.com/data/sde/tranquility/sde-" + current.Format("20060102") + "-TRANQUILITY.zip"
 		req, err := http.NewRequest("HEAD", url, nil)
 		if err != nil {
-			log.Printf("WARN: Unexpected building request: %s", err)
+			return "", err
 		}
 		req.Header.Add("User-Agent", userAgent)
 
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
-			log.Printf("WARN: Unexpected error during request: %s", err)
+			return "", err
 		}
 
 		switch resp.StatusCode {
 		case 200:
-			return url
+			return url, nil
 		case 404:
 			current = current.Add(-24 * time.Hour)
 			continue
 		default:
-			log.Printf("Unexpected response when trying to find last static dump: %s", resp.Status)
+			return "", fmt.Errorf("Unexpected response when trying to find last static dump: %s", resp.Status)
 		}
 	}
-	return ""
+	return "", errors.New("Could not find latest static dump URL")
 }
 
-func LoadTypes(cachepath string, staticDumpURL string) ([]typedb.EveType, error) {
+func LoadTypes(client *pester.Client, cachepath string, staticDumpURL string) ([]typedb.EveType, error) {
 	if _, err := os.Stat(cachepath); os.IsNotExist(err) {
 		log.Printf("Downloading static dump to %s", cachepath)
-		err := download(staticDumpURL, cachepath)
+		err := download(client, staticDumpURL, cachepath)
 		if err != nil {
 			return nil, err
 		}
@@ -64,7 +59,7 @@ func LoadTypes(cachepath string, staticDumpURL string) ([]typedb.EveType, error)
 	return loadtypes(cachepath)
 }
 
-func download(staticDumpURL string, staticDataPath string) error {
+func download(client *pester.Client, staticDumpURL string, staticDataPath string) error {
 	out, err := os.Create(staticDataPath)
 	defer out.Close()
 	if err != nil {
@@ -77,7 +72,7 @@ func download(staticDumpURL string, staticDataPath string) error {
 	}
 
 	req.Header.Add("User-Agent", userAgent)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

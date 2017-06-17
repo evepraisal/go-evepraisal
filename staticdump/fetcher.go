@@ -10,20 +10,23 @@ import (
 
 	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/typedb"
+	"github.com/sethgrid/pester"
 )
 
 type StaticFetcher struct {
 	dbPath   string
 	callback func(typeDB typedb.TypeDB)
+	client   *pester.Client
 
 	stop chan bool
 	wg   *sync.WaitGroup
 }
 
-func NewStaticFetcher(dbPath string, callback func(typeDB typedb.TypeDB)) (*StaticFetcher, error) {
+func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB typedb.TypeDB)) (*StaticFetcher, error) {
 	fetcher := &StaticFetcher{
 		dbPath:   dbPath,
 		callback: callback,
+		client:   client,
 
 		stop: make(chan bool),
 		wg:   &sync.WaitGroup{},
@@ -58,7 +61,11 @@ func NewStaticFetcher(dbPath string, callback func(typeDB typedb.TypeDB)) (*Stat
 }
 
 func (f *StaticFetcher) RunOnce() error {
-	staticDumpURL := MustFindLastStaticDumpURL()
+	staticDumpURL, err := FindLastStaticDumpURL(f.client)
+	if err != nil {
+		return err
+	}
+
 	staticDumpURLBase := filepath.Base(staticDumpURL)
 	typedbPath := filepath.Join(f.dbPath, "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
 	if _, err := os.Stat(typedbPath); os.IsNotExist(err) {
@@ -85,7 +92,7 @@ func (f *StaticFetcher) Close() error {
 }
 
 func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) {
-	types, err := LoadTypes(staticCacheFile+".zip", staticDumpURL)
+	types, err := LoadTypes(f.client, staticCacheFile+".zip", staticDumpURL)
 	if err != nil {
 		log.Fatalf("Unable to load types from static data: %s", err)
 	}

@@ -21,7 +21,9 @@ import (
 	"github.com/evepraisal/go-evepraisal/web"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"github.com/gregjones/httpcache"
 	"github.com/newrelic/go-agent"
+	"github.com/sethgrid/pester"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/oauth2"
@@ -61,7 +63,14 @@ func appMain() {
 		}
 	}()
 
-	priceFetcher, err := esi.NewPriceFetcher(priceDB, viper.GetString("esi_baseurl"), httpCache)
+	httpClient := pester.New()
+	httpClient.Transport = httpcache.NewTransport(httpCache)
+	httpClient.Concurrency = 5
+	httpClient.Timeout = 10 * time.Second
+	httpClient.Backoff = pester.ExponentialJitterBackoff
+	httpClient.MaxRetries = 10
+
+	priceFetcher, err := esi.NewPriceFetcher(priceDB, viper.GetString("esi_baseurl"), httpClient)
 	if err != nil {
 		log.Fatalf("Couldn't start price fetcher: %s", err)
 	}
@@ -97,10 +106,11 @@ func appMain() {
 		}
 
 		app.NewRelicApplication = newRelicApplication
+		httpClient.Transport = NewRoundTripper(newRelicApplication, httpClient.Transport)
 	}
 
 	log.Println("Starting type fetcher")
-	staticFetcher, err := staticdump.NewStaticFetcher(viper.GetString("db_path"), func(typeDB typedb.TypeDB) {
+	staticFetcher, err := staticdump.NewStaticFetcher(httpClient, viper.GetString("db_path"), func(typeDB typedb.TypeDB) {
 		oldTypeDB := app.TypeDB
 		app.TypeDB = typeDB
 		app.Parser = evepraisal.NewContextMultiParser(
@@ -259,3 +269,20 @@ func mustStartServers(handler http.Handler) []*http.Server {
 
 	return servers
 }
+
+func NewRoundTripper(newrelicApp newrelic.Application, original http.RoundTripper) http.RoundTripper {
+	return roundTripperFunc(func(request *http.Request) (*http.Response, error) {
+		txn := newrelicApp.StartTransaction("http", nil, nil)
+		segment := newrelic.StartExternalSegment(txn, request)
+		response, err := original.RoundTrip(request)
+		segment.Response = response
+		segment.End()
+		txn.End()
+
+		return response, err
+	})
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }

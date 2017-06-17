@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/evepraisal/go-evepraisal"
-	"github.com/gregjones/httpcache"
 	"github.com/sethgrid/pester"
 )
 
@@ -57,13 +56,7 @@ type PriceFetcher struct {
 	wg   *sync.WaitGroup
 }
 
-func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, cache httpcache.Cache) (*PriceFetcher, error) {
-	client := pester.New()
-	client.Transport = httpcache.NewTransport(cache)
-	client.Concurrency = 5
-	client.Timeout = 10 * time.Second
-	client.Backoff = pester.ExponentialJitterBackoff
-	client.MaxRetries = 10
+func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.Client) (*PriceFetcher, error) {
 
 	priceFetcher := &PriceFetcher{
 		db:      priceDB,
