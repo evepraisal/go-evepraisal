@@ -73,7 +73,13 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
 		return
 	}
-	log.Printf("[New appraisal] id=%s, market=%s, items=%d, unparsed=%d", appraisal.ID, appraisal.MarketName, len(appraisal.Items), len(appraisal.Unparsed))
+
+	username := ""
+	user := ctx.GetCurrentUser(r)
+	if user != nil {
+		username = user.CharacterName
+	}
+	log.Printf("[New appraisal] id=%s, market=%s, items=%d, unparsed=%d, user=%s", appraisal.ID, appraisal.MarketName, len(appraisal.Items), len(appraisal.Unparsed), username)
 
 	// Set new session variable
 	ctx.setDefaultMarket(r, w, market)

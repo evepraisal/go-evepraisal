@@ -178,6 +178,9 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 
 	select {
 	case <-finished:
+	case <-p.stop:
+		close(workerStop)
+		return nil, nil
 	case err := <-errChannel:
 		if err != nil {
 			close(workerStop)
