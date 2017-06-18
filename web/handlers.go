@@ -68,9 +68,9 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	}))
 
 	if ctx.App.NewRelicApplication != nil {
-		for name, routes := range router.Routes {
+		for _, routes := range router.Routes {
 			for _, route := range routes {
-				_, h := newrelic.WrapHandle(ctx.App.NewRelicApplication, name, route.Handler)
+				_, h := newrelic.WrapHandle(ctx.App.NewRelicApplication, route.Path, route.Handler)
 				route.Handler = h
 			}
 		}
