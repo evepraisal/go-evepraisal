@@ -69,8 +69,8 @@ func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.
 
 	priceFetcher.wg.Add(1)
 	go func() {
+		defer priceFetcher.wg.Done()
 		for {
-			defer priceFetcher.wg.Done()
 			start := time.Now()
 			priceFetcher.runOnce()
 			select {
