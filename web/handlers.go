@@ -1,15 +1,14 @@
 package web
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/elazarl/go-bindata-assetfs"
+	"github.com/go-zoo/bone"
 	"github.com/gorilla/context"
-	"github.com/husobee/vestigo"
 	"github.com/mash/go-accesslog"
 	"github.com/newrelic/go-agent"
 )
@@ -43,48 +42,41 @@ func (ctx *Context) HandleFavicon(w http.ResponseWriter, r *http.Request) {
 
 func (ctx *Context) HTTPHandler() http.Handler {
 
-	router := vestigo.NewRouter()
-	addHandler := func(method string, pattern string, handler http.HandlerFunc) {
-		if ctx.App.NewRelicApplication != nil {
-			_, h := newrelic.WrapHandle(ctx.App.NewRelicApplication, pattern, http.HandlerFunc(handler))
-			handler = func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }
-		}
-		router.Add(method, pattern, handler)
-	}
-
-	addHandler("GET", "/", ctx.HandleIndex)
-	addHandler("POST", "/appraisal", ctx.HandleAppraisal)
-	addHandler("POST", "/estimate", ctx.HandleAppraisal)
-	addHandler("GET", "/a/:appraisalID", ctx.HandleViewAppraisal)
-	addHandler("GET", "/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
-	addHandler("GET", "/item/:typeID", ctx.HandleViewItem)
-	addHandler("GET", "/search", ctx.HandleSearch)
-	addHandler("GET", "/search.json", ctx.HandleSearchJSON)
-	addHandler("GET", "/latest", ctx.HandleLatestAppraisals)
-	addHandler("GET", "/legal", ctx.HandleLegal)
-	addHandler("GET", "/help", ctx.HandleHelp)
-	addHandler("GET", "/robots.txt", ctx.HandleRobots)
-	addHandler("GET", "/favicon.ico", ctx.HandleFavicon)
+	router := bone.New()
+	router.GetFunc("/", ctx.HandleIndex)
+	router.PostFunc("/appraisal", ctx.HandleAppraisal)
+	router.PostFunc("/estimate", ctx.HandleAppraisal)
+	router.GetFunc("/a/:appraisalID", ctx.HandleViewAppraisal)
+	router.GetFunc("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
+	router.GetFunc("/item/:typeID", ctx.HandleViewItem)
+	router.GetFunc("/search", ctx.HandleSearch)
+	router.GetFunc("/search.json", ctx.HandleSearchJSON)
+	router.GetFunc("/latest", ctx.HandleLatestAppraisals)
+	router.GetFunc("/legal", ctx.HandleLegal)
+	router.GetFunc("/help", ctx.HandleHelp)
+	router.GetFunc("/robots.txt", ctx.HandleRobots)
+	router.GetFunc("/favicon.ico", ctx.HandleFavicon)
 
 	// Authenticated pages
-	addHandler("GET", "/login", ctx.HandleLogin)
-	addHandler("GET", "/logout", ctx.HandleLogout)
-	addHandler("GET", "/oauthcallback", ctx.HandleAuthCallback)
-	addHandler("GET", "/user/latest", ctx.HandleUserLatestAppraisals)
+	router.GetFunc("/login", ctx.HandleLogin)
+	router.GetFunc("/logout", ctx.HandleLogout)
+	router.GetFunc("/oauthcallback", ctx.HandleAuthCallback)
+	router.GetFunc("/user/latest", ctx.HandleUserLatestAppraisals)
 
-	vestigo.CustomNotFoundHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-		})
+	router.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+	}))
 
-	vestigo.CustomMethodNotAllowedHandlerFunc(func(allowedMethods string) func(w http.ResponseWriter, r *http.Request) {
-		return func(w http.ResponseWriter, r *http.Request) {
-			ctx.renderErrorPage(r, w, http.StatusMethodNotAllowed, "Method not allowed", fmt.Sprintf("HTTP Method not allowed. What is allowed is: "+allowedMethods))
+	if ctx.App.NewRelicApplication != nil {
+		for name, routes := range router.Routes {
+			for _, route := range routes {
+				_, h := newrelic.WrapHandle(ctx.App.NewRelicApplication, name, route.Handler)
+				route.Handler = h
+			}
 		}
-	})
+	}
 
 	mux := http.NewServeMux()
-
 	setCacheHeaders := func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "public, max-age=3600")

@@ -61,6 +61,12 @@
   revision = "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
 
 [[projects]]
+  name = "github.com/go-zoo/bone"
+  packages = ["."]
+  revision = "fd0aebc74e908868b09ac140fb5a53cb363884c1"
+  version = "1.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -206,9 +212,21 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/oauth2"
+  packages = [".","internal"]
+  revision = "f047394b6d14284165300fd82dad67edb3a4d7f6"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
   revision = "9ccfe848b9db8435a24c424abbc07a921adf1df5"
+
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -225,6 +243,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "65d914486c10a0e77cba28b40b8e63720031a789b7fce0bd7b98c41a2bb6d71a"
+  inputs-digest = "3fabe9b613b9974c624285ba54ef82b33d948f2df11f0f1537ccb89144355e07"
   solver-name = "gps-cdcl"
   solver-version = 1

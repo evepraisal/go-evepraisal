@@ -7,7 +7,7 @@ import (
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/typedb"
-	"github.com/husobee/vestigo"
+	"github.com/go-zoo/bone"
 )
 
 type viewItemMarketSummary struct {
@@ -33,7 +33,7 @@ func (d componentDetails) Totals() evepraisal.Totals {
 }
 
 func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
-	typeIDStr := vestigo.Param(r, "typeID")
+	typeIDStr := bone.GetValue(r, "typeID")
 	typeID, err := strconv.ParseInt(typeIDStr, 10, 64)
 	if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")

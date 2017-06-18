@@ -13,7 +13,7 @@ import (
 
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/legacy"
-	"github.com/husobee/vestigo"
+	"github.com/go-zoo/bone"
 )
 
 type AppraisalPage struct {
@@ -93,8 +93,9 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 	// Legacy Logic
-	if vestigo.Param(r, "legacyAppraisalID") != "" {
-		legacyAppraisalIDStr := vestigo.Param(r, "legacyAppraisalID")
+	appraisalID := bone.GetValue(r, "appraisalID")
+	if bone.GetValue(r, "legacyAppraisalID") != "" {
+		legacyAppraisalIDStr := bone.GetValue(r, "legacyAppraisalID")
 		suffix := filepath.Ext(legacyAppraisalIDStr)
 		legacyAppraisalIDStr = strings.TrimSuffix(legacyAppraisalIDStr, suffix)
 		legacyAppraisalID, err := strconv.ParseUint(legacyAppraisalIDStr, 10, 64)
@@ -102,10 +103,8 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 			return
 		}
-		vestigo.AddParam(r, "appraisalID", evepraisal.Uint64ToAppraisalID(legacyAppraisalID)+suffix)
+		appraisalID = evepraisal.Uint64ToAppraisalID(legacyAppraisalID) + suffix
 	}
-
-	appraisalID := vestigo.Param(r, "appraisalID")
 
 	if strings.HasSuffix(appraisalID, ".json") {
 		ctx.HandleViewAppraisalJSON(w, r)
@@ -134,7 +133,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 }
 
 func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
-	appraisalID := vestigo.Param(r, "appraisalID")
+	appraisalID := bone.GetValue(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".json")
 
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
@@ -151,7 +150,7 @@ func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Reque
 }
 
 func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
-	appraisalID := vestigo.Param(r, "appraisalID")
+	appraisalID := bone.GetValue(r, "appraisalID")
 	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
 
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
