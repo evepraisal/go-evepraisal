@@ -109,7 +109,22 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	// Wrap global handlers
 	handler := http.Handler(mux)
-	handler = accesslog.NewLoggingHandler(handler, accessLogger{})
+	alogger := accessLogger{}
+	userLoggerInjectHandler := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user := ctx.GetCurrentUser(r)
+			if user != nil {
+				r.Header.Set("logged-in-user", user.CharacterName)
+			} else {
+				r.Header.Set("logged-in-user", "")
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	handler = userLoggerInjectHandler(handler)
+	handler = accesslog.NewLoggingHandler(handler, alogger)
 	handler = context.ClearHandler(handler)
 	handler = gziphandler.GzipHandler(handler)
 
