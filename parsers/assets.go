@@ -21,16 +21,23 @@ func (r *AssetList) Lines() []int {
 }
 
 type AssetItem struct {
-	Name      string
-	Quantity  int64
-	Volume    float64
-	Group     string
-	Category  string
-	Size      string
-	Slot      string
-	MetaLevel string
-	TechLevel string
+	Name          string
+	Quantity      int64
+	Volume        float64
+	Group         string
+	Category      string
+	Size          string
+	Slot          string
+	MetaLevel     string
+	TechLevel     string
+	PriceEstimate float64
 }
+
+// 50MN Microwarpdrive I	1	Propulsion Module		Medium	25 m3	145,977.27 ISK
+// 50MN Microwarpdrive II		Propulsion Module		Medium	10 m3	5,044,358.31 ISK
+// 50MN Y-T8 Compact Microwarpdrive	3	Propulsion Module		Medium	30 m3	63,342.24 ISK
+// 5MN Microwarpdrive II		Propulsion Module		Medium	10 m3	3,611,362.71 ISK
+// 5MN Y-T8 Compact Microwarpdrive	3	Propulsion Module		Medium	30 m3	960,279.42 ISK
 
 var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`^([\S\ ]*)`,                           // Name
@@ -41,7 +48,8 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`, // Slot
 	`(?:\t([\d ,\.]*) m3)?`,                // Volume
 	`(?:\t([\d]+|))?`,                      // meta level
-	`(?:\t([\d]+|))?$`,                     // tech level
+	`(?:\t([\d]+|))?`,                      // tech level
+	`(?:\t([\d,'\.])+ ISK)?$`,              // price estimate
 }, ""))
 
 func ParseAssets(input Input) (ParserResult, Input) {
@@ -56,15 +64,16 @@ func ParseAssets(input Input) (ParserResult, Input) {
 
 		assetList.Items = append(assetList.Items,
 			AssetItem{
-				Name:      match[1],
-				Quantity:  qty,
-				Volume:    ToFloat64(match[7]),
-				Group:     match[3],
-				Category:  match[4],
-				Size:      match[5],
-				Slot:      match[6],
-				MetaLevel: match[8],
-				TechLevel: match[9],
+				Name:          match[1],
+				Quantity:      qty,
+				Volume:        ToFloat64(match[7]),
+				Group:         match[3],
+				Category:      match[4],
+				Size:          match[5],
+				Slot:          match[6],
+				MetaLevel:     match[8],
+				TechLevel:     match[9],
+				PriceEstimate: ToFloat64(match[10]),
 			})
 	}
 	sort.Slice(assetList.Items, func(i, j int) bool {

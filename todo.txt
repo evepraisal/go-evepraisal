@@ -1,4 +1,6 @@
 TODO:
+	- Delete appraisal
+	- History pagination
     - Add total number of unpriced items (because no order volume or BPCs) somewhere
     - Blueprint copy prices
       - (price of item - price of materials) * number of runs

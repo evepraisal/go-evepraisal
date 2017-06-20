@@ -58,7 +58,7 @@ type PriceFetcher struct {
 
 func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.Client) (*PriceFetcher, error) {
 
-	priceFetcher := &PriceFetcher{
+	p := &PriceFetcher{
 		db:      priceDB,
 		client:  client,
 		baseURL: baseURL,
@@ -67,21 +67,21 @@ func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.
 		wg:   &sync.WaitGroup{},
 	}
 
-	priceFetcher.wg.Add(1)
+	p.wg.Add(1)
 	go func() {
-		defer priceFetcher.wg.Done()
+		defer p.wg.Done()
 		for {
 			start := time.Now()
-			priceFetcher.runOnce()
+			p.runOnce()
 			select {
 			case <-time.After((5 * time.Minute) - time.Since(start)):
-			case <-priceFetcher.stop:
+			case <-p.stop:
 				return
 			}
 		}
 	}()
 
-	return priceFetcher, nil
+	return p, nil
 }
 
 func (p *PriceFetcher) Close() error {
@@ -99,6 +99,13 @@ func (p *PriceFetcher) runOnce() {
 	}
 
 	for market, pmap := range priceMap {
+		// this takes awhile, so let's check to see if we should stop between markets
+		select {
+		case <-p.stop:
+			return
+		default:
+		}
+
 		for itemName, price := range pmap {
 			err = p.db.UpdatePrice(market, itemName, price)
 			if err != nil {
@@ -106,6 +113,7 @@ func (p *PriceFetcher) runOnce() {
 			}
 		}
 	}
+	log.Println("Done fetching market data")
 }
 
 func (p *PriceFetcher) freshPriceMap() map[string]map[int64]evepraisal.Prices {
