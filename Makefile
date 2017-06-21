@@ -55,4 +55,4 @@ dist:
 	ENV=PROD GOOS=linux GOARCH=amd64 make build
 
 deploy: dist
-	./scripts/deploy.sh
+	USERNAME=root HOSTNAME=beta.evepraisal.com ./scripts/deploy.sh
