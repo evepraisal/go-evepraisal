@@ -24,7 +24,6 @@ type Appraisal struct {
 	ID         string          `json:"id"`
 	Created    int64           `json:"created"`
 	Kind       string          `json:"kind"`
-	MarketID   int             `json:"market_id"`
 	MarketName string          `json:"market_name"`
 	Totals     Totals          `json:"totals"`
 	Items      []AppraisalItem `json:"items"`
