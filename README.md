@@ -1,4 +1,5 @@
-# A new evepraisal written in Go
+# A New Evepraisal
+Evepraisal is a bulk-price estimator for Eve Online.
 
 ## Motivation
-Exploration of different sources for data, easier deployment, less memory overhead
+Switch to using ESI, Eve's SSO, automatic import of static data dump, easier deployment, etc.
