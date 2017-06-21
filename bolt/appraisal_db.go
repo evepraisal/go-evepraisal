@@ -1,8 +1,9 @@
 package bolt
 
 import (
+	"bytes"
 	"encoding/binary"
-	"encoding/json"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"strings"
@@ -88,13 +89,14 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 				return err
 			}
 		}
-
-		appraisalBytes, err := json.Marshal(appraisal)
+		var buf bytes.Buffer
+		encoder := gob.NewEncoder(&buf)
+		err = encoder.Encode(appraisal)
 		if err != nil {
 			return err
 		}
 
-		err = byIDBucket.Put(dbID, snappy.Encode(nil, appraisalBytes))
+		err = byIDBucket.Put(dbID, snappy.Encode(nil, buf.Bytes()))
 		if err != nil {
 			return err
 		}
@@ -132,7 +134,8 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 			return fmt.Errorf("Error when decoding: %s", err)
 		}
 
-		return json.Unmarshal(buf, appraisal)
+		decoder := gob.NewDecoder(bytes.NewBuffer(buf))
+		return decoder.Decode(appraisal)
 	})
 
 	go db.setLastUsedTime(dbID)
@@ -154,7 +157,8 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 				return fmt.Errorf("Error when decoding: %s", err)
 			}
 
-			err = json.Unmarshal(buf, &appraisal)
+			decoder := gob.NewDecoder(bytes.NewBuffer(buf))
+			err = decoder.Decode(&appraisal)
 			if err != nil {
 				return err
 			}
@@ -191,7 +195,8 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 			}
 
 			appraisal := evepraisal.Appraisal{}
-			err = json.Unmarshal(buf, &appraisal)
+			decoder := gob.NewDecoder(bytes.NewBuffer(buf))
+			err = decoder.Decode(&appraisal)
 			if err != nil {
 				return err
 			}
