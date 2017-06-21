@@ -65,7 +65,7 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	indexFilename := filename + ".index"
 	if _, err := os.Stat(indexFilename); os.IsNotExist(err) {
 		if !writable {
-			return nil, fmt.Errorf("Index (%s) does not exist so it cannot be opened in read-only mode")
+			return nil, fmt.Errorf("Index (%s) does not exist so it cannot be opened in read-only mode", indexFilename)
 		}
 		mapping := bleve.NewIndexMapping()
 		mapping.DefaultAnalyzer = "standard"
