@@ -9,10 +9,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/evepraisal/go-evepraisal"
-	"github.com/evepraisal/go-evepraisal/bolt"
 	"github.com/evepraisal/go-evepraisal/legacy"
+	"github.com/evepraisal/go-evepraisal/staticdump"
+	"github.com/evepraisal/go-evepraisal/typedb"
+	"github.com/sethgrid/pester"
 	"github.com/spf13/viper"
 )
 
@@ -41,15 +44,32 @@ func restoreMain() {
 		}
 	}
 
-	log.Println("New typedb")
-	typeDB, err := bolt.NewTypeDB(viper.GetString("type_db"), false)
+	var typeDB typedb.TypeDB
+
+	staticdumpHTTPClient := pester.New()
+	staticdumpHTTPClient.Concurrency = 1
+	staticdumpHTTPClient.Timeout = 5 * time.Minute
+	staticdumpHTTPClient.Backoff = pester.ExponentialJitterBackoff
+	staticdumpHTTPClient.MaxRetries = 10
+	staticFetcher, err := staticdump.NewStaticFetcher(staticdumpHTTPClient, viper.GetString("db_path"), func(newTypeDB typedb.TypeDB) {
+		log.Println("Got new typedb", newTypeDB)
+		typeDB = newTypeDB
+	})
+	log.Println("TypeDB", typeDB)
 	if err != nil {
-		log.Fatalf("Couldn't start type database: %s", err)
+		log.Fatalf("Couldn't start static fetcher: %s", err)
 	}
 	defer func() {
-		err := typeDB.Close()
+		err := staticFetcher.Close()
 		if err != nil {
-			log.Fatalf("Problem closing typeDB: %s", err)
+			log.Fatalf("Problem closing static fetcher: %s", err)
+		}
+
+		if typeDB != nil {
+			err = typeDB.Close()
+			if err != nil {
+				log.Fatalf("Problem closing typeDB: %s", err)
+			}
 		}
 	}()
 

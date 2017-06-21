@@ -74,12 +74,13 @@ func (f *StaticFetcher) RunOnce() error {
 		return err
 	}
 
-	log.Println("Done loading types")
+	log.Println("Done loading types", staticDumpURLBase)
 
 	typeDB, err := bolt.NewTypeDB(typedbPath, false)
 	if err != nil {
 		return err
 	}
+	log.Println("done making new typedb")
 
 	f.callback(typeDB)
 	return nil

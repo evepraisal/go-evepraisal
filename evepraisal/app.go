@@ -101,7 +101,7 @@ func appMain() {
 	log.Println("Starting type fetcher")
 	staticdumpHTTPClient := pester.New()
 	staticdumpHTTPClient.Concurrency = 1
-	staticdumpHTTPClient.Timeout = 10 * time.Second
+	staticdumpHTTPClient.Timeout = 5 * time.Minute
 	staticdumpHTTPClient.Backoff = pester.ExponentialJitterBackoff
 	staticdumpHTTPClient.MaxRetries = 10
 

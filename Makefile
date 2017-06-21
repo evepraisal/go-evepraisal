@@ -56,3 +56,6 @@ dist:
 
 deploy-beta: dist
 	USERNAME=root HOSTNAME=beta.evepraisal.com ./scripts/deploy.sh
+
+deploy-prod: dist
+	USERNAME=root HOSTNAME=new.evepraisal.com ./scripts/deploy.sh
