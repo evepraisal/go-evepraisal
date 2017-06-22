@@ -7,6 +7,7 @@ func init() {
 	viper.SetDefault("http_addr", ":8080")
 	viper.SetDefault("https_addr", "")
 	viper.SetDefault("https_domain-whitelist", []string{"evepraisal.com"})
+	viper.SetDefault("letsencrypt_email", "")
 	viper.SetDefault("db_path", "db/")
 	viper.SetDefault("esi_baseurl", "https://esi.tech.ccp.is/latest")
 	viper.SetDefault("newrelic_app-name", "Evepraisal")

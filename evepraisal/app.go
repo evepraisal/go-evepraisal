@@ -235,6 +235,7 @@ func mustStartServers(handler http.Handler) []*http.Server {
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(viper.GetStringSlice("https_domain-whitelist")...),
 			Cache:      autocert.DirCache(filepath.Join(viper.GetString("db_path"), "certs")),
+			Email:      viper.GetString("letsencrypt_email"),
 		}
 
 		server := &http.Server{
