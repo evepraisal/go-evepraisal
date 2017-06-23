@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/legacy"
 	"github.com/go-zoo/bone"
@@ -48,6 +49,11 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(body) == 0 {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is empty.")
+		return
+	}
+
 	market := r.FormValue("market")
 	marketID, err := strconv.ParseInt(market, 10, 64)
 	if err == nil {
@@ -60,7 +66,11 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appraisal, err := ctx.App.StringToAppraisal(market, body)
-	if err != nil {
+	if err == evepraisal.ErrNoValidLinesFound {
+		log.Println("No valid lines found for this appraisal:", spew.Sdump(body))
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
+		return
+	} else if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
