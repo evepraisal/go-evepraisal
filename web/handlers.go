@@ -26,8 +26,8 @@ func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "legal.html", nil)
 }
 
-func (ctx *Context) HandleHelp(w http.ResponseWriter, r *http.Request) {
-	ctx.render(r, w, "help.html", nil)
+func (ctx *Context) HandleAbout(w http.ResponseWriter, r *http.Request) {
+	ctx.render(r, w, "about.html", nil)
 }
 
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +53,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.GetFunc("/search.json", ctx.HandleSearchJSON)
 	router.GetFunc("/latest", ctx.HandleLatestAppraisals)
 	router.GetFunc("/legal", ctx.HandleLegal)
-	router.GetFunc("/help", ctx.HandleHelp)
+	router.GetFunc("/about", ctx.HandleAbout)
 	router.GetFunc("/robots.txt", ctx.HandleRobots)
 	router.GetFunc("/favicon.ico", ctx.HandleFavicon)
 
