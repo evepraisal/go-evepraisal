@@ -76,10 +76,12 @@
       {{template "content" .}}
 
     </div> <!-- /container -->
-    <div class="text-center">
-      <hr />
-      {{template "ad-block"}}
-    </div>
+    {{if not .UI.User}}
+      <div class="text-center">
+        <hr />
+        {{template "ad-block"}}
+      </div>
+    {{end}}
     <hr />
     <div class="container-fluid text-center">
       <p>
