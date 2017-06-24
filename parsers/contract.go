@@ -64,7 +64,7 @@ func ParseContract(input Input) (ParserResult, Input) {
 			bpcRuns = ToInt(bpc[1])
 		}
 		item := ContractItem{
-			Name:     match[1],
+			Name:     CleanTypeName(match[1]),
 			Type:     match[3],
 			Category: match[4],
 			Details:  match[5],

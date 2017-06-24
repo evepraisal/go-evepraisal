@@ -35,6 +35,10 @@ func CleanString(s string) string {
 	return strings.Trim(s, " ")
 }
 
+func CleanTypeName(s string) string {
+	return strings.TrimSuffix(strings.Trim(s, " "), "*")
+}
+
 func regexMatchedLines(matches map[int][]string) []int {
 	keys := make([]int, len(matches))
 	i := 0

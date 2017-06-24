@@ -93,5 +93,19 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		},
 		Input{},
 		true,
+	}, {
+		"Russian with asterisks",
+		`Hornet EC-300*	10	Дрон электронного противодействия*	Дрон*	Отсек для дронов
+ Hornet EC-300*	10	Дрон электронного противодействия*	Дрон*	Отсек для дронов
+ Praetor II*	1	Боевой дрон*	Дрон*	Отсек для дронов`,
+		&Contract{
+			Items: []ContractItem{
+				{Name: "Hornet EC-300", Quantity: 20, Type: "Дрон электронного противодействия*", Category: "Дрон*", Details: "Отсек для дронов"},
+				{Name: "Praetor II", Quantity: 1, Type: "Боевой дрон*", Category: "Дрон*", Details: "Отсек для дронов"},
+			},
+			lines: []int{0, 1, 2},
+		},
+		Input{},
+		true,
 	},
 }

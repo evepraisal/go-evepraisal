@@ -28,7 +28,6 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	var body string
 
 	f, _, err := r.FormFile("uploadappraisal")
-
 	if err == http.ErrNotMultipart || err == http.ErrMissingFile {
 		body = r.FormValue("raw_textarea")
 	} else if err != nil {
