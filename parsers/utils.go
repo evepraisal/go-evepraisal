@@ -31,10 +31,6 @@ func ToFloat64(s string) float64 {
 	return f
 }
 
-func CleanString(s string) string {
-	return strings.Trim(s, " ")
-}
-
 func CleanTypeName(s string) string {
 	return strings.TrimSuffix(strings.Trim(s, " "), "*")
 }

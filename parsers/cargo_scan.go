@@ -36,7 +36,7 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[CargoScanItem]int64)
 	for _, match := range matches {
-		item := CargoScanItem{Name: match[2]}
+		item := CargoScanItem{Name: CleanTypeName(match[2])}
 
 		if strings.HasSuffix(item.Name, " (Copy)") {
 			item.BPC = true

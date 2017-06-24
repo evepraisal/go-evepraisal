@@ -27,7 +27,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	// collect items
 	matchgroup := make(map[ListingItem]int64)
 	for i, match := range matches {
-		name := CleanString(match[2])
+		name := CleanTypeName(match[2])
 		if p.typeDB.HasType(name) {
 			matchgroup[ListingItem{Name: name}] += ToInt(match[1])
 			listing.lines = append(listing.lines, i)
@@ -37,7 +37,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	}
 
 	for i, match := range matches2 {
-		name := CleanString(match[1])
+		name := CleanTypeName(match[1])
 		if p.typeDB.HasType(name) {
 			matchgroup[ListingItem{Name: name}] += ToInt(match[2])
 			listing.lines = append(listing.lines, i)
@@ -47,7 +47,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	}
 
 	for i, match := range matches3 {
-		name := CleanString(match[1])
+		name := CleanTypeName(match[1])
 		if p.typeDB.HasType(name) {
 			matchgroup[ListingItem{Name: name}] += 1
 			listing.lines = append(listing.lines, i)
@@ -57,8 +57,8 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	}
 
 	for i, match := range matchesWithAmmo {
-		name1 := CleanString(match[1])
-		name2 := CleanString(match[2])
+		name1 := CleanTypeName(match[1])
+		name2 := CleanTypeName(match[2])
 		if p.typeDB.HasType(name1) && p.typeDB.HasType(name2) {
 			matchgroup[ListingItem{Name: name1}] += 1
 			matchgroup[ListingItem{Name: name2}] += 1
