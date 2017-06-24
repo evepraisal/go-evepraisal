@@ -57,11 +57,11 @@ func (i AppraisalItem) BuyTotal() float64 {
 }
 
 func (i AppraisalItem) SellISKVolume() float64 {
-	return i.SellTotal() / i.TypeVolume
+	return i.Prices.Sell.Min / i.TypeVolume
 }
 
 func (i AppraisalItem) BuyISKVolume() float64 {
-	return i.BuyTotal() / i.TypeVolume
+	return i.Prices.Buy.Max / i.TypeVolume
 }
 
 func (i AppraisalItem) SingleRepresentativePrice() float64 {
