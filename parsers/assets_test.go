@@ -74,5 +74,16 @@ Sleeper Data Library	1.080`,
 		},
 		Input{},
 		false,
+	}, {
+		"With asterisk",
+		`Armor Plates*	477	Geborgene Materialien*`,
+		&AssetList{
+			Items: []AssetItem{
+				{Name: "Armor Plates", Quantity: 477, Group: "Geborgene Materialien*"},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 }
