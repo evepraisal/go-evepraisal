@@ -85,5 +85,16 @@ Sleeper Data Library	1.080`,
 		},
 		Input{},
 		false,
+	}, {
+		"With spaces in numbers",
+		`Robotics	741	Specialized Commodities			4 446 m3	76 705 081,83 ISK`,
+		&AssetList{
+			Items: []AssetItem{
+				{Name: "Robotics", Quantity: 741, Group: "Specialized Commodities"},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 }

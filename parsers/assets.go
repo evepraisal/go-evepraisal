@@ -41,7 +41,7 @@ type AssetItem struct {
 
 var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`^([\S\ ]*)`,                           // Name
-	`\t([\d,'\.]*)`,                        // Quantity
+	`\t([\d,'\.\ ]*)`,                      // Quantity
 	`(?:\t([\S ]*))?`,                      // Group
 	`(?:\t([\S ]*))?`,                      // Category
 	`(?:\t(XLarge|Large|Medium|Small|))?`,  // Size
@@ -49,7 +49,7 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`(?:\t([\d ,\.]*) m3)?`,                // Volume
 	`(?:\t([\d]+|))?`,                      // meta level
 	`(?:\t([\d]+|))?`,                      // tech level
-	`(?:\t([\d,'\.])+ ISK)?$`,              // price estimate
+	`(?:\t([\d,'\.\ ]+) ISK)?$`,            // price estimate
 }, ""))
 
 func ParseAssets(input Input) (ParserResult, Input) {

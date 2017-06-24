@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var cleanIntegers = regexp.MustCompile(`[,\'\.` + "\xc2\xa0" + `]`)
+var cleanIntegers = regexp.MustCompile(`[,\'\.\ ` + "\xc2\xa0" + `]`)
 
 func ToInt(s string) int64 {
 	if s == "" {
