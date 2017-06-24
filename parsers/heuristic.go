@@ -18,8 +18,6 @@ var HeuristicSpecs = [][]int{
 	{HEURISTIC_QUANTITY, HEURISTIC_IGNORE, HEURISTIC_ITEM},
 	{HEURISTIC_ITEM, HEURISTIC_QUANTITY},
 	{HEURISTIC_QUANTITY, HEURISTIC_ITEM},
-	{HEURISTIC_IGNORE, HEURISTIC_ITEM},
-	{HEURISTIC_ITEM},
 }
 
 type HeuristicParser struct {
@@ -36,6 +34,7 @@ func heuristicTrimStrings(parts []string, trim string) []string {
 func removeEmpty(parts []string) []string {
 	newParts := make([]string, 0)
 	for _, s := range parts {
+		s = strings.TrimSpace(s)
 		if s != "" {
 			newParts = append(newParts, s)
 		}
@@ -97,17 +96,18 @@ func (p *HeuristicParser) Parse(input Input) (ParserResult, Input) {
 }
 
 func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
+	// Let's try tab separators
 	parts := removeEmpty(heuristicTrimStrings(strings.Split(line, "\t"), ", _=-[]*"))
 	if len(parts) == 1 {
-		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "-"), ", _=-[]*"))
-	}
-	if len(parts) == 1 {
+		// Let's try double space separators
 		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "  "), ", _=-[]*"))
 	}
 	if len(parts) == 1 {
-		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, " "), ", _=-[]*"))
+		// Let's try dash separators
+		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, "-"), ", _=-[]*"))
 	}
 	if len(parts) == 1 {
+		// Let's try space separators
 		parts = removeEmpty(heuristicTrimStrings(strings.Split(line, " "), ", _=-[]*"))
 	}
 
