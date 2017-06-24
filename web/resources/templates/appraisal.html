@@ -61,7 +61,7 @@
               {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}
             </a>
           </td>
-          <td class="numeric-cell text-right" data-sort-volume="-{{$item.SingleRepresentativePrice | printf "%f"}}">{{commaf $item.TypeVolume }}</td>
+          <td class="numeric-cell text-right" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{commaf $item.TypeVolume }}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
             {{commaf $item.Prices.Sell.Min}}<br />
             {{commaf $item.Prices.Buy.Max}}</td>
