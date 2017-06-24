@@ -64,7 +64,7 @@ func ParseAssets(input Input) (ParserResult, Input) {
 
 		assetList.Items = append(assetList.Items,
 			AssetItem{
-				Name:          match[1],
+				Name:          CleanTypeName(match[1]),
 				Quantity:      qty,
 				Volume:        ToFloat64(match[7]),
 				Group:         match[3],
