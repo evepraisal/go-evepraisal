@@ -66,7 +66,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	appraisal, err := ctx.App.StringToAppraisal(market, body)
 	if err == evepraisal.ErrNoValidLinesFound {
-		log.Println("No valid lines found for this appraisal:", spew.Sdump(body))
+		log.Println("No valid lines found:", spew.Sdump(body))
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	} else if err != nil {
@@ -115,12 +115,12 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if strings.HasSuffix(appraisalID, ".json") {
-		ctx.HandleViewAppraisalJSON(w, r)
+		ctx.HandleViewAppraisalJSON(w, r, appraisalID)
 		return
 	}
 
 	if strings.HasSuffix(appraisalID, ".raw") {
-		ctx.HandleViewAppraisalRAW(w, r)
+		ctx.HandleViewAppraisalRAW(w, r, appraisalID)
 		return
 	}
 
@@ -140,8 +140,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
 }
 
-func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request) {
-	appraisalID := bone.GetValue(r, "appraisalID")
+func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request, appraisalID string) {
 	appraisalID = strings.TrimSuffix(appraisalID, ".json")
 
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
@@ -157,8 +156,7 @@ func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(appraisal)
 }
 
-func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request) {
-	appraisalID := bone.GetValue(r, "appraisalID")
+func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request, appraisalID string) {
 	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
 
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)

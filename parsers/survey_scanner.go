@@ -39,7 +39,7 @@ func ParseSurveyScan(input Input) (ParserResult, Input) {
 	for _, match := range matches {
 		surveyScan.Items = append(surveyScan.Items,
 			ScanItem{
-				Name:     match[1],
+				Name:     CleanTypeName(match[1]),
 				Quantity: ToInt(match[2]),
 				Distance: match[3],
 			})
