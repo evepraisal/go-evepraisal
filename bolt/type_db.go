@@ -25,6 +25,10 @@ type TypeDB struct {
 	indexFilename string
 }
 
+var aliases = map[string]string{
+	"skill injector": "large skill injector",
+}
+
 func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	opts := &bolt.Options{Timeout: 1 * time.Second}
 	var (
@@ -93,10 +97,15 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 }
 
 func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
+	lower := strings.ToLower(typeName)
+	newLower, ok := aliases[lower]
+	if ok {
+		lower = newLower
+	}
 	evetype := typedb.EveType{}
 	var buf []byte
 	err := db.db.View(func(tx *bolt.Tx) error {
-		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(strings.ToLower(typeName)))
+		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(lower))
 		return nil
 	})
 
@@ -118,9 +127,15 @@ func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
 }
 
 func (db *TypeDB) HasType(typeName string) bool {
+	lower := strings.ToLower(typeName)
+	newLower, ok := aliases[lower]
+	if ok {
+		lower = newLower
+	}
+
 	var buf []byte
 	err := db.db.View(func(tx *bolt.Tx) error {
-		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(strings.ToLower(typeName)))
+		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(lower))
 		return nil
 	})
 
