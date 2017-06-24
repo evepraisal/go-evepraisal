@@ -132,11 +132,11 @@ func appMain() {
 				parsers.ParseWallet,
 				parsers.ParseSurveyScan,
 				parsers.ParseContract,
+				parsers.NewContextListingParser(typeDB),
 				parsers.ParseAssets,
 				parsers.ParseIndustry,
 				parsers.ParseCargoScan,
 				parsers.ParseDScan,
-				parsers.NewContextListingParser(typeDB),
 				parsers.NewHeuristicParser(typeDB),
 			})
 
