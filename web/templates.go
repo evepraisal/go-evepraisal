@@ -87,6 +87,11 @@ func (ctx *Context) renderErrorPage(r *http.Request, w http.ResponseWriter, stat
 	}{title, message})
 }
 
+func (ctx *Context) renderServerError(r *http.Request, w http.ResponseWriter, err error) {
+	log.Printf("ERROR: %s", err)
+	ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+}
+
 func (ctx *Context) Reload() error {
 	templates := make(map[string]*template.Template)
 	root := template.New("root").Funcs(templateFuncs)

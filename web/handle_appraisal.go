@@ -29,16 +29,16 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	f, _, err := r.FormFile("uploadappraisal")
 
-	if err == http.ErrMissingFile {
+	if err == http.ErrNotMultipart || err == http.ErrMissingFile {
 		body = r.FormValue("raw_textarea")
 	} else if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	} else {
 		defer f.Close()
 		bodyBytes, err := ioutil.ReadAll(f)
 		if err != nil {
-			ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+			ctx.renderServerError(r, w, err)
 			return
 		}
 		body = string(bodyBytes)
@@ -79,8 +79,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
-		log.Printf("ERROR: saving appraisal: %s", err)
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 
@@ -131,7 +130,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 
@@ -151,7 +150,7 @@ func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Reque
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 
@@ -168,7 +167,7 @@ func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Reques
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 

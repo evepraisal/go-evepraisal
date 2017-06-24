@@ -45,13 +45,13 @@ func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	tok, err := ctx.OauthConfig.Exchange(r.Context(), code)
 	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 	}
 
 	client := ctx.OauthConfig.Client(r.Context(), tok)
 	resp, err := client.Get(ctx.OauthVerifyURL)
 	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 	}
 
 	if resp.StatusCode != 200 {
@@ -62,7 +62,7 @@ func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(resp.Body).Decode(user)
 	defer resp.Body.Close()
 	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 	}
 
 	ctx.setSessionValue(r, w, "user", &user)

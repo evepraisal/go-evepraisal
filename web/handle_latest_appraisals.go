@@ -20,7 +20,7 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 
 	appraisals, err := ctx.App.AppraisalDB.LatestAppraisals(int(limit), r.FormValue("kind"))
 	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (ctx *Context) HandleUserLatestAppraisals(w http.ResponseWriter, r *http.Re
 
 	appraisals, err := ctx.App.AppraisalDB.LatestAppraisalsByUser(*user, int(limit), r.FormValue("kind"))
 	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 

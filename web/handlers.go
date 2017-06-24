@@ -16,7 +16,7 @@ import (
 func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	total, err := ctx.App.AppraisalDB.TotalAppraisals()
 	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+		ctx.renderServerError(r, w, err)
 		return
 	}
 	ctx.render(r, w, "main.html", struct{ TotalAppraisalCount int64 }{TotalAppraisalCount: total})
