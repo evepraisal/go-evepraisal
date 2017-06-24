@@ -15,6 +15,7 @@ import (
 )
 
 var templateFuncs = template.FuncMap{
+	"humanizeVolume":  humanizeVolume,
 	"commaf":          humanizeCommaf,
 	"comma":           humanize.Comma,
 	"prettybignumber": HumanLargeNumber,
