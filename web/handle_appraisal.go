@@ -96,6 +96,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
+	w.Header().Add("X-Appraisal-ID", appraisal.ID)
+
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
 }
 
