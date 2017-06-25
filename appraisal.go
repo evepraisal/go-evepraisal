@@ -43,7 +43,7 @@ type AppraisalItem struct {
 	TypeVolume float64 `json:"typeVolume"`
 	Quantity   int64   `json:"quantity"`
 	Prices     Prices  `json:"prices"`
-	Meta       struct {
+	Extra      struct {
 		Fitted     bool    `json:"fitted,omitempty"`
 		Dropped    bool    `json:"dropped,omitempty"`
 		Destroyed  bool    `json:"destroyed,omitempty"`
@@ -225,7 +225,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			return prices
 		}
 
-		if items[i].Meta.BPC {
+		if items[i].Extra.BPC {
 			// TODO: Fix this logic
 			// bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(t.Name, " Blueprint"))
 			// if !ok {
@@ -308,7 +308,7 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.BPC = item.BPC
+			newItem.Extra.BPC = item.BPC
 			items = append(items, newItem)
 		}
 	case *parsers.Contract:
@@ -317,9 +317,9 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.Fitted = item.Fitted
-			newItem.Meta.BPC = item.BPC
-			newItem.Meta.BPCRuns = item.BPCRuns
+			newItem.Extra.Fitted = item.Fitted
+			newItem.Extra.BPC = item.BPC
+			newItem.Extra.BPCRuns = item.BPCRuns
 			items = append(items, newItem)
 		}
 	case *parsers.DScan:
@@ -345,8 +345,8 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.Dropped = true
-			newItem.Meta.Location = item.Location
+			newItem.Extra.Dropped = true
+			newItem.Extra.Location = item.Location
 			items = append(items, newItem)
 		}
 		for _, item := range r.Destroyed {
@@ -354,8 +354,8 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.Destroyed = true
-			newItem.Meta.Location = item.Location
+			newItem.Extra.Destroyed = true
+			newItem.Extra.Location = item.Location
 			items = append(items, newItem)
 		}
 	case *parsers.Listing:
@@ -368,7 +368,7 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.PlayerName = item.PlayerName
+			newItem.Extra.PlayerName = item.PlayerName
 			items = append(items, newItem)
 		}
 	case *parsers.PI:
@@ -377,8 +377,8 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.Routed = item.Routed
-			newItem.Meta.Volume = item.Volume
+			newItem.Extra.Routed = item.Routed
+			newItem.Extra.Volume = item.Volume
 			items = append(items, newItem)
 		}
 	case *parsers.SurveyScan:
@@ -387,7 +387,7 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.Distance = item.Distance
+			newItem.Extra.Distance = item.Distance
 			items = append(items, newItem)
 		}
 	case *parsers.ViewContents:
@@ -396,7 +396,7 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Name:     item.Name,
 				Quantity: item.Quantity,
 			}
-			newItem.Meta.Location = item.Location
+			newItem.Extra.Location = item.Location
 			items = append(items, newItem)
 		}
 	case *parsers.Wallet:
