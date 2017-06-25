@@ -50,7 +50,7 @@ func ParseViewContents(input Input) (ParserResult, Input) {
 	matchgroup := make(map[ViewContentsItem]int64)
 	for _, match := range matches {
 		item := ViewContentsItem{
-			Name:     match[1],
+			Name:     CleanTypeName(match[1]),
 			Group:    match[2],
 			Location: match[3],
 		}
@@ -59,7 +59,7 @@ func ParseViewContents(input Input) (ParserResult, Input) {
 
 	for _, match := range matches2 {
 		item := ViewContentsItem{
-			Name:  match[1],
+			Name:  CleanTypeName(match[1]),
 			Group: match[2],
 		}
 		matchgroup[item] += ToInt(match[3])
