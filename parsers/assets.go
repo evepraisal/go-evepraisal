@@ -33,12 +33,6 @@ type AssetItem struct {
 	PriceEstimate float64
 }
 
-// 50MN Microwarpdrive I	1	Propulsion Module		Medium	25 m3	145,977.27 ISK
-// 50MN Microwarpdrive II		Propulsion Module		Medium	10 m3	5,044,358.31 ISK
-// 50MN Y-T8 Compact Microwarpdrive	3	Propulsion Module		Medium	30 m3	63,342.24 ISK
-// 5MN Microwarpdrive II		Propulsion Module		Medium	10 m3	3,611,362.71 ISK
-// 5MN Y-T8 Compact Microwarpdrive	3	Propulsion Module		Medium	30 m3	960,279.42 ISK
-
 var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`^([\S\ ]*)`,                           // Name
 	`\t([\d,'\.\ ]*)`,                      // Quantity

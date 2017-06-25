@@ -37,15 +37,24 @@ func (appraisal *Appraisal) CreatedTime() time.Time {
 }
 
 type AppraisalItem struct {
-	Name       string                 `json:"name"`
-	TypeID     int64                  `json:"typeID"`
-	TypeName   string                 `json:"typeName"`
-	TypeVolume float64                `json:"typeVolume"`
-	Quantity   int64                  `json:"quantity"`
-	Meta       map[string]interface{} `json:"meta"`
-	Prices     Prices                 `json:"prices"`
-	BPC        bool                   `json:"bpc"`
-	BPCRuns    int64                  `json:"bpcRuns,omitempty"`
+	Name       string  `json:"name"`
+	TypeID     int64   `json:"typeID"`
+	TypeName   string  `json:"typeName"`
+	TypeVolume float64 `json:"typeVolume"`
+	Quantity   int64   `json:"quantity"`
+	Prices     Prices  `json:"prices"`
+	Meta       struct {
+		Fitted     bool    `json:"fitted,omitempty"`
+		Dropped    bool    `json:"dropped,omitempty"`
+		Destroyed  bool    `json:"destroyed,omitempty"`
+		Location   string  `json:"location,omitempty"`
+		PlayerName string  `json:"player_name,omitempty"`
+		Routed     bool    `json:"routed,omitempty"`
+		Volume     float64 `json:"volume,omitempty"`
+		Distance   string  `json:"distance,omitempty"`
+		BPC        bool    `json:"bpc"`
+		BPCRuns    int64   `json:"bpcRuns,omitempty"`
+	} `json:"meta,omitempty"`
 }
 
 func (i AppraisalItem) SellTotal() float64 {
@@ -216,7 +225,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			return prices
 		}
 
-		if items[i].BPC {
+		if items[i].Meta.BPC {
 			// TODO: Fix this logic
 			// bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(t.Name, " Blueprint"))
 			// if !ok {
@@ -295,23 +304,23 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		}
 	case *parsers.CargoScan:
 		for _, item := range r.Items {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					BPC:      item.BPC,
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.BPC = item.BPC
+			items = append(items, newItem)
 		}
 	case *parsers.Contract:
 		for _, item := range r.Items {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta:     map[string]interface{}{"fitted": item.Fitted},
-					BPC:      item.BPC,
-					BPCRuns:  item.BPCRuns,
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.Fitted = item.Fitted
+			newItem.Meta.BPC = item.BPC
+			newItem.Meta.BPCRuns = item.BPCRuns
+			items = append(items, newItem)
 		}
 	case *parsers.DScan:
 		for _, item := range r.Items {
@@ -332,26 +341,22 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		}
 	case *parsers.Killmail:
 		for _, item := range r.Dropped {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"dropped":  true,
-						"location": item.Location,
-					},
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.Dropped = true
+			newItem.Meta.Location = item.Location
+			items = append(items, newItem)
 		}
 		for _, item := range r.Destroyed {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"destroyed": true,
-						"location":  item.Location,
-					},
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.Destroyed = true
+			newItem.Meta.Location = item.Location
+			items = append(items, newItem)
 		}
 	case *parsers.Listing:
 		for _, item := range r.Items {
@@ -359,48 +364,40 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		}
 	case *parsers.LootHistory:
 		for _, item := range r.Items {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"player_name": item.PlayerName,
-					},
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.PlayerName = item.PlayerName
+			items = append(items, newItem)
 		}
 	case *parsers.PI:
 		for _, item := range r.Items {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"routed": item.Routed,
-						"volume": item.Volume,
-					},
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.Routed = item.Routed
+			newItem.Meta.Volume = item.Volume
+			items = append(items, newItem)
 		}
 	case *parsers.SurveyScan:
 		for _, item := range r.Items {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"distance": item.Distance,
-					},
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.Distance = item.Distance
+			items = append(items, newItem)
 		}
 	case *parsers.ViewContents:
 		for _, item := range r.Items {
-			items = append(items,
-				AppraisalItem{
-					Name:     item.Name,
-					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"location": item.Location,
-					},
-				})
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Meta.Location = item.Location
+			items = append(items, newItem)
 		}
 	case *parsers.Wallet:
 		for _, item := range r.ItemizedTransactions {
@@ -408,14 +405,6 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				AppraisalItem{
 					Name:     item.Name,
 					Quantity: item.Quantity,
-					Meta: map[string]interface{}{
-						"client":   item.Client,
-						"credit":   item.Credit,
-						"currency": item.Currency,
-						"datetime": item.Datetime,
-						"location": item.Location,
-						"price":    item.Price,
-					},
 				})
 		}
 	case *parsers.HeuristicResult:
@@ -424,10 +413,16 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		}
 	}
 
-	returnItems := make([]AppraisalItem, len(items))
-	for i, item := range items {
+	mappedItems := make(map[AppraisalItem]int64)
+	for _, item := range items {
 		item.Name = strings.Trim(item.Name, " \t")
-		returnItems[i] = item
+		mappedItems[item] += item.Quantity
+	}
+
+	returnItems := make([]AppraisalItem, 0, len(mappedItems))
+	for item, quantity := range mappedItems {
+		item.Quantity = quantity
+		returnItems = append(returnItems, item)
 	}
 
 	return returnItems

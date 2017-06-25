@@ -280,13 +280,12 @@ func (t LegacyType) ToNewItems() []evepraisal.AppraisalItem {
 		Name:     t.Name,
 		TypeName: t.Name,
 		Quantity: int64(t.Quantity),
-		Meta:     make(map[string]interface{}),
 	}
 	if t.Fitted {
-		item.Meta["fitted"] = true
+		item.Meta.Fitted = true
 	}
 	if t.Location != "" {
-		item.Meta["location"] = t.Location
+		item.Meta.Location = t.Location
 	}
 	items = append(items, item)
 	return items
@@ -319,26 +318,24 @@ type LegacyKillmail struct {
 }
 
 func (t LegacyKillmail) ToNewItems() []evepraisal.AppraisalItem {
-	items := []evepraisal.AppraisalItem{
-		{Name: t.Victim.Destroyed, Quantity: 1},
-	}
+	ship := evepraisal.AppraisalItem{Name: t.Victim.Destroyed, Quantity: 1}
+	ship.Meta.Destroyed = true
+	items := []evepraisal.AppraisalItem{ship}
 	for _, dropped := range t.Dropped {
-		items = append(items,
-			evepraisal.AppraisalItem{
-				Name:     dropped.Name,
-				Quantity: dropped.Quantity,
-				Meta:     map[string]interface{}{"dropped": true},
-			},
-		)
+		item := evepraisal.AppraisalItem{
+			Name:     dropped.Name,
+			Quantity: dropped.Quantity,
+		}
+		item.Meta.Dropped = true
+		items = append(items, item)
 	}
 	for _, destroyed := range t.Destroyed {
-		items = append(items,
-			evepraisal.AppraisalItem{
-				Name:     destroyed.Name,
-				Quantity: destroyed.Quantity,
-				Meta:     map[string]interface{}{"destroyed": true},
-			},
-		)
+		item := evepraisal.AppraisalItem{
+			Name:     destroyed.Name,
+			Quantity: destroyed.Quantity,
+		}
+		item.Meta.Destroyed = true
+		items = append(items, item)
 	}
 	return items
 }
