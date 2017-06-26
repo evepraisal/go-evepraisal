@@ -1,6 +1,7 @@
 package esi
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -90,12 +91,36 @@ func (p *PriceFetcher) Close() error {
 	return nil
 }
 
+func regionNames() []string {
+	regions := make([]string, len(SpecialRegions)+1)
+	regions[0] = "universe"
+	for i, region := range SpecialRegions {
+		regions[i+1] = region.name
+	}
+	return regions
+}
+
 func (p *PriceFetcher) runOnce() {
 	log.Println("Fetch market data")
-	priceMap, err := p.FetchMarketData(p.client, p.baseURL, []int{10000002, 10000042, 10000027, 10000032, 10000043})
+	priceMap, err := p.FetchOrderData(p.client, p.baseURL, []int{10000002, 10000042, 10000027, 10000032, 10000043})
 	if err != nil {
 		log.Println("ERROR: fetching market data: ", err)
 		return
+	}
+
+	pricesFromCCP, err := p.FetchPriceData(p.client, p.baseURL)
+	if err != nil {
+		log.Println("ERROR: fetching CCP price data: ", err)
+		return
+	}
+
+	for _, regionName := range regionNames() {
+		for typeID, prices := range pricesFromCCP {
+			p, ok := priceMap[regionName][typeID]
+			if !ok || p.All.Volume < 50 {
+				priceMap[regionName][typeID] = prices
+			}
+		}
 	}
 
 	for market, pmap := range priceMap {
@@ -125,7 +150,40 @@ func (p *PriceFetcher) freshPriceMap() map[string]map[int64]evepraisal.Prices {
 	return priceMap
 }
 
-func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
+func (p *PriceFetcher) FetchPriceData(client *pester.Client, baseURL string) (map[int64]evepraisal.Prices, error) {
+	start := time.Now()
+	url := fmt.Sprintf("%s/markets/prices/?datasource=tranquility", baseURL)
+	esiPrices := make([]struct {
+		TypeID        int64   `json:"type_id"`
+		AveragePrice  float64 `json:"average_price"`
+		AdjustedPrice float64 `json:"adjusted_price"`
+	}, 0)
+	err := fetchURL(client, url, &esiPrices)
+	if err != nil {
+		return nil, err
+	}
+
+	allPrices := make(map[int64]evepraisal.Prices, len(esiPrices))
+	for _, p := range esiPrices {
+		stats := evepraisal.PriceStats{
+			Average:    p.AveragePrice,
+			Max:        p.AdjustedPrice,
+			Median:     p.AdjustedPrice,
+			Min:        p.AdjustedPrice,
+			Percentile: p.AdjustedPrice,
+		}
+		allPrices[p.TypeID] = evepraisal.Prices{
+			All:      stats,
+			Buy:      stats,
+			Sell:     stats,
+			Updated:  start,
+			Strategy: "ccp",
+		}
+	}
+	return allPrices, nil
+}
+
+func (p *PriceFetcher) FetchOrderData(client *pester.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
 	finished := make(chan bool, 1)
 	workerStop := make(chan bool, 1)
@@ -188,7 +246,7 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 	case <-finished:
 	case <-p.stop:
 		close(workerStop)
-		return nil, nil
+		return nil, errors.New("Stopping during price fetch")
 	case err := <-errChannel:
 		if err != nil {
 			close(workerStop)
@@ -218,6 +276,7 @@ func (p *PriceFetcher) FetchMarketData(client *pester.Client, baseURL string, re
 			}
 			agg := getPriceAggregatesForOrders(filteredOrders)
 			agg.Updated = fetchStart
+			agg.Strategy = "orders"
 			newPriceMap[region.name][k] = agg
 		}
 		agg := getPriceAggregatesForOrders(orders)

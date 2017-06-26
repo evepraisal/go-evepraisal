@@ -16,8 +16,10 @@
   <div class="tab-content">
     {{ range $i, $summary := .Page.Summaries }}
       <div class="tab-pane{{if eq $i 0}} active{{end}}" id="{{$summary.MarketName}}" role="tabpanel">
-        {{if eq $summary.PricingStrategy "component"}}
+        {{if eq $summary.Prices.Strategy "component"}}
           {{template "_view_item_component.html" $summary}}
+        {{else if eq $summary.Prices.Strategy "ccp"}}
+          {{template "_view_item_ccp.html" $summary}}
         {{else}}
           {{template "_view_item_market.html" $summary}}
         {{end}}

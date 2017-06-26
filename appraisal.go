@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
-	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
 var (
@@ -86,10 +85,11 @@ func (i AppraisalItem) RepresentativePrice() float64 {
 }
 
 type Prices struct {
-	All     PriceStats `json:"all"`
-	Buy     PriceStats `json:"buy"`
-	Sell    PriceStats `json:"sell"`
-	Updated time.Time  `json:"updated"`
+	All      PriceStats `json:"all"`
+	Buy      PriceStats `json:"buy"`
+	Sell     PriceStats `json:"sell"`
+	Updated  time.Time  `json:"updated"`
+	Strategy string     `json:"strategy"`
 }
 
 func (prices Prices) String() string {
@@ -213,18 +213,6 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		items[i].TypeName = t.Name
 		items[i].TypeVolume = t.Volume
 
-		priceByComponents := func(components []typedb.Component) Prices {
-			var prices Prices
-			for _, component := range components {
-				p, ok := app.PriceDB.GetPrice(market, component.TypeID)
-				if !ok {
-					continue
-				}
-				prices = prices.Add(p.Mul(float64(component.Quantity)))
-			}
-			return prices
-		}
-
 		if items[i].Extra.BPC {
 			// TODO: Fix this logic
 			// bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(t.Name, " Blueprint"))
@@ -250,14 +238,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			// appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
 			// appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
 		} else {
-			prices, ok := app.PriceDB.GetPrice(market, t.ID)
-			if !ok {
-				log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
-			}
-
-			if prices.Sell.Volume <= 10 && len(t.BaseComponents) > 0 {
-				prices = priceByComponents(t.BaseComponents)
-			}
+			prices, _ := app.PriceDB.GetPrice(market, t.ID)
 			items[i].Prices = prices
 			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
 			appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
@@ -436,3 +417,15 @@ func filterUnparsed(unparsed map[int]string) map[int]string {
 	}
 	return unparsed
 }
+
+// func priceByComponents(t typedb.EveType, priceDB PriceDB) Prices {
+// 	var prices Prices
+// 	for _, component := range t.BaseComponents {
+// 		p, ok := priceDB.GetPrice(market, component.TypeID)
+// 		if !ok {
+// 			continue
+// 		}
+// 		prices = prices.Add(p.Mul(float64(component.Quantity)))
+// 	}
+// 	return prices
+// }

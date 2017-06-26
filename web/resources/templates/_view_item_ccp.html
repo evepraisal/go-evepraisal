@@ -1,0 +1,19 @@
+<div class="row col-lg-12">
+  <h4>CCP Pricing</h4>
+  <p>If there is not enough market volume then Evepraisal relies on the prices that CCP gives. The price was last updated {{relativetime .Prices.Updated}}.</p>
+
+  <div class="col-lg-12">
+    <table class="table">
+      <tbody>
+        <tr class="active">
+          <th>Adjusted Price</th>
+          <td class="text-right">{{commaf .Prices.All.Min}} ISK</td>
+        </tr>
+        <tr>
+          <th>Average Price</th>
+          <td class="text-right">{{commaf .Prices.All.Average}} ISK</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

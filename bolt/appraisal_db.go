@@ -16,7 +16,7 @@ import (
 )
 
 type AppraisalDB struct {
-	db   *bolt.DB
+	DB   *bolt.DB
 	wg   *sync.WaitGroup
 	stop chan (bool)
 }
@@ -57,7 +57,7 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 	}
 
 	appraisalDB := &AppraisalDB{
-		db:   db,
+		DB:   db,
 		wg:   &sync.WaitGroup{},
 		stop: make(chan bool),
 	}
@@ -69,7 +69,7 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 
 func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 	var dbID []byte
-	err := db.db.Update(func(tx *bolt.Tx) error {
+	err := db.DB.Update(func(tx *bolt.Tx) error {
 		byIDBucket := tx.Bucket([]byte("appraisals"))
 		var err error
 		if appraisal.ID == "" {
@@ -121,7 +121,7 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 
 	appraisal := &evepraisal.Appraisal{}
 
-	err = db.db.View(func(tx *bolt.Tx) error {
+	err = db.DB.View(func(tx *bolt.Tx) error {
 		var err error
 		b := tx.Bucket([]byte("appraisals"))
 		buf := b.Get(dbID)
@@ -146,7 +146,7 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 
 func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
 		c := b.Cursor()
 		for key, val := c.Last(); key != nil; key, val = c.Prev() {
@@ -183,7 +183,7 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 
 func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.DB.View(func(tx *bolt.Tx) error {
 		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
 		byIDBucket := tx.Bucket([]byte("appraisals"))
 		c := byUserBucket.Cursor()
@@ -221,7 +221,7 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 
 func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	var total int64
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
 		total = int64(b.Sequence())
 		return nil
@@ -231,7 +231,7 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 }
 
 func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
-	return db.db.Update(func(tx *bolt.Tx) error {
+	return db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
 		lastUsedB := tx.Bucket([]byte("appraisals-last-used"))
 		dbID, err := EncodeDBID(appraisalID)
@@ -255,14 +255,14 @@ func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 func (db *AppraisalDB) Close() error {
 	close(db.stop)
 	db.wg.Wait()
-	return db.db.Close()
+	return db.DB.Close()
 }
 
 func (db *AppraisalDB) setLastUsedTime(dbID []byte) {
 	now := time.Now().Unix()
 	encodedNow := make([]byte, 8)
 	binary.BigEndian.PutUint64(encodedNow, uint64(now))
-	err := db.db.Update(func(tx *bolt.Tx) error {
+	err := db.DB.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket([]byte("appraisals-last-used")).Put(dbID, encodedNow)
 	})
 
@@ -276,7 +276,7 @@ func (db *AppraisalDB) startReaper() {
 	for {
 		log.Println("Start reaping unused appraisals")
 		unused := make([]string, 0)
-		err := db.db.View(func(tx *bolt.Tx) error {
+		err := db.DB.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("appraisals-last-used"))
 			c := b.Cursor()
 			for key, val := c.First(); key != nil; key, val = c.Next() {

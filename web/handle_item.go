@@ -13,7 +13,6 @@ import (
 type viewItemMarketSummary struct {
 	MarketName        string
 	MarketDisplayName string
-	PricingStrategy   string
 	Prices            evepraisal.Prices
 	Components        []componentDetails
 	Totals            evepraisal.Totals
@@ -54,6 +53,12 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		summaries = append(summaries, viewItemMarketSummary{
+			MarketName:        market.Name,
+			MarketDisplayName: market.DisplayName,
+			Prices:            prices,
+		})
+
 		if prices.Sell.Volume < 10 && len(item.BaseComponents) > 0 {
 			components := make([]componentDetails, len(item.BaseComponents))
 			totals := evepraisal.Totals{}
@@ -75,17 +80,11 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 			summaries = append(summaries, viewItemMarketSummary{
 				MarketName:        market.Name,
 				MarketDisplayName: market.DisplayName,
-				PricingStrategy:   "component",
 				Totals:            totals,
 				Components:        components,
 			})
 		} else {
-			summaries = append(summaries, viewItemMarketSummary{
-				MarketName:        market.Name,
-				MarketDisplayName: market.DisplayName,
-				PricingStrategy:   "market",
-				Prices:            prices,
-			})
+
 		}
 	}
 
