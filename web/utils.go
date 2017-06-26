@@ -33,7 +33,11 @@ func HumanLargeNumber(n float64) string {
 }
 
 func humanizeCommaf(f float64) string {
-	val, _ := stats.Round(f, 0)
+	roundto := 0
+	if f < 10000 {
+		roundto = 2
+	}
+	val, _ := stats.Round(f, roundto)
 	return humanize.Commaf(val)
 }
 
