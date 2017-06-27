@@ -121,7 +121,7 @@ func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath s
 }
 
 type Type struct {
-	GroupID int64
+	GroupID int64 `yaml:"groupID"`
 	Name    struct {
 		En string
 	}
