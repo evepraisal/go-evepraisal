@@ -2,6 +2,7 @@ package staticdump
 
 import (
 	"archive/zip"
+	"compress/bzip2"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -48,7 +49,7 @@ func FindLastStaticDumpURL(client *pester.Client) (string, error) {
 }
 
 func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
-	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latestyaml/invVolumes1.csv", nil)
+	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latest/invVolumes.csv.bz2", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,10 @@ func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
 	}
 	defer resp.Body.Close()
 
-	reader := csv.NewReader(resp.Body)
+	reader := csv.NewReader(bzip2.NewReader(resp.Body))
+
+	// Ignore header
+	reader.Read()
 
 	typeVolumes := make(map[int64]float64)
 	for {
@@ -72,12 +76,12 @@ func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
 			return nil, err
 		}
 
-		id, err := strconv.ParseInt(record[1], 10, 64)
+		id, err := strconv.ParseInt(record[0], 10, 64)
 		if err != nil {
 			continue
 		}
 
-		v, err := strconv.ParseFloat(record[0], 64)
+		v, err := strconv.ParseFloat(record[1], 64)
 		if err != nil {
 			continue
 		}

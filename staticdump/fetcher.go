@@ -145,7 +145,7 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 			}
 		}
 
-		volume, ok := typeVolumes[t.GroupID]
+		volume, ok := typeVolumes[t.ID]
 		if ok {
 			t.PackagedVolume = volume
 		}
