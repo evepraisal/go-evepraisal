@@ -2,7 +2,6 @@ package web
 
 import (
 	"net/http"
-	"sort"
 	"strconv"
 
 	"github.com/evepraisal/go-evepraisal"
@@ -59,33 +58,37 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 			Prices:            prices,
 		})
 
-		if prices.Sell.Volume < 10 && len(item.BaseComponents) > 0 {
-			components := make([]componentDetails, len(item.BaseComponents))
-			totals := evepraisal.Totals{}
-			for i, comp := range item.BaseComponents {
-				compType, _ := ctx.App.TypeDB.GetTypeByID(comp.TypeID)
-				compPrices, _ := ctx.App.PriceDB.GetPrice(market.Name, comp.TypeID)
-				components[i] = componentDetails{
-					Type:     compType,
-					Quantity: comp.Quantity,
-					Prices:   compPrices,
-				}
-				totals.Sell += compPrices.Sell.Min * float64(comp.Quantity)
-				totals.Buy += compPrices.Buy.Max * float64(comp.Quantity)
-			}
+		// if prices.Sell.Volume < 10 && len(item.BaseComponents) > 0 {
+		// 	components := make([]componentDetails, len(item.BaseComponents))
+		// 	totals := evepraisal.Totals{}
+		// 	for i, comp := range item.BaseComponents {
+		// 		compType, _ := ctx.App.TypeDB.GetTypeByID(comp.TypeID)
+		// 		compPrices, _ := ctx.App.PriceDB.GetPrice(market.Name, comp.TypeID)
+		// 		components[i] = componentDetails{
+		// 			Type:     compType,
+		// 			Quantity: comp.Quantity,
+		// 			Prices:   compPrices,
+		// 		}
+		// 		totals.Sell += compPrices.Sell.Min * float64(comp.Quantity)
+		// 		totals.Buy += compPrices.Buy.Max * float64(comp.Quantity)
+		// 	}
 
-			sort.Slice(components, func(i, j int) bool {
-				return components[i].Totals().Sell > components[j].Totals().Sell
-			})
-			summaries = append(summaries, viewItemMarketSummary{
-				MarketName:        market.Name,
-				MarketDisplayName: market.DisplayName,
-				Totals:            totals,
-				Components:        components,
-			})
-		} else {
-
-		}
+		// 	sort.Slice(components, func(i, j int) bool {
+		// 		return components[i].Totals().Sell > components[j].Totals().Sell
+		// 	})
+		// 	summaries = append(summaries, viewItemMarketSummary{
+		// 		MarketName:        market.Name,
+		// 		MarketDisplayName: market.DisplayName,
+		// 		Totals:            totals,
+		// 		Components:        components,
+		// 	})
+		// } else {
+		// 	summaries = append(summaries, viewItemMarketSummary{
+		// 		MarketName:        market.Name,
+		// 		MarketDisplayName: market.DisplayName,
+		// 		Prices:            prices,
+		// 	})
+		// }
 	}
 
 	ctx.render(r, w, "view_item.html", struct {

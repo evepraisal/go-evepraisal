@@ -247,7 +247,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
 			appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
 		}
-		appraisal.Totals.Volume += t.Volume * float64(items[i].Quantity)
+		appraisal.Totals.Volume += items[i].TypeVolume * float64(items[i].Quantity)
 	}
 	appraisal.Items = items
 

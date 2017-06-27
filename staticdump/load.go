@@ -2,7 +2,6 @@ package staticdump
 
 import (
 	"archive/zip"
-	"compress/bzip2"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -49,7 +48,7 @@ func FindLastStaticDumpURL(client *pester.Client) (string, error) {
 }
 
 func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
-	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latest/invVolumes.csv.bz2", nil)
+	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latestyaml/invVolumes1.csv", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -61,10 +60,7 @@ func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
 	}
 	defer resp.Body.Close()
 
-	reader := csv.NewReader(bzip2.NewReader(resp.Body))
-
-	// Ignore header
-	reader.Read()
+	reader := csv.NewReader(resp.Body)
 
 	typeVolumes := make(map[int64]float64)
 	for {
@@ -76,12 +72,12 @@ func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
 			return nil, err
 		}
 
-		id, err := strconv.ParseInt(record[0], 10, 64)
+		id, err := strconv.ParseInt(record[1], 10, 64)
 		if err != nil {
 			continue
 		}
 
-		v, err := strconv.ParseFloat(record[1], 64)
+		v, err := strconv.ParseFloat(record[0], 64)
 		if err != nil {
 			continue
 		}
@@ -121,7 +117,8 @@ func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath s
 }
 
 type Type struct {
-	Name struct {
+	GroupID int64
+	Name    struct {
 		En string
 	}
 	Published bool
@@ -186,6 +183,7 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 
 		eveType := typedb.EveType{
 			ID:                typeID,
+			GroupID:           t.GroupID,
 			Name:              t.Name.En,
 			Volume:            t.Volume,
 			BasePrice:         t.BasePrice,
