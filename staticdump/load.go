@@ -2,12 +2,15 @@ package staticdump
 
 import (
 	"archive/zip"
+	"compress/bzip2"
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
@@ -45,21 +48,51 @@ func FindLastStaticDumpURL(client *pester.Client) (string, error) {
 	return "", errors.New("Could not find latest static dump URL")
 }
 
-func LoadTypes(client *pester.Client, cachepath string, staticDumpURL string) ([]typedb.EveType, error) {
-	if _, err := os.Stat(cachepath); os.IsNotExist(err) {
-		log.Printf("Downloading static dump to %s", cachepath)
-		err := download(client, staticDumpURL, cachepath)
-		if err != nil {
-			return nil, err
-		}
-	} else if err != nil {
+func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
+	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latest/invVolumes.csv.bz2", nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return loadtypes(cachepath)
+	req.Header.Add("User-Agent", userAgent)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	reader := csv.NewReader(bzip2.NewReader(resp.Body))
+
+	// Ignore header
+	reader.Read()
+
+	typeVolumes := make(map[int64]float64)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		id, err := strconv.ParseInt(record[0], 10, 64)
+		if err != nil {
+			continue
+		}
+
+		v, err := strconv.ParseFloat(record[1], 64)
+		if err != nil {
+			continue
+		}
+
+		typeVolumes[id] = v
+
+	}
+	return typeVolumes, nil
 }
 
-func download(client *pester.Client, staticDumpURL string, staticDataPath string) error {
+func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath string) error {
 	out, err := os.Create(staticDataPath)
 	defer out.Close()
 	if err != nil {

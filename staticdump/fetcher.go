@@ -65,11 +65,14 @@ func (f *StaticFetcher) RunOnce() error {
 	if err != nil {
 		return err
 	}
-
+	//
 	staticDumpURLBase := filepath.Base(staticDumpURL)
 	typedbPath := filepath.Join(f.dbPath, "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
 	if _, err := os.Stat(typedbPath); os.IsNotExist(err) {
-		f.loadTypes(typedbPath, staticDumpURL)
+		err := f.loadTypes(typedbPath, staticDumpURL)
+		if err != nil {
+			return err
+		}
 	} else if err != nil {
 		return err
 	}
@@ -92,15 +95,33 @@ func (f *StaticFetcher) Close() error {
 	return nil
 }
 
-func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) {
-	types, err := LoadTypes(f.client, staticCacheFile+".zip", staticDumpURL)
+func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) error {
+
+	typeVolumes, err := downloadTypeVolumes(f.client)
 	if err != nil {
-		log.Fatalf("Unable to load types from static data: %s", err)
+		return err
+	}
+
+	// avoid re-downloading the entire static dump if we already have it
+	cachepath := staticCacheFile + ".zip"
+	if _, err := os.Stat(cachepath); os.IsNotExist(err) {
+		log.Printf("Downloading static dump to %s", cachepath)
+		err := downloadTypes(f.client, staticDumpURL, cachepath)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+
+	types, err := loadtypes(cachepath)
+	if err != nil {
+		return err
 	}
 
 	typeDB, err := bolt.NewTypeDB(staticCacheFile, true)
 	if err != nil {
-		log.Fatalf("Couldn't start type database (write mode): %s", err)
+		return err
 	}
 	finished := false
 	defer func() {
@@ -119,15 +140,22 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 		if i%1000 == 0 {
 			select {
 			case <-f.stop:
-				return
+				return nil
 			default:
 			}
 		}
 
+		volume, ok := typeVolumes[t.ID]
+		if ok {
+			t.PackagedVolume = volume
+		}
+
 		err = typeDB.PutType(t)
 		if err != nil {
-			log.Fatalf("Cannot insert type: %s", err)
+			return err
 		}
 	}
 	finished = true
+	log.Println("Finished typedb fetch")
+	return nil
 }

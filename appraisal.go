@@ -211,7 +211,11 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		}
 		items[i].TypeID = t.ID
 		items[i].TypeName = t.Name
-		items[i].TypeVolume = t.Volume
+		if t.PackagedVolume != 0.0 {
+			items[i].TypeVolume = t.PackagedVolume
+		} else {
+			items[i].TypeVolume = t.Volume
+		}
 
 		if items[i].Extra.BPC {
 			// TODO: Fix this logic
