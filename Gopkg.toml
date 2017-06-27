@@ -65,3 +65,7 @@
 [[constraint]]
   version = "1.2"
   name = "github.com/go-zoo/bone"
+
+[[constraint]]
+  version = "v0.2"
+  name = "github.com/leekchan/accounting"

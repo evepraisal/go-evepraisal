@@ -4,8 +4,11 @@ import (
 	"math"
 
 	"github.com/dustin/go-humanize"
+	"github.com/leekchan/accounting"
 	"github.com/montanaflynn/stats"
 )
+
+var ISKFormat = accounting.Accounting{Symbol: "", Precision: 2}
 
 var humanThresholds = []string{
 	"Thousand",
@@ -33,12 +36,7 @@ func HumanLargeNumber(n float64) string {
 }
 
 func humanizeCommaf(f float64) string {
-	roundto := 0
-	if f < 10000 {
-		roundto = 2
-	}
-	val, _ := stats.Round(f, roundto)
-	return humanize.Commaf(val)
+	return ISKFormat.FormatMoney(f)
 }
 
 func humanizeVolume(f float64) string {

@@ -118,6 +118,12 @@
   revision = "e373e137fafd8abd480af49182dea0513914adb4"
 
 [[projects]]
+  name = "github.com/leekchan/accounting"
+  packages = ["."]
+  revision = "a35854c075934d6aa1a6c1ab3ea8a82ee0dc1a93"
+  version = "v0.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/magiconair/properties"
   packages = ["."]
@@ -243,6 +249,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3fabe9b613b9974c624285ba54ef82b33d948f2df11f0f1537ccb89144355e07"
+  inputs-digest = "4ecebae2d0aa4b7c21639e95ebf8318e2a809d9dccb244cf4fce6c21ef462cfa"
   solver-name = "gps-cdcl"
   solver-version = 1
