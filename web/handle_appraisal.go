@@ -25,8 +25,18 @@ type AppraisalPage struct {
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(20 * 1000)
 
-	var body string
+	market := r.FormValue("market")
+	marketID, err := strconv.ParseInt(market, 10, 64)
+	if err == nil {
+		var ok bool
+		market, ok = legacy.MarketIDToName[marketID]
+		if !ok {
+			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Market not found.")
+			return
+		}
+	}
 
+	var body string
 	f, _, err := r.FormFile("uploadappraisal")
 	if err == http.ErrNotMultipart || err == http.ErrMissingFile {
 		body = r.FormValue("raw_textarea")
@@ -43,34 +53,26 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		body = string(bodyBytes)
 	}
 
+	errorRoot := PageRoot{}
+	errorRoot.UI.RawTextAreaDefault = body
+
 	if len(body) > 200000 {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.", errorRoot)
 		return
 	}
 
 	if len(body) == 0 {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is empty.")
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Input value is empty.", errorRoot)
 		return
-	}
-
-	market := r.FormValue("market")
-	marketID, err := strconv.ParseInt(market, 10, 64)
-	if err == nil {
-		var ok bool
-		market, ok = legacy.MarketIDToName[marketID]
-		if !ok {
-			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Market not found.")
-			return
-		}
 	}
 
 	appraisal, err := ctx.App.StringToAppraisal(market, body)
 	if err == evepraisal.ErrNoValidLinesFound {
 		log.Println("No valid lines found:", spew.Sdump(body))
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
 		return
 	} else if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
 		return
 	}
 
@@ -78,7 +80,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
-		ctx.renderServerError(r, w, err)
+		ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
 		return
 	}
 

@@ -51,17 +51,21 @@ type PageRoot struct {
 		BaseURLWithoutScheme string
 		User                 *evepraisal.User
 		LoginEnabled         bool
+		RawTextAreaDefault   string
 	}
 	Page interface{}
 }
 
 func (ctx *Context) render(r *http.Request, w http.ResponseWriter, templateName string, page interface{}) error {
+	return ctx.renderWithRoot(r, w, templateName, PageRoot{Page: page})
+}
+
+func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templateName string, root PageRoot) error {
 	tmpl, ok := ctx.templates[templateName]
 	if !ok {
 		return fmt.Errorf("Could not find template named '%s'", templateName)
 	}
 
-	root := PageRoot{Page: page}
 	root.UI.SelectedMarket = ctx.getDefaultMarket(r)
 	root.UI.Markets = selectableMarkets
 	root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
@@ -81,16 +85,25 @@ func (ctx *Context) render(r *http.Request, w http.ResponseWriter, templateName 
 }
 
 func (ctx *Context) renderErrorPage(r *http.Request, w http.ResponseWriter, statusCode int, title, message string) {
-	w.WriteHeader(statusCode)
-	ctx.render(r, w, "error.html", struct {
+	ctx.renderErrorPageWithRoot(r, w, statusCode, title, message, PageRoot{})
+}
+
+func (ctx *Context) renderErrorPageWithRoot(r *http.Request, w http.ResponseWriter, statusCode int, title, message string, root PageRoot) {
+	root.Page = struct {
 		ErrorTitle   string
 		ErrorMessage string
-	}{title, message})
+	}{title, message}
+	w.WriteHeader(statusCode)
+	ctx.renderWithRoot(r, w, "error.html", root)
 }
 
 func (ctx *Context) renderServerError(r *http.Request, w http.ResponseWriter, err error) {
+	ctx.renderServerErrorWithRoot(r, w, err, PageRoot{})
+}
+
+func (ctx *Context) renderServerErrorWithRoot(r *http.Request, w http.ResponseWriter, err error, root PageRoot) {
 	log.Printf("ERROR: %s", err)
-	ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", err.Error())
+	ctx.renderErrorPageWithRoot(r, w, http.StatusInternalServerError, "Something bad happened", err.Error(), root)
 }
 
 func (ctx *Context) Reload() error {
