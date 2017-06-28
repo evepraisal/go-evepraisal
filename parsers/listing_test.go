@@ -57,5 +57,15 @@ Tritanium `,
 		},
 		Input{},
 		false,
+	}, {
+		"with capital x",
+		`Tritanium x 1
+Tritanium X 1`,
+		&Listing{
+			Items: []ListingItem{{Name: "Tritanium", Quantity: 2}},
+			lines: []int{0, 1},
+		},
+		Input{},
+		false,
 	},
 }

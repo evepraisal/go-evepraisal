@@ -24,8 +24,8 @@ type ListingItem struct {
 	Quantity int64
 }
 
-var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?x? ([\S ]+)$`)
-var reListing2 = regexp.MustCompile(`^([\S ]+?) x? ?([\d,'\.]+)$`)
+var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?(?:x|X)? ([\S ]+)$`)
+var reListing2 = regexp.MustCompile(`^([\S ]+?) (?:x|X)? ?([\d,'\.]+)$`)
 var reListing3 = regexp.MustCompile(`^([\S ]+)$`)
 var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ([\S ]+)$`)
 
