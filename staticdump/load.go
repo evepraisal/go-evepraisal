@@ -121,8 +121,9 @@ func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath s
 }
 
 type Type struct {
-	GroupID int64 `yaml:"groupID"`
-	Name    struct {
+	GroupID       int64 `yaml:"groupID"`
+	MarketGroupID int64 `yaml:"marketGroupID"`
+	Name          struct {
 		En string
 	}
 	Published bool
@@ -188,6 +189,7 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 		eveType := typedb.EveType{
 			ID:                typeID,
 			GroupID:           t.GroupID,
+			MarketGroupID:     t.MarketGroupID,
 			Name:              t.Name.En,
 			Volume:            t.Volume,
 			BasePrice:         t.BasePrice,

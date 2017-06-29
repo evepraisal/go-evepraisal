@@ -67,8 +67,9 @@ var volumeGroupOverrides = map[int64]float64{
 	1527: 2500,     // Logistics Frigate
 	1534: 5000,     // Command Destroyer
 	1538: 1300000,  // Force Auxiliary
+}
 
-	// Modules
+var volumeMarketGroupOverrides = map[int64]float64{
 	600:  1000,
 	771:  1000,
 	772:  1000,
@@ -247,14 +248,21 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 			}
 		}
 
-		volume, ok := volumeGroupOverrides[t.GroupID]
+		var volume float64
+		var ok bool
+		volume, ok = volumeGroupOverrides[t.GroupID]
 		if ok {
 			t.PackagedVolume = volume
-		} else {
-			volume, ok := volumeItemOverrides[t.ID]
-			if ok {
-				t.PackagedVolume = volume
-			}
+		}
+
+		volume, ok = volumeMarketGroupOverrides[t.MarketGroupID]
+		if ok {
+			t.PackagedVolume = volume
+		}
+
+		volume, ok = volumeItemOverrides[t.ID]
+		if ok {
+			t.PackagedVolume = volume
 		}
 
 		err = typeDB.PutType(t)

@@ -13,6 +13,7 @@ type TypeDB interface {
 type EveType struct {
 	ID                int64       `json:"id"`
 	GroupID           int64       `json:"group_id"`
+	MarketGroupID     int64       `json:"market_group_id"`
 	Name              string      `json:"name"`
 	Volume            float64     `json:"volume"`
 	PackagedVolume    float64     `json:"packaged_volume"`
