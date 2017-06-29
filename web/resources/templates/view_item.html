@@ -20,6 +20,8 @@
           {{template "_view_item_component.html" $summary}}
         {{else if eq $summary.Prices.Strategy "ccp"}}
           {{template "_view_item_ccp.html" $summary}}
+        {{else if eq $summary.Prices.Strategy "orders_universe"}}
+          {{template "_view_item_market_universe.html" $summary}}
         {{else}}
           {{template "_view_item_market.html" $summary}}
         {{end}}

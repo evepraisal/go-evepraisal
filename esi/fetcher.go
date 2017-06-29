@@ -115,10 +115,20 @@ func (p *PriceFetcher) runOnce() {
 	}
 
 	for _, regionName := range regionNames() {
+		// Use CCP's price if our regional price is too low
 		for typeID, prices := range pricesFromCCP {
 			p, ok := priceMap[regionName][typeID]
 			if !ok || p.All.Volume < 50 {
 				priceMap[regionName][typeID] = prices
+			}
+		}
+
+		// Use the universe price if our regional price is too low (override CCP's price)
+		for typeID, p := range priceMap[regionName] {
+			universePrice, ok := priceMap["universe"][typeID]
+			if ok && p.All.Volume < 50 {
+				universePrice.Strategy = "orders_universe"
+				priceMap[regionName][typeID] = universePrice
 			}
 		}
 	}

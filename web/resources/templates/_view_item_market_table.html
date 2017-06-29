@@ -1,0 +1,74 @@
+
+<div class="col-lg-6">
+  <table class="table">
+    <thead>
+      <tr>
+        <td class="text-center" colspan="5"><h5>{{comma .Prices.Sell.OrderCount}} Sell Orders / {{comma .Prices.Sell.Volume}} units</h5></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="active">
+        <th>Min</th>
+        <td class="text-right">{{commaf .Prices.Sell.Min}} ISK</td>
+      </tr>
+      <tr>
+        <th>Median</th>
+        <td class="text-right">{{commaf .Prices.Sell.Median}} ISK</td>
+      </tr>
+      <tr>
+        <th>Average</th>
+        <td class="text-right">{{commaf .Prices.Sell.Average}} ISK</td>
+      </tr>
+      <tr>
+        <th>90th Percentile</th>
+        <td class="text-right">{{commaf .Prices.Sell.Percentile}} ISK</td>
+      </tr>
+      <tr>
+        <th>Standard Deviation</th>
+        <td class="text-right">{{commaf .Prices.Sell.Stddev}} ISK</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td class="text-center" colspan="5"><b>sell market-price = min(<em>sell order prices</em>)</b></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="col-lg-6">
+  <table class="table">
+    <thead>
+      <tr>
+        <td class="text-center" colspan="5"><h5>{{comma .Prices.Buy.OrderCount}} Buy orders / {{comma .Prices.Buy.Volume}} units</h5></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="active">
+        <th>Max</th>
+        <td class="text-right">{{commaf .Prices.Buy.Max}} ISK</td>
+      </tr>
+      <tr>
+        <th>Median</th>
+        <td class="text-right">{{commaf .Prices.Buy.Median}} ISK</td>
+      </tr>
+      <tr>
+        <th>Average</th>
+        <td class="text-right">{{commaf .Prices.Buy.Average}} ISK</td>
+      </tr>
+      <tr>
+        <th>90th Percentile</th>
+        <td class="text-right">{{commaf .Prices.Buy.Percentile}} ISK</td>
+      </tr>
+      <tr>
+        <th>Standard Deviation</th>
+        <td class="text-right">{{commaf .Prices.Buy.Stddev}} ISK</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td class="text-center" colspan="5"><b>buy market-price = max(<em>buy order prices</em>)</b></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
