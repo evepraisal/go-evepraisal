@@ -23,6 +23,7 @@ type StaticFetcher struct {
 }
 
 var volumeGroupOverrides = map[int64]float64{
+	// Ships
 	25:   2500,     // Frigate
 	26:   10000,    // Cruiser
 	27:   50000,    // Battleship
@@ -65,6 +66,59 @@ var volumeGroupOverrides = map[int64]float64{
 	1527: 2500,     // Logistics Frigate
 	1534: 5000,     // Command Destroyer
 	1538: 1300000,  // Force Auxiliary
+
+	// Modules
+	600:  1000,
+	771:  1000,
+	772:  1000,
+	773:  1000,
+	774:  1000,
+	775:  1000,
+	776:  1000,
+	777:  1000,
+	778:  1000,
+	910:  1000,
+	1052: 1000,
+	1063: 1000,
+	2240: 1000,
+	2241: 1000,
+	2242: 1000,
+	2243: 1000,
+	2244: 1000,
+	2245: 1000,
+	2246: 1000,
+	2247: 1000,
+	2250: 1000,
+	2251: 1000,
+	2249: 2000,
+	2267: 2000,
+	2268: 2000,
+	2269: 2000,
+	2270: 2000,
+	2276: 2000,
+}
+
+var volumeItemOverrides = map[int64]float64{
+	41249: 1000,
+	41250: 1000,
+	41251: 1000,
+	41252: 1000,
+	41253: 1000,
+	41254: 1000,
+	41255: 1000,
+	41236: 1000,
+	41238: 1000,
+	41239: 1000,
+	41240: 1000,
+	41241: 1000,
+	41411: 1000,
+	24283: 1000,
+	41414: 1000,
+	41415: 1000,
+	40715: 2000,
+	40716: 2000,
+	40717: 2000,
+	40718: 2000,
 }
 
 func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB typedb.TypeDB)) (*StaticFetcher, error) {
@@ -142,10 +196,11 @@ func (f *StaticFetcher) Close() error {
 
 func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) error {
 
-	typeVolumes, err := downloadTypeVolumes(f.client)
-	if err != nil {
-		return err
-	}
+	// TODO: I need to find a reliable source for this information..... CCP????
+	// typeVolumes, err := downloadTypeVolumes(f.client)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// avoid re-downloading the entire static dump if we already have it
 	cachepath := staticCacheFile + ".zip"
@@ -194,7 +249,7 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 		if ok {
 			t.PackagedVolume = volume
 		} else {
-			volume, ok := typeVolumes[t.ID]
+			volume, ok := volumeItemOverrides[t.ID]
 			if ok {
 				t.PackagedVolume = volume
 			}
