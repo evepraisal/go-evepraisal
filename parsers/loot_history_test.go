@@ -32,5 +32,14 @@ var lootHistoryTestCases = []Case{
 		},
 		Input{},
 		true,
+	}, {
+		"Alternative number format",
+		`17:07:32 Nathan Ohmiras has looted 34 016 x Viscous Pyroxeres`,
+		&LootHistory{
+			Items: []LootItem{{Time: "17:07:32", PlayerName: "Nathan Ohmiras", Quantity: 34016, Name: "Viscous Pyroxeres"}},
+			lines: []int{0},
+		},
+		Input{},
+		true,
 	},
 }

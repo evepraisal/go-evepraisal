@@ -26,7 +26,7 @@ type LootItem struct {
 	Quantity   int64
 }
 
-var reLootHistory = regexp.MustCompile(`(\d\d:\d\d:\d\d) ([\S ]+) has looted ([\d,'\.]+) x ([\S ]+)$`)
+var reLootHistory = regexp.MustCompile(`(\d\d:\d\d:\d\d) ([\S ]+) has looted ([\d,'\.\ ]+) x ([\S ]+)$`)
 
 func ParseLootHistory(input Input) (ParserResult, Input) {
 	lootHistory := &LootHistory{}
