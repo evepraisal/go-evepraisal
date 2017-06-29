@@ -22,6 +22,7 @@ type StaticFetcher struct {
 	wg   *sync.WaitGroup
 }
 
+// Reference: https://bitbucket.org/snippets/viktorielucilla/d4oyA/calculating-repackaged-volumes-for-eve
 var volumeGroupOverrides = map[int64]float64{
 	// Ships
 	25:   2500,     // Frigate
@@ -119,6 +120,7 @@ var volumeItemOverrides = map[int64]float64{
 	40716: 2000,
 	40717: 2000,
 	40718: 2000,
+	40714: 2000,
 }
 
 func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB typedb.TypeDB)) (*StaticFetcher, error) {
