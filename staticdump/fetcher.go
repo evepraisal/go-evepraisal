@@ -62,6 +62,9 @@ var volumeGroupOverrides = map[int64]float64{
 	1202: 10000,    // Blockade Runner
 	1283: 2500,     // Expedition Frigate
 	1305: 5000,     // Tactical Destroyer
+	1527: 2500,     // Logistics Frigate
+	1534: 5000,     // Command Destroyer
+	1538: 1300000,  // Force Auxiliary
 }
 
 func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB typedb.TypeDB)) (*StaticFetcher, error) {
