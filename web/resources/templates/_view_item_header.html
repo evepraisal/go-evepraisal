@@ -1,13 +1,33 @@
 <div class="media">
   <div class="media-body">
-    <h4 class="mt-0">
-      <img class="media-image" src="https://image.eveonline.com/Type/{{.Page.Type.ID}}_64.png" alt="{{.Page.Type.Name}}" /> {{.Page.Type.Name}}
+    <div class="col-md-8">
+      <h4 class="mt-0">
+        <img class="media-image" src="https://image.eveonline.com/Type/{{.Page.Type.ID}}_64.png" alt="{{.Page.Type.Name}}" /> {{.Page.Type.Name}}
 
-      <small>
-        | <a href="https://element-43.com/market/{{.Page.Type.ID}}/" target="_blank">Element 43</a>
-        | <a href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank">Eve Info</a>
-        | <a href="https://eve-central.com/home/quicklook.html?typeid={{.Page.Type.ID}}" target="_blank">Eve Central</a>
-      </small>
-    </h4>
+        <small>
+          | <a href="https://element-43.com/market/{{.Page.Type.ID}}/" target="_blank">Element 43</a>
+          | <a href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank">Eve Info</a>
+          | <a href="https://eve-central.com/home/quicklook.html?typeid={{.Page.Type.ID}}" target="_blank">Eve Central</a>
+        </small>
+      </h4>
+    </div>
+    <div class="col-md-3">
+      <table class="table table-condensed table-striped">
+        <tr>
+          <th>ID</th>
+          <td>{{.Page.Type.ID}}</td>
+        </tr>
+        <tr>
+          <th>Volume</th>
+          <td>{{.Page.Type.Volume}} m<sup>3</sup></td>
+        </tr>
+        {{if .Page.Type.PackagedVolume}}
+        <tr>
+          <th>Packaged Volume</th>
+          <td>{{.Page.Type.PackagedVolume}} m<sup>3</sup></td>
+        </tr>
+        {{end}}
+      </table>
+    </div>
   </div>
 </div>
