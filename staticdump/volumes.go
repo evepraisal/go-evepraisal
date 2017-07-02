@@ -2,12 +2,11 @@ package staticdump
 
 // Reference: https://bitbucket.org/snippets/viktorielucilla/d4oyA/calculating-repackaged-volumes-for-eve
 var volumeGroupOverrides = map[int64]float64{
-	// Ships
 	25:   2500,     // Frigate
 	26:   10000,    // Cruiser
 	27:   50000,    // Battleship
-	28:   10000,    // Industrial
-	30:   13000000, // Titan
+	28:   20000,    // Industrial
+	30:   10000000, // Titan
 	31:   500,      // Shuttle
 	237:  2500,     // Rookie ship
 	324:  2500,     // Assault Frigate
@@ -22,7 +21,7 @@ var volumeGroupOverrides = map[int64]float64{
 	541:  5000,     // Interdictor
 	543:  3750,     // Exhumer
 	547:  1300000,  // Carrier
-	659:  13000000, // Supercarrier
+	659:  1300000,  // Supercarrier
 	830:  2500,     // Covert Ops
 	831:  2500,     // Interceptor
 	832:  10000,    // Logistics
@@ -36,7 +35,7 @@ var volumeGroupOverrides = map[int64]float64{
 	902:  1300000,  // Jump Freighter
 	906:  10000,    // Combat Recon Ship
 	941:  500000,   // Industrial Command Ship
-	963:  10000,    // Strategic Cruiser
+	963:  5000,     // Strategic Cruiser
 	1022: 500,      // Prototype Exploration Ship
 	1201: 15000,    // Attack Battlecruiser
 	1202: 10000,    // Blockade Runner
@@ -48,6 +47,10 @@ var volumeGroupOverrides = map[int64]float64{
 }
 
 var volumeMarketGroupOverrides = map[int64]float64{
+	1614: 20000, // Special Edition Industrial Ships
+	1056: 1000,  // Capital Ship Repaierers
+	801:  1000,  // Siege Modules
+	2270: 8000,  // Phenomena Generators
 	600:  1000,
 	771:  1000,
 	772:  1000,
@@ -79,6 +82,30 @@ var volumeMarketGroupOverrides = map[int64]float64{
 }
 
 var volumeItemOverrides = map[int64]float64{
+	42244: 50000,  // Porpoise
+	17363: 10,     // Small Container
+	3467:  10,     // Small Container
+	33011: 10,     // Small Container
+	3297:  10,     // Small Container
+	17364: 33,     // Medium Container
+	3466:  33,     // Medium Container
+	3293:  33,     // Medium Container
+	33009: 50,     // Medium Freight Container
+	17365: 65,     // Large Container
+	3465:  65,     // Large Container
+	3296:  65,     // Large Container
+	33007: 100,    // Large Freight Container
+	11488: 150,    // Huge Secure Container
+	33005: 500,    // Huge Freight Container
+	11489: 300,    // Giant Secure Container
+	24445: 1200,   // Giant Freight Container
+	33003: 2500,   // Enormous Freight Container
+	17366: 10,     // Station Container
+	17366: 50000,  // Station Vault Container
+	17368: 100000, // Station Warehouse Container
+	41237: 1000,   // 10000MN Y-S8 Compact Afterburner
+	41417: 1000,   // Sentient Fighter Support Unit
+	42890: 4000,   // Industrial Core II (for some reason, doesn't match other siege modules)
 	41249: 1000,
 	41250: 1000,
 	41251: 1000,
