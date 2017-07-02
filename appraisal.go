@@ -93,7 +93,7 @@ type Prices struct {
 }
 
 func (prices Prices) String() string {
-	return fmt.Sprintf("Sell = %fISK, Buy = %fISK", prices.Sell.Min, prices.Buy.Max)
+	return fmt.Sprintf("Sell = %fISK, Buy = %fISK (Updated %s) (Using %s)", prices.Sell.Min, prices.Buy.Max, prices.Updated, prices.Strategy)
 }
 
 func (prices Prices) Add(p Prices) Prices {
