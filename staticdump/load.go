@@ -182,7 +182,9 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 
 	types := make([]typedb.EveType, 0)
 	for typeID, t := range allTypes {
-		if !t.Published {
+
+		// Yep, there is at least one type that isn't named.
+		if t.Name.En == "" {
 			continue
 		}
 

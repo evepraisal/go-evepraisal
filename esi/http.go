@@ -3,14 +3,13 @@ package esi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/sethgrid/pester"
 )
 
 func fetchURL(client *pester.Client, url string, r interface{}) error {
-	log.Printf("Fetching %s", url)
+	// log.Printf("Fetching %s", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
