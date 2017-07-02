@@ -77,7 +77,6 @@ var volumeMarketGroupOverrides = map[int64]float64{
 	2267: 2000,
 	2268: 2000,
 	2269: 2000,
-	2270: 2000,
 	2276: 2000,
 }
 
@@ -100,8 +99,8 @@ var volumeItemOverrides = map[int64]float64{
 	11489: 300,    // Giant Secure Container
 	24445: 1200,   // Giant Freight Container
 	33003: 2500,   // Enormous Freight Container
-	17366: 10,     // Station Container
-	17366: 50000,  // Station Vault Container
+	17366: 10000,  // Station Container
+	17367: 50000,  // Station Vault Container
 	17368: 100000, // Station Warehouse Container
 	41237: 1000,   // 10000MN Y-S8 Compact Afterburner
 	41417: 1000,   // Sentient Fighter Support Unit
