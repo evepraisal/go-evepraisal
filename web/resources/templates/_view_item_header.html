@@ -18,13 +18,23 @@
           <td>{{.Page.Type.ID}}</td>
         </tr>
         <tr>
+          <th>Group ID</th>
+          <td>{{.Page.Type.GroupID}}</td>
+        </tr>
+        {{if .Page.Type.MarketGroupID}}
+        <tr>
+          <th>Market Group ID</th>
+          <td>{{.Page.Type.MarketGroupID}}</td>
+        </tr>
+        {{end}}
+        <tr>
           <th>Volume</th>
-          <td>{{.Page.Type.Volume}} m<sup>3</sup></td>
+          <td>{{humanizeVolume .Page.Type.Volume}} m<sup>3</sup></td>
         </tr>
         {{if .Page.Type.PackagedVolume}}
         <tr>
           <th>Packaged Volume</th>
-          <td>{{.Page.Type.PackagedVolume}} m<sup>3</sup></td>
+          <td>{{humanizeVolume .Page.Type.PackagedVolume}} m<sup>3</sup></td>
         </tr>
         {{end}}
       </table>
