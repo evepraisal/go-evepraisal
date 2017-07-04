@@ -11,7 +11,7 @@ var volumeGroupOverrides = map[int64]float64{
 	237:  2500,     // Rookie ship
 	324:  2500,     // Assault Frigate
 	358:  10000,    // Heavy Assault Cruiser
-	380:  10000,    // Deep Space Transport
+	380:  20000,    // Deep Space Transport
 	419:  15000,    // Combat Battlecruiser
 	420:  5000,     // Destroyer
 	463:  3750,     // Mining Barge
@@ -38,12 +38,15 @@ var volumeGroupOverrides = map[int64]float64{
 	963:  5000,     // Strategic Cruiser
 	1022: 500,      // Prototype Exploration Ship
 	1201: 15000,    // Attack Battlecruiser
-	1202: 10000,    // Blockade Runner
+	1202: 20000,    // Blockade Runner
 	1283: 2500,     // Expedition Frigate
 	1305: 5000,     // Tactical Destroyer
 	1527: 2500,     // Logistics Frigate
 	1534: 5000,     // Command Destroyer
 	1538: 1300000,  // Force Auxiliary
+
+	// Modules
+	1815: 8000, // Phenomena Generators
 }
 
 var volumeMarketGroupOverrides = map[int64]float64{
