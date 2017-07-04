@@ -20,11 +20,15 @@
     {{end}}
 
     <div class="pull-right">
-      <p>Permalink: <a href="/a/{{.Page.Appraisal.ID}}">{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}</a></p>
+      <p>
+        <a href="/a/{{.Page.Appraisal.ID}}">{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}</a> |
+        <a href="/a/{{.Page.Appraisal.ID}}.raw" target="_blank">Raw</a> |
+        <a href="/a/{{.Page.Appraisal.ID}}.json" target="_blank">JSON</a>
+      </p>
     </div>
 
     <div>
-      <p class="text-left">Result <a href="/a/{{.Page.Appraisal.ID}}"><strong>{{.Page.Appraisal.ID}}</strong></a> ({{.Page.Appraisal.Kind}}) priced in {{.Page.Appraisal.MarketName}} created {{relativetime .Page.Appraisal.CreatedTime}}. <a href="/a/{{.Page.Appraisal.ID}}.raw" target="_blank">View Raw</a></p>
+      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}</p>
     </div>
 
     <div>
