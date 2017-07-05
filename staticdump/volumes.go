@@ -53,7 +53,6 @@ var volumeMarketGroupOverrides = map[int64]float64{
 	1614: 20000, // Special Edition Industrial Ships
 	1056: 1000,  // Capital Ship Repaierers
 	801:  1000,  // Siege Modules
-	2270: 8000,  // Phenomena Generators
 	600:  1000,
 	771:  1000,
 	772:  1000,
