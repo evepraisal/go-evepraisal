@@ -214,8 +214,8 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 		err    error
 	)
 
-	// if item.Extra.BPC {
-	if false {
+	if item.Extra.BPC {
+		return prices, err
 		bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(item.TypeName, " Blueprint"))
 		if !ok {
 			log.Printf("WARN: parsed out name that isn't a type: %q", item.TypeName)
