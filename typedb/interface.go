@@ -19,7 +19,8 @@ type EveType struct {
 	PackagedVolume    float64     `json:"packaged_volume"`
 	BasePrice         float64     `json:"base_price"`
 	BlueprintProducts []Component `json:"blueprint_products,omitempty"`
-	BaseComponents    []Component `json:"components,omitempty"`
+	Components        []Component `json:"components,omitempty"`
+	BaseComponents    []Component `json:"base_components,omitempty"`
 }
 
 type Component struct {

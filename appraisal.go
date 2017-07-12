@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/parsers"
+	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
 var (
@@ -94,6 +95,28 @@ type Prices struct {
 
 func (prices Prices) String() string {
 	return fmt.Sprintf("Sell = %fISK, Buy = %fISK (Updated %s) (Using %s)", prices.Sell.Min, prices.Buy.Max, prices.Updated, prices.Strategy)
+}
+
+func (prices Prices) Set(price float64) Prices {
+	prices.All.Average = price
+	prices.All.Max = price
+	prices.All.Min = price
+	prices.All.Median = price
+	prices.All.Percentile = price
+
+	prices.Buy.Average = price
+	prices.Buy.Max = price
+	prices.Buy.Min = price
+	prices.Buy.Median = price
+	prices.Buy.Percentile = price
+
+	prices.Sell.Average = price
+	prices.Sell.Max = price
+	prices.Sell.Min = price
+	prices.Sell.Median = price
+	prices.Sell.Percentile = price
+
+	return prices
 }
 
 func (prices Prices) Add(p Prices) Prices {
@@ -185,6 +208,56 @@ type PriceStats struct {
 	OrderCount int64   `json:"order_count"`
 }
 
+func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error) {
+	var (
+		prices Prices
+		err    error
+	)
+
+	// if item.Extra.BPC {
+	if false {
+		bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(item.TypeName, " Blueprint"))
+		if !ok {
+			log.Printf("WARN: parsed out name that isn't a type: %q", item.TypeName)
+			return prices, err
+		}
+
+		marketMarket := market
+		// If the user selected "universe" as the market then it is fairly likely that someone has a
+		// rediculously low price in a station no one wants to travel to. To avoid negative "value"
+		// for blueprint copies, we're forcing this item to be sold at jita prices Z
+		if marketMarket == "universe" {
+			marketMarket = "jita"
+		}
+		marketPrices := Prices{Strategy: "bpc"}
+		for _, product := range bpType.BlueprintProducts {
+			p, ok := app.PriceDB.GetPrice(market, product.TypeID)
+			if !ok {
+				log.Printf("WARN: No market data for type (%d %s)", item.TypeID, item.TypeName)
+				continue
+			}
+
+			marketPrices = marketPrices.Add(p.Set(p.Sell.Min).Mul(float64(product.Quantity)))
+		}
+
+		manufacturedPrices := Prices{Strategy: "pbc"}
+		for _, component := range bpType.Components {
+			p, ok := app.PriceDB.GetPrice(market, component.TypeID)
+			if !ok {
+				continue
+			}
+			manufacturedPrices = manufacturedPrices.Add(p.Mul(float64(component.Quantity)))
+		}
+
+		// Assume Industry V (+10%) and misc costs (-1%)
+		prices := marketPrices.Sub(manufacturedPrices).Mul(float64(item.Extra.BPCRuns))
+		return prices, nil
+	}
+
+	prices, _ = app.PriceDB.GetPrice(market, item.TypeID)
+	return prices, nil
+}
+
 func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 	appraisal := &Appraisal{
 		Created: time.Now().Unix(),
@@ -217,38 +290,16 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 			items[i].TypeVolume = t.Volume
 		}
 
-		if items[i].Extra.BPC {
-			// TODO: Fix this logic
-			// bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(t.Name, " Blueprint"))
-			// if !ok {
-			// 	log.Printf("WARN: parsed out name that isn't a type: %q", items[i].Name)
-			// 	continue
-			// }
-
-			// var marketPrices Prices
-			// for _, product := range bpType.BlueprintProducts {
-			// 	p, ok := app.PriceDB.GetPrice(market, product.TypeID)
-			// 	if !ok {
-			// 		log.Printf("WARN: No market data for type (%d %s)", items[i].TypeID, items[i].TypeName)
-			// 		continue
-			// 	}
-			// 	marketPrices = marketPrices.Add(p.Mul(float64(product.Quantity)))
-			// }
-
-			// // Assume Industry V (+10%) and misc costs (-1%)
-			// manufacturedPrices := priceByComponents(bpType.BaseComponents).Mul(0.91)
-			// prices := marketPrices.Sub(manufacturedPrices).Mul(float64(items[i].BPCRuns))
-			// items[i].Prices = prices
-			// appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
-			// appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
-		} else {
-			prices, _ := app.PriceDB.GetPrice(market, t.ID)
-			items[i].Prices = prices
-			appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
-			appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
+		prices, err := app.PricesForItem(market, items[i])
+		if err != nil {
+			continue
 		}
+		items[i].Prices = prices
+		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
+		appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
 		appraisal.Totals.Volume += items[i].TypeVolume * float64(items[i].Quantity)
 	}
+
 	appraisal.Items = items
 
 	return appraisal, nil
@@ -294,6 +345,9 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 				Quantity: item.Quantity,
 			}
 			newItem.Extra.BPC = item.BPC
+			if item.BPC {
+				newItem.Extra.BPCRuns = 1
+			}
 			items = append(items, newItem)
 		}
 	case *parsers.Contract:
@@ -422,14 +476,14 @@ func filterUnparsed(unparsed map[int]string) map[int]string {
 	return unparsed
 }
 
-// func priceByComponents(t typedb.EveType, priceDB PriceDB) Prices {
-// 	var prices Prices
-// 	for _, component := range t.BaseComponents {
-// 		p, ok := priceDB.GetPrice(market, component.TypeID)
-// 		if !ok {
-// 			continue
-// 		}
-// 		prices = prices.Add(p.Mul(float64(component.Quantity)))
-// 	}
-// 	return prices
-// }
+func priceByComponents(t typedb.EveType, priceDB PriceDB, market string) Prices {
+	var prices Prices
+	for _, component := range t.Components {
+		p, ok := priceDB.GetPrice(market, component.TypeID)
+		if !ok {
+			continue
+		}
+		prices = prices.Add(p.Mul(float64(component.Quantity)))
+	}
+	return prices
+}

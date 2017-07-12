@@ -118,16 +118,16 @@ func (p *PriceFetcher) runOnce() {
 		// Use CCP's price if our regional price is too low
 		for typeID, prices := range pricesFromCCP {
 			p, ok := priceMap[regionName][typeID]
-			if !ok || p.Sell.Volume < 20 {
+			if !ok || p.Sell.Volume < 10 {
 				priceMap[regionName][typeID] = prices
 			}
 		}
 
 		// Use the universe price if our regional price is too low (override CCP's price)
 		for typeID, p := range priceMap[regionName] {
-			if p.Sell.Volume < 20 {
+			if p.Sell.Volume < 2 {
 				universePrice, ok := priceMap["universe"][typeID]
-				if ok && universePrice.Sell.Volume >= 20 {
+				if ok && universePrice.Sell.Volume >= 2 {
 					universePrice.Strategy = "orders_universe"
 					priceMap[regionName][typeID] = universePrice
 				}
@@ -179,9 +179,9 @@ func (p *PriceFetcher) FetchPriceData(client *pester.Client, baseURL string) (ma
 	for _, p := range esiPrices {
 		stats := evepraisal.PriceStats{
 			Average:    p.AveragePrice,
-			Max:        p.AdjustedPrice,
-			Median:     p.AdjustedPrice,
-			Min:        p.AdjustedPrice,
+			Max:        p.AveragePrice,
+			Median:     p.AveragePrice,
+			Min:        p.AveragePrice,
 			Percentile: p.AdjustedPrice,
 		}
 		allPrices[p.TypeID] = evepraisal.Prices{
