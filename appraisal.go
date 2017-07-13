@@ -3,6 +3,7 @@ package evepraisal
 import (
 	"fmt"
 	"log"
+	"math"
 	"strings"
 	"time"
 
@@ -215,10 +216,10 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 	)
 
 	if item.Extra.BPC {
-		return prices, err
-		bpType, ok := app.TypeDB.GetType(strings.TrimSuffix(item.TypeName, " Blueprint"))
+		tName := strings.TrimSuffix(item.TypeName, " Blueprint")
+		bpType, ok := app.TypeDB.GetType(tName)
 		if !ok {
-			log.Printf("WARN: parsed out name that isn't a type: %q", item.TypeName)
+			log.Printf("WARN: parsed out name that isn't a type: %q", tName)
 			return prices, err
 		}
 
@@ -229,9 +230,10 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 		if marketMarket == "universe" {
 			marketMarket = "jita"
 		}
+
 		marketPrices := Prices{Strategy: "bpc"}
 		for _, product := range bpType.BlueprintProducts {
-			p, ok := app.PriceDB.GetPrice(market, product.TypeID)
+			p, ok := app.PriceDB.GetPrice(marketMarket, product.TypeID)
 			if !ok {
 				log.Printf("WARN: No market data for type (%d %s)", item.TypeID, item.TypeName)
 				continue
@@ -246,10 +248,11 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 			if !ok {
 				continue
 			}
-			manufacturedPrices = manufacturedPrices.Add(p.Mul(float64(component.Quantity)))
+			manufacturedPrices = manufacturedPrices.Add(p.Set(math.Min(p.Sell.Min, p.Buy.Max)).Mul(float64(component.Quantity)))
 		}
 
 		// Assume Industry V (+10%) and misc costs (-1%)
+		manufacturedPrices = manufacturedPrices.Mul(0.91)
 		prices := marketPrices.Sub(manufacturedPrices).Mul(float64(item.Extra.BPCRuns))
 		return prices, nil
 	}

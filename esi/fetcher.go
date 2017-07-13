@@ -177,11 +177,15 @@ func (p *PriceFetcher) FetchPriceData(client *pester.Client, baseURL string) (ma
 
 	allPrices := make(map[int64]evepraisal.Prices, len(esiPrices))
 	for _, p := range esiPrices {
+		priceToUse := p.AveragePrice
+		if priceToUse == 0 {
+			priceToUse = p.AdjustedPrice
+		}
 		stats := evepraisal.PriceStats{
 			Average:    p.AveragePrice,
-			Max:        p.AveragePrice,
-			Median:     p.AveragePrice,
-			Min:        p.AveragePrice,
+			Max:        priceToUse,
+			Median:     priceToUse,
+			Min:        priceToUse,
 			Percentile: p.AdjustedPrice,
 		}
 		allPrices[p.TypeID] = evepraisal.Prices{

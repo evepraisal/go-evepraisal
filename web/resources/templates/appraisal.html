@@ -62,8 +62,8 @@
             &nbsp;
             {{end}}
             <a href="/item/{{$item.TypeID}}">
-              {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}
-            </a>
+              {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}{{if $item.Extra.BPC}} (Copy)</a>
+              <span class="badge badge-default">Runs: {{$item.Extra.BPCRuns}}</span>{{end}}
           </td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{humanizeVolume $item.TypeVolume }}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
