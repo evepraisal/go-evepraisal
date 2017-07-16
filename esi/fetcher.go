@@ -132,6 +132,13 @@ func (p *PriceFetcher) runOnce() {
 					priceMap[regionName][typeID] = universePrice
 				}
 			}
+
+			if regionName != "universe" && p.Buy.Volume > 0 && p.Sell.Volume > 0 && p.Buy.Max > p.Sell.Min {
+				delta := p.Buy.Max - p.Sell.Min
+				if delta > 1000000 {
+					log.Printf("MARKET: Prices are wack for %d in %s", typeID, regionName)
+				}
+			}
 		}
 	}
 

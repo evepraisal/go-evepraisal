@@ -246,6 +246,7 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 		for _, component := range bpType.Components {
 			p, ok := app.PriceDB.GetPrice(market, component.TypeID)
 			if !ok {
+				log.Println("Failed getting getting price for component", component.TypeID)
 				continue
 			}
 			manufacturedPrices = manufacturedPrices.Add(p.Set(math.Min(p.Sell.Min, p.Buy.Max)).Mul(float64(component.Quantity)))
@@ -253,8 +254,14 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 
 		// Assume Industry V (+10%) and misc costs (-1%)
 		manufacturedPrices = manufacturedPrices.Mul(0.91)
-		prices := marketPrices.Sub(manufacturedPrices).Mul(float64(item.Extra.BPCRuns))
-		return prices, nil
+		// prices := marketPrices.Sub(manufacturedPrices).Mul(float64(item.Extra.BPCRuns))
+
+		log.Println("BPC Name: ", item.TypeName)
+		log.Println("BPC materials:", manufacturedPrices)
+		log.Println("BPC item value:", marketPrices)
+		log.Println("BPC price (1 run):", marketPrices.Sub(manufacturedPrices))
+		return Prices{}, nil
+		// return prices, nil
 	}
 
 	prices, _ = app.PriceDB.GetPrice(market, item.TypeID)
