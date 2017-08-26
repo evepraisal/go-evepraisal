@@ -21,8 +21,6 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 
 	matchesWithAmmo, rest := regexParseLines(reListingWithAmmo, input)
 	matches, rest := regexParseLines(reListing, rest)
-	matches2, rest := regexParseLines(reListing2, rest)
-	matches3, rest := regexParseLines(reListing3, rest)
 
 	// collect items
 	matchgroup := make(map[ListingItem]int64)
@@ -36,6 +34,8 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		}
 	}
 
+	matches2, rest := regexParseLines(reListing2, rest)
+
 	for i, match := range matches2 {
 		name := CleanTypeName(match[1])
 		if p.typeDB.HasType(name) {
@@ -46,6 +46,7 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		}
 	}
 
+	matches3, rest := regexParseLines(reListing3, rest)
 	for i, match := range matches3 {
 		name := CleanTypeName(match[1])
 		if p.typeDB.HasType(name) {
