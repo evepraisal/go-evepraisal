@@ -43,5 +43,15 @@ Men's 'Esquire' Coat (red/gold)	Outer	1`,
 			lines: []int{0, 1, 2, 3}},
 		Input{},
 		true,
+	}, {
+		"Ore Hold - Issue #28",
+		`Compressed Vivid Hemorphite	Hemorphite	Ore Hold	51`,
+		&ViewContents{
+			Items: []ViewContentsItem{
+				{Name: "Compressed Vivid Hemorphite", Group: "Hemorphite", Location: "Ore Hold", Quantity: 51},
+			},
+			lines: []int{0}},
+		Input{},
+		true,
 	},
 }
