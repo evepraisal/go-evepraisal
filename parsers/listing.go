@@ -27,7 +27,7 @@ type ListingItem struct {
 var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?(?:x|X)? ([\S ]+)$`)
 var reListing2 = regexp.MustCompile(`^([\S ]+?) (?:x|X)? ?([\d,'\.]+)$`)
 var reListing3 = regexp.MustCompile(`^([\S ]+)$`)
-var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ([\S ]+)$`)
+var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ?([a-zA-Z][\S ]+)$`)
 
 func ParseListing(input Input) (ParserResult, Input) {
 	listing := &Listing{}

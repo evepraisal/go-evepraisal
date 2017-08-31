@@ -80,5 +80,21 @@ Tachyon Beam Laser II, Aurora L`,
 		&EFT{FittingName: "test", Ship: "Rifter", Items: nil, lines: []int{0}},
 		Input{},
 		true,
+	}, {
+		"With Ammo (Issue 30)",
+		`[Phoenix, Fitting Name]
+
+XL Torpedo Launcher I,Guristas Mjolnir XL Torpedo`,
+		&EFT{
+			FittingName: "Fitting Name",
+			Ship:        "Phoenix",
+			Items: []ListingItem{
+				ListingItem{Name: "Guristas Mjolnir XL Torpedo", Quantity: 1},
+				ListingItem{Name: "XL Torpedo Launcher I", Quantity: 1},
+			},
+			lines: []int{0, 2},
+		},
+		Input{1: ""},
+		true,
 	},
 }
