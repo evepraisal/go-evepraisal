@@ -114,6 +114,22 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 }
 
 func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
+	appraisal, err := db.getAppraisal(appraisalID)
+	if err != nil {
+		return nil, err
+	}
+
+	dbID, err := EncodeDBID(appraisalID)
+	if err != nil {
+		return nil, err
+	}
+	go db.setLastUsedTime(dbID)
+	appraisal.User = nil
+
+	return appraisal, err
+}
+
+func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
 	dbID, err := EncodeDBID(appraisalID)
 	if err != nil {
 		return nil, err
@@ -137,9 +153,6 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 		decoder := gob.NewDecoder(bytes.NewBuffer(buf))
 		return decoder.Decode(appraisal)
 	})
-
-	go db.setLastUsedTime(dbID)
-	appraisal.User = nil
 
 	return appraisal, err
 }
@@ -231,15 +244,28 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 }
 
 func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
+	appraisal, err := db.getAppraisal(appraisalID)
+	if err != nil {
+		return err
+	}
+
 	return db.DB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("appraisals"))
+		byIDBucket := tx.Bucket([]byte("appraisals"))
+		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
 		lastUsedB := tx.Bucket([]byte("appraisals-last-used"))
 		dbID, err := EncodeDBID(appraisalID)
 		if err != nil {
 			return err
 		}
 
-		err = b.Delete(dbID)
+		if appraisal.User != nil {
+			err = byUserBucket.Delete(append([]byte(fmt.Sprintf("%s:", appraisal.User.CharacterOwnerHash)), dbID...))
+			if err != nil {
+				return err
+			}
+		}
+
+		err = byIDBucket.Delete(dbID)
 		if err != nil {
 			return err
 		}
@@ -276,10 +302,13 @@ func (db *AppraisalDB) startReaper() {
 	for {
 		log.Println("Start reaping unused appraisals")
 		unused := make([]string, 0)
+		appraisalCount := 0
 		err := db.DB.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("appraisals-last-used"))
 			c := b.Cursor()
 			for key, val := c.First(); key != nil; key, val = c.Next() {
+				appraisalCount++
+
 				var timestamp time.Time
 				if val != nil {
 					timestamp = time.Unix(int64(binary.BigEndian.Uint64(val)), 0)
@@ -310,7 +339,7 @@ func (db *AppraisalDB) startReaper() {
 			}
 		}
 
-		log.Printf("Done reaping unused appraisals, removed %d appraisals", len(unused))
+		log.Printf("Done reaping unused appraisals, removed %d (out of %d) appraisals", len(unused), appraisalCount)
 
 		select {
 		case <-db.stop:
