@@ -51,12 +51,13 @@
   name = "golang.org/x/crypto"
 
 [[constraint]]
-  branch = "master"
+  version = "v1.4.2"
   name = "gopkg.in/fsnotify.v1"
 
 [[constraint]]
-  branch = "master"
   name = "gopkg.in/yaml.v2"
+  source = "https://github.com/go-yaml/yaml.git"
+  branch = "v2"
 
 [[constraint]]
   branch = "master"

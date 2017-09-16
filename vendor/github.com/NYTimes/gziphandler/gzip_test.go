@@ -81,6 +81,17 @@ func TestGzipHandler(t *testing.T) {
 	assert.Equal(t, http.DetectContentType([]byte(testBody)), res3.Header().Get("Content-Type"))
 }
 
+func TestGzipHandlerAlreadyCompressed(t *testing.T) {
+	handler := newTestHandler(testBody)
+
+	req, _ := http.NewRequest("GET", "/gzipped", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	assert.Equal(t, testBody, res.Body.String())
+}
+
 func TestNewGzipLevelHandler(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -295,6 +306,90 @@ func TestStatusCodes(t *testing.T) {
 	}
 }
 
+func TestDontWriteWhenNotWrittenTo(t *testing.T) {
+	// When using gzip as middleware without ANY writes in the handler,
+	// ensure the gzip middleware doesn't touch the actual ResponseWriter
+	// either.
+
+	handler0 := GzipHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	}))
+
+	handler1 := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler0.ServeHTTP(w, r)
+		w.WriteHeader(404) // this only works if gzip didn't do a WriteHeader(200)
+	})
+
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Accept-Encoding", "gzip")
+	w := httptest.NewRecorder()
+	handler1.ServeHTTP(w, r)
+
+	result := w.Result()
+	if result.StatusCode != 404 {
+		t.Errorf("StatusCode should have been 404 but was %d", result.StatusCode)
+	}
+}
+
+var contentTypeTests = []struct {
+	name                 string
+	contentType          string
+	acceptedContentTypes []string
+	expectedGzip         bool
+}{
+	{
+		name:                 "Always gzip when content types are empty",
+		contentType:          "",
+		acceptedContentTypes: []string{},
+		expectedGzip:         true,
+	},
+	{
+		name:                 "Exact content-type match",
+		contentType:          "application/json",
+		acceptedContentTypes: []string{"application/json"},
+		expectedGzip:         true,
+	},
+	{
+		name:                 "Case insensitive content-type matching",
+		contentType:          "Application/Json",
+		acceptedContentTypes: []string{"application/json"},
+		expectedGzip:         true,
+	},
+	{
+		name:                 "Non-matching content-type",
+		contentType:          "text/xml",
+		acceptedContentTypes: []string{"application/json"},
+		expectedGzip:         false,
+	},
+}
+
+func TestContentTypes(t *testing.T) {
+	for _, tt := range contentTypeTests {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Header().Set("Content-Type", tt.contentType)
+			io.WriteString(w, testBody)
+		})
+
+		wrapper, err := GzipHandlerWithOpts(ContentTypes(tt.acceptedContentTypes))
+		if !assert.Nil(t, err, "NewGzipHandlerWithOpts returned error", tt.name) {
+			continue
+		}
+
+		req, _ := http.NewRequest("GET", "/whatever", nil)
+		req.Header.Set("Accept-Encoding", "gzip")
+		resp := httptest.NewRecorder()
+		wrapper(handler).ServeHTTP(resp, req)
+		res := resp.Result()
+
+		assert.Equal(t, 200, res.StatusCode)
+		if tt.expectedGzip {
+			assert.Equal(t, "gzip", res.Header.Get("Content-Encoding"), tt.name)
+		} else {
+			assert.NotEqual(t, "gzip", res.Header.Get("Content-Encoding"), tt.name)
+		}
+	}
+}
+
 // --------------------------------------------------------------------
 
 func BenchmarkGzipHandler_S2k(b *testing.B)   { benchmark(b, false, 2048) }
@@ -351,6 +446,12 @@ func runBenchmark(b *testing.B, req *http.Request, handler http.Handler) {
 
 func newTestHandler(body string) http.Handler {
 	return GzipHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, body)
+		switch r.URL.Path {
+		case "/gzipped":
+			w.Header().Set("Content-Encoding", "gzip")
+			io.WriteString(w, body)
+		default:
+			io.WriteString(w, body)
+		}
 	}))
 }

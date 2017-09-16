@@ -1,14 +1,18 @@
-Overview [![Build Status](https://travis-ci.org/magiconair/properties.png?branch=master)](https://travis-ci.org/magiconair/properties)
+Overview [![Build Status](https://travis-ci.org/magiconair/properties.svg?branch=master)](https://travis-ci.org/magiconair/properties)
 ========
+
+#### Current version: 1.7.3
 
 properties is a Go library for reading and writing properties files.
 
-It supports reading from multiple files and Spring style recursive property
-expansion of expressions like `${key}` to their corresponding value.
-Value expressions can refer to other keys like in `${key}` or to
-environment variables like in `${USER}`.
-Filenames can also contain environment variables like in
-`/home/${USER}/myapp.properties`.
+It supports reading from multiple files or URLs and Spring style recursive
+property expansion of expressions like `${key}` to their corresponding value.
+Value expressions can refer to other keys like in `${key}` or to environment
+variables like in `${USER}`.  Filenames can also contain environment variables
+like in `/home/${USER}/myapp.properties`.
+
+Properties can be decoded into structs, maps, arrays and values through
+struct tags.
 
 Comments and the order of keys are preserved. Comments can be modified
 and can be written to the output.
@@ -21,21 +25,63 @@ changed from `panic` to `log.Fatal` but this is configurable and custom
 error handling functions can be provided. See the package documentation for
 details.
 
+Read the full documentation on [GoDoc](https://godoc.org/github.com/magiconair/properties)   [![GoDoc](https://godoc.org/github.com/magiconair/properties?status.png)](https://godoc.org/github.com/magiconair/properties)
+
 Getting Started
 ---------------
 
 ```go
-import "github.com/magiconair/properties"
+import (
+	"flag"
+	"github.com/magiconair/properties"
+)
 
 func main() {
+	// init from a file
 	p := properties.MustLoadFile("${HOME}/config.properties", properties.UTF8)
+
+	// or multiple files
+	p = properties.MustLoadFiles([]string{
+			"${HOME}/config.properties",
+			"${HOME}/config-${USER}.properties",
+		}, properties.UTF8, true)
+
+	// or from a map
+	p = properties.LoadMap(map[string]string{"key": "value", "abc": "def"})
+
+	// or from a string
+	p = properties.MustLoadString("key=value\nabc=def")
+
+	// or from a URL
+	p = properties.MustLoadURL("http://host/path")
+
+	// or from multiple URLs
+	p = properties.MustLoadURL([]string{
+			"http://host/config",
+			"http://host/config-${USER}",
+		}, true)
+
+	// or from flags
+	p.MustFlag(flag.CommandLine)
+
+	// get values through getters
 	host := p.MustGetString("host")
 	port := p.GetInt("port", 8080)
+
+	// or through Decode
+	type Config struct {
+		Host    string        `properties:"host"`
+		Port    int           `properties:"port,default=9000"`
+		Accept  []string      `properties:"accept,default=image/png;image;gif"`
+		Timeout time.Duration `properties:"timeout,default=5s"`
+	}
+	var cfg Config
+	if err := p.Decode(&cfg); err != nil {
+		log.Fatal(err)
+	}
 }
 
 ```
-
-Read the full documentation on [GoDoc](https://godoc.org/github.com/magiconair/properties)   [![GoDoc](https://godoc.org/github.com/magiconair/properties?status.png)](https://godoc.org/github.com/magiconair/properties)
 
 Installation and Upgrade
 ------------------------
@@ -43,81 +89,6 @@ Installation and Upgrade
 ```
 $ go get -u github.com/magiconair/properties
 ```
-
-For testing and debugging you need the [go-check](https://github.com/go-check/check) library
-
-```
-$ go get -u gopkg.in/check.v1
-```
-
-History
--------
-
-v1.5.5, 31 Jul 2015
--------------------
- * [Pull Request #6](https://github.com/magiconair/properties/pull/6): Add [Delete](http://godoc.org/github.com/magiconair/properties#Properties.Delete) method to remove keys including comments. (@gerbenjacobs)
-
-v1.5.4, 23 Jun 2015
--------------------
- * [Issue #5](https://github.com/magiconair/properties/issues/5): Allow disabling of property expansion [DisableExpansion](http://godoc.org/github.com/magiconair/properties#Properties.DisableExpansion). When property expansion is disabled Properties become a simple key/value store and don't check for circular references.
-
-v1.5.3, 02 Jun 2015
--------------------
- * [Issue #4](https://github.com/magiconair/properties/issues/4): Maintain key order in [Filter()](http://godoc.org/github.com/magiconair/properties#Properties.Filter), [FilterPrefix()](http://godoc.org/github.com/magiconair/properties#Properties.FilterPrefix) and [FilterRegexp()](http://godoc.org/github.com/magiconair/properties#Properties.FilterRegexp)
-
-v1.5.2, 10 Apr 2015
--------------------
- * [Issue #3](https://github.com/magiconair/properties/issues/3): Don't print comments in [WriteComment()](http://godoc.org/github.com/magiconair/properties#Properties.WriteComment) if they are all empty
- * Add clickable links to README
-
-v1.5.1, 08 Dec 2014
--------------------
- * Added [GetParsedDuration()](http://godoc.org/github.com/magiconair/properties#Properties.GetParsedDuration) and [MustGetParsedDuration()](http://godoc.org/github.com/magiconair/properties#Properties.MustGetParsedDuration) for values specified compatible with
-   [time.ParseDuration()](http://golang.org/pkg/time/#ParseDuration).
-
-v1.5.0, 18 Nov 2014
--------------------
- * Added support for single and multi-line comments (reading, writing and updating)
- * The order of keys is now preserved
- * Calling [Set()](http://godoc.org/github.com/magiconair/properties#Properties.Set) with an empty key now silently ignores the call and does not create a new entry
- * Added a [MustSet()](http://godoc.org/github.com/magiconair/properties#Properties.MustSet) method
- * Migrated test library from launchpad.net/gocheck to [gopkg.in/check.v1](http://gopkg.in/check.v1)
-
-v1.4.2, 15 Nov 2014
--------------------
- * [Issue #2](https://github.com/magiconair/properties/issues/2): Fixed goroutine leak in parser which created two lexers but cleaned up only one
-
-v1.4.1, 13 Nov 2014
--------------------
- * [Issue #1](https://github.com/magiconair/properties/issues/1): Fixed bug in Keys() method which returned an empty string
-
-v1.4.0, 23 Sep 2014
--------------------
- * Added [Keys()](http://godoc.org/github.com/magiconair/properties#Properties.Keys) to get the keys
- * Added [Filter()](http://godoc.org/github.com/magiconair/properties#Properties.Filter), [FilterRegexp()](http://godoc.org/github.com/magiconair/properties#Properties.FilterRegexp) and [FilterPrefix()](http://godoc.org/github.com/magiconair/properties#Properties.FilterPrefix) to get a subset of the properties
-
-v1.3.0, 18 Mar 2014
--------------------
-* Added support for time.Duration
-* Made MustXXX() failure behavior configurable (log.Fatal, panic, custom)
-* Changed default of MustXXX() failure from panic to log.Fatal
-
-v1.2.0, 05 Mar 2014
--------------------
-* Added MustGet... functions
-* Added support for int and uint with range checks on 32 bit platforms
-
-v1.1.0, 20 Jan 2014
--------------------
-* Renamed from goproperties to properties
-* Added support for expansion of environment vars in
-  filenames and value expressions
-* Fixed bug where value expressions were not at the
-  start of the string
-
-v1.0.0, 7 Jan 2014
-------------------
-* Initial release
 
 License
 -------

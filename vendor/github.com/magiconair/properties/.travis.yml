@@ -1,5 +1,8 @@
 language: go
 go:
-    - release
-install: go get gopkg.in/check.v1
-
+    - 1.4.x
+    - 1.5.x
+    - 1.6.x
+    - 1.7.x
+    - 1.8.x
+    - tip
