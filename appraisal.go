@@ -30,7 +30,7 @@ type Appraisal struct {
 	Items      []AppraisalItem `json:"items"`
 	Raw        string          `json:"raw"`
 	Unparsed   map[int]string  `json:"unparsed"`
-	User       *User           `json:"user"`
+	User       *User           `json:"user,omitempty"`
 }
 
 func (appraisal *Appraisal) CreatedTime() time.Time {

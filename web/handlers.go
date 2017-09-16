@@ -31,7 +31,7 @@ func (ctx *Context) HandleAbout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "text/plain")
+	r.Header["Content-Type"] = []string{"text/plain"}
 	io.WriteString(w, `User-agent: *
 Disallow:`)
 }
@@ -45,6 +45,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router := bone.New()
 	router.GetFunc("/", ctx.HandleIndex)
 	router.PostFunc("/appraisal", ctx.HandleAppraisal)
+	router.PostFunc("/appraisal.json", ctx.HandleAppraisal)
 	router.PostFunc("/estimate", ctx.HandleAppraisal)
 	router.GetFunc("/a/:appraisalID", ctx.HandleViewAppraisal)
 	router.GetFunc("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)

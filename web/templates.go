@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -66,21 +67,27 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		return fmt.Errorf("Could not find template named '%s'", templateName)
 	}
 
-	root.UI.SelectedMarket = ctx.getDefaultMarket(r)
-	root.UI.Markets = selectableMarkets
-	root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
-	root.UI.BaseURL = ctx.BaseURL
-	if ctx.OauthConfig != nil {
-		root.UI.LoginEnabled = true
-		root.UI.User = ctx.GetCurrentUser(r)
+	if strings.HasSuffix(r.URL.Path, ".json") {
+		r.Header["Content-Type"] = []string{"application/json"}
+		json.NewEncoder(w).Encode(root.Page)
+	} else {
+		root.UI.SelectedMarket = ctx.getDefaultMarket(r)
+		root.UI.Markets = selectableMarkets
+		root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
+		root.UI.BaseURL = ctx.BaseURL
+		if ctx.OauthConfig != nil {
+			root.UI.LoginEnabled = true
+			root.UI.User = ctx.GetCurrentUser(r)
+		}
+
+		w.Header().Add("Content-Type", "text/html")
+		err := tmpl.ExecuteTemplate(w, templateName, root)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
 	}
 
-	w.Header().Add("Content-Type", "text/html")
-	err := tmpl.ExecuteTemplate(w, templateName, root)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
-	}
 	return nil
 }
 
@@ -90,8 +97,8 @@ func (ctx *Context) renderErrorPage(r *http.Request, w http.ResponseWriter, stat
 
 func (ctx *Context) renderErrorPageWithRoot(r *http.Request, w http.ResponseWriter, statusCode int, title, message string, root PageRoot) {
 	root.Page = struct {
-		ErrorTitle   string
-		ErrorMessage string
+		ErrorTitle   string `json:"error_title"`
+		ErrorMessage string `json:"error_message"`
 	}{title, message}
 	w.WriteHeader(statusCode)
 	ctx.renderWithRoot(r, w, "error.html", root)

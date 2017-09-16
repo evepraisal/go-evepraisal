@@ -18,23 +18,14 @@ import (
 )
 
 type AppraisalPage struct {
-	Appraisal *evepraisal.Appraisal
-	ShowFull  bool
+	Appraisal *evepraisal.Appraisal `json:"appraisal"`
+	ShowFull  bool                  `json:"show_full,omitempty"`
 }
 
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(20 * 1000)
 
-	market := r.FormValue("market")
-	marketID, err := strconv.ParseInt(market, 10, 64)
-	if err == nil {
-		var ok bool
-		market, ok = legacy.MarketIDToName[marketID]
-		if !ok {
-			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Market not found.")
-			return
-		}
-	}
+	// Parse body
+	r.ParseMultipartForm(20 * 1000)
 
 	var body string
 	f, _, err := r.FormFile("uploadappraisal")
@@ -52,20 +43,53 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		}
 		body = string(bodyBytes)
 	}
-
-	errorRoot := PageRoot{}
-	errorRoot.UI.RawTextAreaDefault = body
-
 	if len(body) > 200000 {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.", errorRoot)
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
 		return
 	}
 
 	if len(body) == 0 {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Input value is empty.", errorRoot)
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is empty.")
 		return
 	}
 
+	errorRoot := PageRoot{}
+	errorRoot.UI.RawTextAreaDefault = body
+
+	// Parse Market
+	market := r.FormValue("market")
+
+	// Legacy Market ID
+	marketID, err := strconv.ParseInt(market, 10, 64)
+	if err == nil {
+		var ok bool
+		market, ok = legacy.MarketIDToName[marketID]
+		if !ok {
+			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Market not found.")
+			return
+		}
+	}
+
+	// No market given
+	if market == "" {
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "A market is required.", errorRoot)
+		return
+	}
+
+	// Invalid market given
+	foundMarket := false
+	for _, m := range selectableMarkets {
+		if m.Name == market {
+			foundMarket = true
+			break
+		}
+	}
+	if !foundMarket {
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
+		return
+	}
+
+	// Actually do the appraisal
 	appraisal, err := ctx.App.StringToAppraisal(market, body)
 	if err == evepraisal.ErrNoValidLinesFound {
 		log.Println("No valid lines found:", spew.Sdump(body))
@@ -78,6 +102,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	appraisal.User = ctx.GetCurrentUser(r)
 
+	// Persist Appraisal to the database
 	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
 		ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
@@ -98,8 +123,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
-	w.Header().Add("X-Appraisal-ID", appraisal.ID)
-
+	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
+	r.Header["X-Appraisal-ID"] = []string{appraisal.ID}
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
 }
 
