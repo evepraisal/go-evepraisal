@@ -30,6 +30,10 @@ func (ctx *Context) HandleAbout(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "about.html", nil)
 }
 
+func (ctx *Context) HandleAboutAPI(w http.ResponseWriter, r *http.Request) {
+	ctx.render(r, w, "api.html", nil)
+}
+
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
 	r.Header["Content-Type"] = []string{"text/plain"}
 	io.WriteString(w, `User-agent: *
@@ -55,6 +59,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.GetFunc("/latest", ctx.HandleLatestAppraisals)
 	router.GetFunc("/legal", ctx.HandleLegal)
 	router.GetFunc("/about", ctx.HandleAbout)
+	router.GetFunc("/about/api", ctx.HandleAboutAPI)
 	router.GetFunc("/robots.txt", ctx.HandleRobots)
 	router.GetFunc("/favicon.ico", ctx.HandleFavicon)
 
