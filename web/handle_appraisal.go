@@ -17,11 +17,13 @@ import (
 	"github.com/go-zoo/bone"
 )
 
+// AppraisalPage contains data used on the appraisal page
 type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal `json:"appraisal"`
 	ShowFull  bool                  `json:"show_full,omitempty"`
 }
 
+// HandleAppraisal is the handler for POST /appraisal
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// Parse body
@@ -128,6 +130,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
 }
 
+// HandleViewAppraisal is the handler for /a/[id]
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 	// Legacy Logic
 	appraisalID := bone.GetValue(r, "appraisalID")
@@ -143,22 +146,24 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		appraisalID = evepraisal.Uint64ToAppraisalID(legacyAppraisalID) + suffix
 	}
 
-	if strings.HasSuffix(appraisalID, ".json") {
-		ctx.HandleViewAppraisalJSON(w, r, appraisalID)
-		return
-	}
-
-	if strings.HasSuffix(appraisalID, ".raw") {
-		ctx.HandleViewAppraisalRAW(w, r, appraisalID)
-		return
-	}
-
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
 	if err == evepraisal.AppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
 		ctx.renderServerError(r, w, err)
+		return
+	}
+
+	if r.Header.Get("format") == "json" {
+		r.Header["Content-Type"] = []string{"application/json"}
+		json.NewEncoder(w).Encode(appraisal)
+		return
+	}
+
+	if r.Header.Get("format") == "raw" {
+		r.Header["Content-Type"] = []string{"application/text"}
+		io.WriteString(w, appraisal.Raw)
 		return
 	}
 
@@ -167,36 +172,4 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	})
 
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
-}
-
-func (ctx *Context) HandleViewAppraisalJSON(w http.ResponseWriter, r *http.Request, appraisalID string) {
-	appraisalID = strings.TrimSuffix(appraisalID, ".json")
-
-	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
-	if err == evepraisal.AppraisalNotFound {
-		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-		return
-	} else if err != nil {
-		ctx.renderServerError(r, w, err)
-		return
-	}
-
-	r.Header["Content-Type"] = []string{"application/json"}
-	json.NewEncoder(w).Encode(appraisal)
-}
-
-func (ctx *Context) HandleViewAppraisalRAW(w http.ResponseWriter, r *http.Request, appraisalID string) {
-	appraisalID = strings.TrimSuffix(appraisalID, ".raw")
-
-	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
-	if err == evepraisal.AppraisalNotFound {
-		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-		return
-	} else if err != nil {
-		ctx.renderServerError(r, w, err)
-		return
-	}
-
-	r.Header["Content-Type"] = []string{"application/text"}
-	io.WriteString(w, appraisal.Raw)
 }

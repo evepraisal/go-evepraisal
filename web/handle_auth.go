@@ -11,6 +11,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// GetCurrentUser returns the current user, if there is one in the request cookies
 func (ctx *Context) GetCurrentUser(r *http.Request) *evepraisal.User {
 	user, ok := ctx.getSessionValue(r, "user").(evepraisal.User)
 	if !ok {
@@ -19,6 +20,7 @@ func (ctx *Context) GetCurrentUser(r *http.Request) *evepraisal.User {
 	return &user
 }
 
+// HandleLogin handles /login
 func (ctx *Context) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	if ctx.OauthConfig == nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Feature Unavailable", "SSO is not configured")
@@ -28,6 +30,7 @@ func (ctx *Context) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+// HandleLogout handles /logout
 func (ctx *Context) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	if ctx.OauthConfig == nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Feature Unavailable", "SSO is not configured")
@@ -37,6 +40,7 @@ func (ctx *Context) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
+// HandleAuthCallback handles /oauthcallback
 func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	if ctx.OauthConfig == nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Feature Unavailable", "SSO is not configured")

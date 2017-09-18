@@ -44,6 +44,7 @@ var selectableMarkets = []displayMarket{
 	{Name: "hek", DisplayName: "Hek"},
 }
 
+// PageRoot is basically the root of the page. It includes some details that are given on every page and page-specific data
 type PageRoot struct {
 	UI struct {
 		SelectedMarket       string
@@ -67,7 +68,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		return fmt.Errorf("Could not find template named '%s'", templateName)
 	}
 
-	if strings.HasSuffix(r.URL.Path, ".json") {
+	if r.Header.Get("format") == "json" {
 		r.Header["Content-Type"] = []string{"application/json"}
 		json.NewEncoder(w).Encode(root.Page)
 	} else {
@@ -113,6 +114,7 @@ func (ctx *Context) renderServerErrorWithRoot(r *http.Request, w http.ResponseWr
 	ctx.renderErrorPageWithRoot(r, w, http.StatusInternalServerError, "Something bad happened", err.Error(), root)
 }
 
+// Reload will re-parse templates and set them on the context object
 func (ctx *Context) Reload() error {
 	templates := make(map[string]*template.Template)
 	root := template.New("root").Funcs(templateFuncs)

@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/elazarl/go-bindata-assetfs"
@@ -13,50 +14,69 @@ import (
 	"github.com/newrelic/go-agent"
 )
 
+// HandleIndex is the handler for /
 func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	total, err := ctx.App.AppraisalDB.TotalAppraisals()
 	if err != nil {
 		ctx.renderServerError(r, w, err)
 		return
 	}
-	ctx.render(r, w, "main.html", struct{ TotalAppraisalCount int64 }{TotalAppraisalCount: total})
+	ctx.render(r, w, "main.html", struct {
+		TotalAppraisalCount int64 `json:"total_appraisal_count"`
+	}{TotalAppraisalCount: total})
 }
 
+// HandleLegal is the handler for /legal
 func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "legal.html", nil)
 }
 
+// HandleAbout is the handler for /about
 func (ctx *Context) HandleAbout(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "about.html", nil)
 }
 
+// HandleAboutAPI is the handler for /about/api
 func (ctx *Context) HandleAboutAPI(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "api.html", nil)
 }
 
+// HandleRobots is the handler for /robots.txt
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
 	r.Header["Content-Type"] = []string{"text/plain"}
 	io.WriteString(w, `User-agent: *
 Disallow:`)
 }
 
+// HandleFavicon is the handler for /favicon.ico
 func (ctx *Context) HandleFavicon(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "static/favicon.ico", http.StatusPermanentRedirect)
 }
 
+// HTTPHandler returns all HTTP handlers for the app
 func (ctx *Context) HTTPHandler() http.Handler {
 
 	router := bone.New()
 	router.GetFunc("/", ctx.HandleIndex)
+
+	// Create Appraisal
 	router.PostFunc("/appraisal", ctx.HandleAppraisal)
-	router.PostFunc("/appraisal.json", ctx.HandleAppraisal)
 	router.PostFunc("/estimate", ctx.HandleAppraisal)
-	router.GetFunc("/a/:appraisalID", ctx.HandleViewAppraisal)
-	router.GetFunc("/e/:legacyAppraisalID", ctx.HandleViewAppraisal)
-	router.GetFunc("/item/:typeID", ctx.HandleViewItem)
-	router.GetFunc("/search", ctx.HandleSearch)
-	router.GetFunc("/search.json", ctx.HandleSearchJSON)
+
+	// Lates Appraisals
 	router.GetFunc("/latest", ctx.HandleLatestAppraisals)
+
+	// View Appraisal
+	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$", ctx.HandleViewAppraisal)
+	router.GetFunc("/e/#legacyAppraisalID^[0-9]+$", ctx.HandleViewAppraisal)
+
+	// View Item
+	router.GetFunc("/item/#typeID^[0-9]$", ctx.HandleViewItem)
+
+	// Search
+	router.GetFunc("/search", ctx.HandleSearch)
+
+	// Misc
 	router.GetFunc("/legal", ctx.HandleLegal)
 	router.GetFunc("/about", ctx.HandleAbout)
 	router.GetFunc("/about/api", ctx.HandleAboutAPI)
@@ -121,7 +141,23 @@ func (ctx *Context) HTTPHandler() http.Handler {
 		})
 	}
 
+	formatHandler := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasSuffix(r.URL.Path, ".json") {
+				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".json")
+				r.Header.Set("format", "json")
+			} else if strings.HasSuffix(r.URL.Path, ".raw") {
+				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".raw")
+				r.Header.Set("format", "raw")
+			} else {
+				r.Header.Set("format", "")
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+
 	handler = userLoggerInjectHandler(handler)
+	handler = formatHandler(handler)
 	handler = accesslog.NewLoggingHandler(handler, alogger)
 	handler = context.ClearHandler(handler)
 	handler = gziphandler.GzipHandler(handler)

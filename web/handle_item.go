@@ -10,17 +10,17 @@ import (
 )
 
 type viewItemMarketSummary struct {
-	MarketName        string
-	MarketDisplayName string
-	Prices            evepraisal.Prices
-	Components        []componentDetails
-	Totals            evepraisal.Totals
+	MarketName        string             `json:"market_name"`
+	MarketDisplayName string             `json:"market_display_name"`
+	Prices            evepraisal.Prices  `json:"prices"`
+	Components        []componentDetails `json:"component_details,omitempty"`
+	Totals            evepraisal.Totals  `json:"totals"`
 }
 
 type componentDetails struct {
-	Type     typedb.EveType
-	Quantity int64
-	Prices   evepraisal.Prices
+	Type     typedb.EveType    `json:"type"`
+	Quantity int64             `json:"quantity"`
+	Prices   evepraisal.Prices `json:"prices"`
 }
 
 func (d componentDetails) Totals() evepraisal.Totals {
@@ -30,6 +30,7 @@ func (d componentDetails) Totals() evepraisal.Totals {
 	}
 }
 
+// HandleViewItem handles /item/[id]
 func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 	typeIDStr := bone.GetValue(r, "typeID")
 	typeID, err := strconv.ParseInt(typeIDStr, 10, 64)
@@ -44,7 +45,7 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summaries := make([]viewItemMarketSummary, 0)
+	var summaries []viewItemMarketSummary
 	for _, market := range selectableMarkets {
 		prices, ok := ctx.App.PriceDB.GetPrice(market.Name, typeID)
 		if !ok {
@@ -92,7 +93,7 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx.render(r, w, "view_item.html", struct {
-		Type      typedb.EveType
-		Summaries []viewItemMarketSummary
+		Type      typedb.EveType          `json:"type"`
+		Summaries []viewItemMarketSummary `json:"summaries"`
 	}{Type: item, Summaries: summaries})
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/evepraisal/go-evepraisal"
 )
 
+// HandleLatestAppraisals is the handler for /latest
 func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Request) {
 	var limit int64
 	var err error
@@ -24,9 +25,12 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	ctx.render(r, w, "latest.html", struct{ Appraisals []evepraisal.Appraisal }{appraisals})
+	ctx.render(r, w, "latest.html", struct {
+		Appraisals []evepraisal.Appraisal `json:"appraisals"`
+	}{appraisals})
 }
 
+// HandleUserLatestAppraisals is the handler for /user/latest
 func (ctx *Context) HandleUserLatestAppraisals(w http.ResponseWriter, r *http.Request) {
 	user := ctx.GetCurrentUser(r)
 	if user == nil {
@@ -50,5 +54,7 @@ func (ctx *Context) HandleUserLatestAppraisals(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	ctx.render(r, w, "user_latest.html", struct{ Appraisals []evepraisal.Appraisal }{appraisals})
+	ctx.render(r, w, "user_latest.html", struct {
+		Appraisals []evepraisal.Appraisal `json:"appraisals"`
+	}{appraisals})
 }

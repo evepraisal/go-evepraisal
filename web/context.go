@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+// Context contains all of the 'global' app context for the HTTP app
 type Context struct {
 	App            *evepraisal.App
 	BaseURL        string
@@ -22,6 +23,7 @@ type Context struct {
 	etags     map[string]string
 }
 
+// NewContext returns a new Context object given an app instance
 func NewContext(app *evepraisal.App) *Context {
 	ctx := &Context{App: app}
 	ctx.GenerateStaticEtags()

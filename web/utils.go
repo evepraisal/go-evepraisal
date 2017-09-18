@@ -8,6 +8,7 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
+// ISKFormat defines how ISK is rounded and displayed
 var ISKFormat = accounting.Accounting{Symbol: "", Precision: 2}
 
 var humanThresholds = []string{
@@ -24,6 +25,7 @@ var humanThresholds = []string{
 	"Decillion",
 }
 
+// HumanLargeNumber returns string numbers that are formatted with commas and have X-illion appended.
 func HumanLargeNumber(n float64) string {
 	if math.Abs(n) < 1000 {
 		return humanize.Commaf(n)
