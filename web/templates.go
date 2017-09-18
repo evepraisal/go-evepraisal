@@ -69,7 +69,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 	}
 
 	if r.Header.Get("format") == "json" {
-		r.Header["Content-Type"] = []string{"application/json"}
+		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(root.Page)
 	} else {
 		root.UI.SelectedMarket = ctx.getDefaultMarket(r)

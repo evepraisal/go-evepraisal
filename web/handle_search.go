@@ -8,14 +8,16 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
+// SearchPage holds the search results to be rendered
 type SearchPage struct {
 	Results []typedb.EveType `json:"results"`
 }
 
+// HandleSearch handles searching for items
 func (ctx *Context) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	results := ctx.App.TypeDB.Search(r.FormValue("q"))
 	if r.Header.Get("format") == "json" {
-		r.Header["Content-Type"] = []string{"application/json"}
+		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(results)
 		return
 	}

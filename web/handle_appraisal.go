@@ -126,7 +126,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
-	r.Header["X-Appraisal-ID"] = []string{appraisal.ID}
+	w.Header().Add("X-Appraisal-ID", appraisal.ID)
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
 }
 
@@ -156,13 +156,13 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if r.Header.Get("format") == "json" {
-		r.Header["Content-Type"] = []string{"application/json"}
+		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(appraisal)
 		return
 	}
 
 	if r.Header.Get("format") == "raw" {
-		r.Header["Content-Type"] = []string{"application/text"}
+		w.Header().Add("Content-Type", "application/text")
 		io.WriteString(w, appraisal.Raw)
 		return
 	}
