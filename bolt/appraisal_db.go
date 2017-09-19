@@ -126,7 +126,6 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 		return nil, err
 	}
 	go db.setLastUsedTime(dbID)
-	appraisal.User = nil
 
 	return appraisal, err
 }

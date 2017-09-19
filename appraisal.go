@@ -31,6 +31,7 @@ type Appraisal struct {
 	Raw        string          `json:"raw"`
 	Unparsed   map[int]string  `json:"unparsed"`
 	User       *User           `json:"user,omitempty"`
+	Private    bool            `json:"private"`
 }
 
 func (appraisal *Appraisal) CreatedTime() time.Time {

@@ -10,6 +10,7 @@
       <th colspan="2" class="text-center">Created</th>
       <th colspan="2" class="text-center">Sell Value</th>
       <th colspan="2" class="text-center">Buy Value</th>
+      <th class="text-center">Private</th>
     </tr>
     {{range $appraisal := .Page.Appraisals}}
     <tr>
@@ -22,6 +23,7 @@
       <td class="text-left">{{prettybignumber $appraisal.Totals.Sell}} ISK</td>
       <td class="text-right">{{commaf $appraisal.Totals.Buy}}</td>
       <td class="text-left">{{prettybignumber $appraisal.Totals.Buy}} ISK</td>
+      <td>{{if $appraisal.Private}}Yes{{end}}</td>
     </tr>
     {{end}}
   </table>

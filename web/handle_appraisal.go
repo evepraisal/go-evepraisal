@@ -115,6 +115,9 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	appraisal.User = ctx.GetCurrentUser(r)
 
+	// TODO: Set to private based on user settings
+	appraisal.Private = true
+
 	// Persist Appraisal to the database
 	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 	if err != nil {
@@ -166,6 +169,14 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	log.Println("appraisal.Private", appraisal.Private)
+	user := ctx.GetCurrentUser(r)
+	if appraisal.Private && (user == nil || appraisal.User.CharacterOwnerHash != user.CharacterOwnerHash) {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	}
+
+	appraisal.User = nil
 	if r.Header.Get("format") == "json" {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(appraisal)

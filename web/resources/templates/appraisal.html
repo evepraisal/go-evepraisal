@@ -21,7 +21,11 @@
 
     <div class="pull-right">
       <p>
+        {{if .Page.Appraisal.Private}}
+        <i>Private</i> |
+        {{else}}
         <a href="/a/{{.Page.Appraisal.ID}}">{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}</a> |
+        {{end}}
         <a href="/a/{{.Page.Appraisal.ID}}.raw" target="_blank">Raw</a> |
         <a href="/a/{{.Page.Appraisal.ID}}.json" target="_blank">JSON</a>
       </p>
