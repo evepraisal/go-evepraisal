@@ -141,7 +141,7 @@ func appMain() {
 			})
 
 		if oldTypeDB != nil {
-			log.Println("closeing old typedb")
+			log.Println("closing old typedb")
 			oldTypeDB.Close()
 			log.Println("closed old typedb")
 		}
