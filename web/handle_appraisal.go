@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	errInputTooBig = errors.New("Input value is too big.")
-	errInputEmpty  = errors.New("Input value is empty.")
+	errInputTooBig = errors.New("Input value is too big")
+	errInputEmpty  = errors.New("Input value is empty")
 )
 
 // AppraisalPage contains data used on the appraisal page
@@ -173,7 +173,6 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if r.Header.Get("format") == "raw" {
-		w.Header().Add("Content-Type", "application/text")
 		io.WriteString(w, appraisal.Raw)
 		return
 	}
