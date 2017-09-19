@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,15 +18,18 @@ import (
 	"github.com/go-zoo/bone"
 )
 
+var (
+	errInputTooBig = errors.New("Input value is too big.")
+	errInputEmpty  = errors.New("Input value is empty.")
+)
+
 // AppraisalPage contains data used on the appraisal page
 type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal `json:"appraisal"`
 	ShowFull  bool                  `json:"show_full,omitempty"`
 }
 
-// HandleAppraisal is the handler for POST /appraisal
-func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
-
+func parseAppraisalBody(r *http.Request) (string, error) {
 	// Parse body
 	r.ParseMultipartForm(20 * 1000)
 
@@ -34,24 +38,31 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	if err == http.ErrNotMultipart || err == http.ErrMissingFile {
 		body = r.FormValue("raw_textarea")
 	} else if err != nil {
-		ctx.renderServerError(r, w, err)
-		return
+		return "", err
 	} else {
 		defer f.Close()
 		bodyBytes, err := ioutil.ReadAll(f)
 		if err != nil {
-			ctx.renderServerError(r, w, err)
-			return
+			return "", err
 		}
 		body = string(bodyBytes)
 	}
 	if len(body) > 200000 {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is too big.")
-		return
+		return "", errInputTooBig
 	}
 
 	if len(body) == 0 {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Input value is empty.")
+		return "", errInputEmpty
+	}
+	return body, nil
+}
+
+// HandleAppraisal is the handler for POST /appraisal
+func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
+
+	body, err := parseAppraisalBody(r)
+	if err != nil {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
 
