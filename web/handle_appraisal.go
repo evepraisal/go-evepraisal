@@ -3,9 +3,11 @@ package web
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"path/filepath"
 	"sort"
@@ -27,6 +29,14 @@ var (
 type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal `json:"appraisal"`
 	ShowFull  bool                  `json:"show_full,omitempty"`
+}
+
+func (p AppraisalPage) Link() string {
+	if p.Appraisal.Private {
+		return fmt.Sprintf("/a/%s/%s", p.Appraisal.ID, p.Appraisal.PrivateToken)
+	} else {
+		return fmt.Sprintf("/a/%s", p.Appraisal.ID)
+	}
 }
 
 func parseAppraisalBody(r *http.Request) (string, error) {
@@ -102,6 +112,14 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := ctx.GetCurrentUser(r)
+
+	visibility := r.FormValue("visibility")
+	private := false
+	if visibility == "private" && user != nil {
+		private = true
+	}
+
 	// Actually do the appraisal
 	appraisal, err := ctx.App.StringToAppraisal(market, body)
 	if err == evepraisal.ErrNoValidLinesFound {
@@ -114,9 +132,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appraisal.User = ctx.GetCurrentUser(r)
-
-	// TODO: Set to private based on user settings
-	appraisal.Private = true
+	appraisal.Private = private
+	appraisal.PrivateToken = NewPrivateAppraisalToken()
 
 	// Persist Appraisal to the database
 	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
@@ -126,14 +143,14 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := ""
-	user := ctx.GetCurrentUser(r)
 	if user != nil {
 		username = user.CharacterName
 	}
 	log.Printf("[New appraisal] id=%s, market=%s, items=%d, unparsed=%d, user=%s", appraisal.ID, appraisal.MarketName, len(appraisal.Items), len(appraisal.Unparsed), username)
 
 	// Set new session variable
-	ctx.setDefaultMarket(r, w, market)
+	ctx.setSessionValue(r, w, "market", market)
+	ctx.setSessionValue(r, w, "visibility", visibility)
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
@@ -141,7 +158,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
 	w.Header().Add("X-Appraisal-ID", appraisal.ID)
-	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
+	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: cleanAppraisal(appraisal)})
 }
 
 // HandleViewAppraisal is the handler for /a/[id]
@@ -169,14 +186,18 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	log.Println("appraisal.Private", appraisal.Private)
-	user := ctx.GetCurrentUser(r)
-	if appraisal.Private && (user == nil || appraisal.User.CharacterOwnerHash != user.CharacterOwnerHash) {
-		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-		return
+	if appraisal.Private {
+		user := ctx.GetCurrentUser(r)
+		correctUser := (user != nil && appraisal.User != nil && appraisal.User.CharacterOwnerHash == user.CharacterOwnerHash)
+		correctToken := appraisal.PrivateToken == bone.GetValue(r, "privateToken")
+		if !(correctUser && correctToken) {
+			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+			return
+		}
 	}
 
-	appraisal.User = nil
+	appraisal = cleanAppraisal(appraisal)
+
 	if r.Header.Get("format") == "json" {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(appraisal)
@@ -193,4 +214,14 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	})
 
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
+}
+
+// NewPrivateAppraisalToken returns a new token to use for private appraisals
+func NewPrivateAppraisalToken() string {
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	result := make([]byte, 16)
+	for i := range result {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }

@@ -5,24 +5,18 @@ import (
 	"net/http"
 )
 
-const defaultMarket = "jita"
-
-func (ctx *Context) setDefaultMarket(r *http.Request, w http.ResponseWriter, market string) {
-	ctx.setSessionValue(r, w, "market", market)
-}
-
-func (ctx *Context) getDefaultMarket(r *http.Request) string {
-	market := ctx.getSessionValue(r, "market")
-	if market == nil {
-		return defaultMarket
+func (ctx *Context) getSessionValueWithDefault(r *http.Request, key string, defaultValue string) string {
+	value := ctx.getSessionValue(r, key)
+	if value == nil {
+		return defaultValue
 	}
 
-	strMarket, ok := market.(string)
+	strValue, ok := value.(string)
 	if !ok {
-		return defaultMarket
+		return defaultValue
 	}
 
-	return strMarket
+	return strValue
 }
 
 func (ctx *Context) setSessionValue(r *http.Request, w http.ResponseWriter, name string, value interface{}) {

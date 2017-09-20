@@ -21,13 +21,9 @@
 
     <div class="pull-right">
       <p>
-        {{if .Page.Appraisal.Private}}
-        <i>Private</i> |
-        {{else}}
-        <a href="/a/{{.Page.Appraisal.ID}}">{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}</a> |
-        {{end}}
-        <a href="/a/{{.Page.Appraisal.ID}}.raw" target="_blank">Raw</a> |
-        <a href="/a/{{.Page.Appraisal.ID}}.json" target="_blank">JSON</a>
+        <a href="{{.Page.Link}}">{{.UI.BaseURLWithoutScheme}}{{.Page.Link}}</a> |
+        <a href="{{.Page.Link}}.raw" target="_blank">Raw</a> |
+        <a href="{{.Page.Link}}.json" target="_blank">JSON</a>
       </p>
     </div>
 
@@ -105,7 +101,7 @@
     </table>
 
     <script type="text/javascript">
-      window.history.replaceState({}, "", "/a/{{.Page.Appraisal.ID}}");
+      window.history.replaceState({}, "", "{{.Page.Link}}");
       $(document).ready(function() {
         $("#results").tablesorter({
           textExtraction : function(node, table, cellIndex){

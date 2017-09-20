@@ -22,16 +22,17 @@ type Totals struct {
 }
 
 type Appraisal struct {
-	ID         string          `json:"id"`
-	Created    int64           `json:"created"`
-	Kind       string          `json:"kind"`
-	MarketName string          `json:"market_name"`
-	Totals     Totals          `json:"totals"`
-	Items      []AppraisalItem `json:"items"`
-	Raw        string          `json:"raw"`
-	Unparsed   map[int]string  `json:"unparsed"`
-	User       *User           `json:"user,omitempty"`
-	Private    bool            `json:"private"`
+	ID           string          `json:"id"`
+	Created      int64           `json:"created"`
+	Kind         string          `json:"kind"`
+	MarketName   string          `json:"market_name"`
+	Totals       Totals          `json:"totals"`
+	Items        []AppraisalItem `json:"items"`
+	Raw          string          `json:"raw"`
+	Unparsed     map[int]string  `json:"unparsed"`
+	User         *User           `json:"user,omitempty"`
+	Private      bool            `json:"private"`
+	PrivateToken string          `json:"private_token,omitempty`
 }
 
 func (appraisal *Appraisal) CreatedTime() time.Time {

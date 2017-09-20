@@ -68,6 +68,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	// View Appraisal
 	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$", ctx.HandleViewAppraisal)
+	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$/#privateToken^[a-zA-Z0-9]+$", ctx.HandleViewAppraisal)
 	router.GetFunc("/e/#legacyAppraisalID^[0-9]+$", ctx.HandleViewAppraisal)
 
 	// View Item

@@ -27,7 +27,7 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 
 	ctx.render(r, w, "latest.html", struct {
 		Appraisals []evepraisal.Appraisal `json:"appraisals"`
-	}{appraisals})
+	}{cleanAppraisals(appraisals)})
 }
 
 // HandleUserLatestAppraisals is the handler for /user/latest
@@ -56,5 +56,5 @@ func (ctx *Context) HandleUserLatestAppraisals(w http.ResponseWriter, r *http.Re
 
 	ctx.render(r, w, "user_latest.html", struct {
 		Appraisals []evepraisal.Appraisal `json:"appraisals"`
-	}{appraisals})
+	}{cleanAppraisals(appraisals)})
 }
