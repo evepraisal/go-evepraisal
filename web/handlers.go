@@ -53,6 +53,18 @@ func (ctx *Context) HandleFavicon(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "static/favicon.ico", http.StatusPermanentRedirect)
 }
 
+func (ctx *Context) authWrapper(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := ctx.GetCurrentUser(r)
+		if user == nil {
+			ctx.renderErrorPage(r, w, http.StatusUnauthorized, "Not logged in", "You need to be logged in to see this page")
+			return
+		}
+
+		handler(w, r)
+	}
+}
+
 // HTTPHandler returns all HTTP handlers for the app
 func (ctx *Context) HTTPHandler() http.Handler {
 
@@ -88,7 +100,9 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.GetFunc("/login", ctx.HandleLogin)
 	router.GetFunc("/logout", ctx.HandleLogout)
 	router.GetFunc("/oauthcallback", ctx.HandleAuthCallback)
-	router.GetFunc("/user/latest", ctx.HandleUserLatestAppraisals)
+	router.GetFunc("/user/history", ctx.authWrapper(ctx.HandleUserHistoryAppraisals))
+	router.PostFunc("/user/history", ctx.authWrapper(ctx.HandleUserHistoryAppraisals))
+	router.PostFunc("/a/delete/#appraisalID^[a-zA-Z0-9]+$", ctx.authWrapper(ctx.HandleDeleteAppraisal))
 
 	router.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")

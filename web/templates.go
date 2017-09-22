@@ -27,6 +27,9 @@ var templateFuncs = template.FuncMap{
 	"divide":   func(a, b int64) float64 { return float64(a) / float64(b) },
 	"multiply": func(a, b float64) float64 { return a * b },
 
+	// Appraisal-specific
+	"appraisallink": appraisalLink,
+
 	// Only for debugging
 	"spew": spew.Sdump,
 }
@@ -62,6 +65,7 @@ type PageRoot struct {
 		User                 *evepraisal.User
 		LoginEnabled         bool
 		RawTextAreaDefault   string
+		FlashMessages        []FlashMessage
 	}
 	Page interface{}
 }
@@ -86,6 +90,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		root.UI.Visibilities = selectableVisibilities
 		root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
 		root.UI.BaseURL = ctx.BaseURL
+		root.UI.FlashMessages = ctx.getFlashMessages(r, w)
 		if ctx.OauthConfig != nil {
 			root.UI.LoginEnabled = true
 			root.UI.User = ctx.GetCurrentUser(r)

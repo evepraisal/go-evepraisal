@@ -31,12 +31,11 @@ type AppraisalPage struct {
 	ShowFull  bool                  `json:"show_full,omitempty"`
 }
 
-func (p AppraisalPage) Link() string {
-	if p.Appraisal.Private {
-		return fmt.Sprintf("/a/%s/%s", p.Appraisal.ID, p.Appraisal.PrivateToken)
-	} else {
-		return fmt.Sprintf("/a/%s", p.Appraisal.ID)
+func appraisalLink(appraisal *evepraisal.Appraisal) string {
+	if appraisal.Private {
+		return fmt.Sprintf("/a/%s/%s", appraisal.ID, appraisal.PrivateToken)
 	}
+	return fmt.Sprintf("/a/%s", appraisal.ID)
 }
 
 func parseAppraisalBody(r *http.Request) (string, error) {
@@ -190,13 +189,21 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		user := ctx.GetCurrentUser(r)
 		correctUser := (user != nil && appraisal.User != nil && appraisal.User.CharacterOwnerHash == user.CharacterOwnerHash)
 		correctToken := appraisal.PrivateToken == bone.GetValue(r, "privateToken")
-		if !(correctUser && correctToken) {
+		log.Println(correctUser, correctToken)
+		if !(correctUser || correctToken) {
 			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 			return
 		}
+	} else if bone.GetValue(r, "privateToken") != "" {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
 	}
 
 	appraisal = cleanAppraisal(appraisal)
+
+	sort.Slice(appraisal.Items, func(i, j int) bool {
+		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
+	})
 
 	if r.Header.Get("format") == "json" {
 		w.Header().Add("Content-Type", "application/json")
@@ -209,11 +216,39 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	sort.Slice(appraisal.Items, func(i, j int) bool {
-		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
-	})
-
 	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
+}
+
+// HandleDeleteAppraisal is the handler for POST /a/delete/[id]
+func (ctx *Context) HandleDeleteAppraisal(w http.ResponseWriter, r *http.Request) {
+	appraisalID := bone.GetValue(r, "appraisalID")
+	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
+	if err == evepraisal.AppraisalNotFound {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	} else if err != nil {
+		ctx.renderServerError(r, w, err)
+		return
+	}
+
+	user := ctx.GetCurrentUser(r)
+	isOwner := appraisal.User != nil && appraisal.User.CharacterOwnerHash == user.CharacterOwnerHash
+	if !isOwner {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	}
+
+	err = ctx.App.AppraisalDB.DeleteAppraisal(appraisalID)
+	if err == evepraisal.AppraisalNotFound {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	} else if err != nil {
+		ctx.renderServerError(r, w, err)
+		return
+	}
+
+	ctx.setFlashMessage(r, w, FlashMessage{Message: fmt.Sprintf("Appraisal %s has been deleted.", appraisalID), Severity: "success"})
+	http.Redirect(w, r, "/user/history", http.StatusTemporaryRedirect)
 }
 
 // NewPrivateAppraisalToken returns a new token to use for private appraisals

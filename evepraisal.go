@@ -30,7 +30,7 @@ type AppraisalDB interface {
 	PutNewAppraisal(appraisal *Appraisal) error
 	GetAppraisal(appraisalID string) (*Appraisal, error)
 	LatestAppraisals(count int, kind string) ([]Appraisal, error)
-	LatestAppraisalsByUser(user User, count int, kind string) ([]Appraisal, error)
+	LatestAppraisalsByUser(user User, count int, kind string, after string) ([]Appraisal, error)
 	TotalAppraisals() (int64, error)
 	DeleteAppraisal(appraisalID string) error
 	Close() error

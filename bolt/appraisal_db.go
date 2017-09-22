@@ -198,13 +198,26 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 	return appraisals, err
 }
 
-func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string) ([]evepraisal.Appraisal, error) {
+func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string, after string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
 		byIDBucket := tx.Bucket([]byte("appraisals"))
 		c := byUserBucket.Cursor()
-		c.Seek([]byte(fmt.Sprintf("%s;", user.CharacterOwnerHash)))
+
+		var suffix []byte
+		if after != "" {
+			afterDBID, err := EncodeDBID(after)
+			if err != nil {
+				return err
+			}
+			suffix = append([]byte(":"), afterDBID...)
+		} else {
+			suffix = []byte(";")
+		}
+
+		c.Seek([]byte(append([]byte(user.CharacterOwnerHash), suffix...)))
+
 		for key, val := c.Prev(); strings.HasPrefix(string(key), user.CharacterOwnerHash); key, val = c.Prev() {
 			buf, err := snappy.Decode(nil, byIDBucket.Get(val))
 			if err != nil {

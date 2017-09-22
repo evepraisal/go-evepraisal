@@ -32,7 +32,7 @@ type Appraisal struct {
 	Unparsed     map[int]string  `json:"unparsed"`
 	User         *User           `json:"user,omitempty"`
 	Private      bool            `json:"private"`
-	PrivateToken string          `json:"private_token,omitempty`
+	PrivateToken string          `json:"private_token,omitempty"`
 }
 
 func (appraisal *Appraisal) CreatedTime() time.Time {

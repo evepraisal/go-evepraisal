@@ -21,14 +21,14 @@
 
     <div class="pull-right">
       <p>
-        <a href="{{.Page.Link}}">{{.UI.BaseURLWithoutScheme}}{{.Page.Link}}</a> |
-        <a href="{{.Page.Link}}.raw" target="_blank">Raw</a> |
-        <a href="{{.Page.Link}}.json" target="_blank">JSON</a>
+        <a href="{{.Page.Appraisal | appraisallink}}">{{.UI.BaseURLWithoutScheme}}{{.Page.Appraisal | appraisallink}}</a> |
+        <a href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank">Raw</a> |
+        <a href="{{.Page.Appraisal | appraisallink}}.json" target="_blank">JSON</a>
       </p>
     </div>
 
     <div>
-      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}</p>
+      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if .Page.Appraisal.Private}} (private){{end}}</p>
     </div>
 
     <div>
@@ -101,7 +101,7 @@
     </table>
 
     <script type="text/javascript">
-      window.history.replaceState({}, "", "{{.Page.Link}}");
+      window.history.replaceState({}, "", "{{.Page.Appraisal | appraisallink}}");
       $(document).ready(function() {
         $("#results").tablesorter({
           textExtraction : function(node, table, cellIndex){
