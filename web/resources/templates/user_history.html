@@ -1,7 +1,7 @@
-{{define "title"}}Evepraisal - Your Latest Appraisals{{end}}
+{{define "title"}}Evepraisal - Your Appraisal History{{end}}
 {{define "content"}}
 <div class="container">
-  <h2>Your Latest Appraisals</h2>
+  <h2>Your Appraisal History</h2>
   <table class="table table-condensed table-striped">
     <tr class="header">
       <th>ID</th>
@@ -35,6 +35,24 @@
     </tr>
     {{end}}
   </table>
+
+  <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  ...
+              </div>
+              <div class="modal-body">
+                  ...
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                  <a class="btn btn-danger btn-ok">Delete</a>
+              </div>
+          </div>
+      </div>
+  </div>
+
 
   <nav aria-label="Navigate history">
     <ul class="pagination justify-content-center">
