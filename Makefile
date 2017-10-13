@@ -12,6 +12,7 @@ endif
 
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
+GOPATH?=$(shell go env GOPATH)
 
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
@@ -49,7 +50,7 @@ run: install
 	${GOPATH}/bin/evepraisal
 
 run-reload:
-	reflex -c reflex.conf
+	${GOPATH}/bin/reflex -c reflex.conf
 
 dist:
 	ENV=PROD GOOS=linux GOARCH=amd64 make build
