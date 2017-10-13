@@ -15,6 +15,8 @@ import (
 	"github.com/golang/snappy"
 )
 
+var expireTime = time.Hour * 24 * 90
+
 type AppraisalDB struct {
 	DB   *bolt.DB
 	wg   *sync.WaitGroup
@@ -245,7 +247,10 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 
 func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 	appraisal, err := db.getAppraisal(appraisalID)
-	if err != nil {
+	appraisalFound := true
+	if err == evepraisal.AppraisalNotFound {
+		appraisalFound = true
+	} else if err != nil {
 		return err
 	}
 
@@ -258,7 +263,7 @@ func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 			return err
 		}
 
-		if appraisal.User != nil {
+		if appraisalFound && appraisal.User != nil {
 			err = byUserBucket.Delete(append([]byte(fmt.Sprintf("%s:", appraisal.User.CharacterOwnerHash)), dbID...))
 			if err != nil {
 				return err
@@ -316,7 +321,7 @@ func (db *AppraisalDB) startReaper() {
 					timestamp = time.Unix(0, 0)
 				}
 
-				if time.Since(timestamp) > time.Hour*24*90 {
+				if time.Since(timestamp) > expireTime {
 					appraisalID, err := DecodeDBID(key)
 					if err != nil {
 						log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
