@@ -66,7 +66,7 @@ func appMain() {
 	httpClient := pester.New()
 	httpClient.Transport = httpcache.NewTransport(httpCache)
 	httpClient.Concurrency = 5
-	httpClient.Timeout = 10 * time.Second
+	httpClient.Timeout = 30 * time.Second
 	httpClient.Backoff = pester.ExponentialJitterBackoff
 	httpClient.MaxRetries = 10
 

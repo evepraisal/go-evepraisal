@@ -42,6 +42,7 @@ var selectableMarkets = []displayMarket{
 	{Name: "amarr", DisplayName: "Amarr"},
 	{Name: "dodixie", DisplayName: "Dodixie"},
 	{Name: "hek", DisplayName: "Hek"},
+	{Name: "rens", DisplayName: "Rens"},
 }
 
 // PageRoot is basically the root of the page. It includes some details that are given on every page and page-specific data

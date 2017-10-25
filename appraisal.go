@@ -276,7 +276,7 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 
 	result, unparsed := app.Parser(parsers.StringToInput(s))
 
-	appraisal.Unparsed = map[int]string(filterUnparsed(unparsed))
+	appraisal.Unparsed = filterUnparsed(unparsed)
 
 	kind, err := findKind(result)
 	if err != nil {

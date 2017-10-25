@@ -45,6 +45,10 @@ var SpecialRegions = []struct {
 		// 10000042
 		name:     "hek",
 		stations: []int64{60005236, 60004516, 60015140, 60005686, 60011287, 60005236},
+	}, {
+		// 10000030
+		name:     "rens",
+		stations: []int64{60004588, 60005725, 60004594, 60012727, 60012721, 60012724, 60009106},
 	},
 }
 
@@ -102,7 +106,7 @@ func regionNames() []string {
 
 func (p *PriceFetcher) runOnce() {
 	log.Println("Fetch market data")
-	priceMap, err := p.FetchOrderData(p.client, p.baseURL, []int{10000002, 10000042, 10000027, 10000032, 10000043})
+	priceMap, err := p.FetchOrderData(p.client, p.baseURL, []int{10000002, 10000042, 10000027, 10000032, 10000043, 10000030})
 	if err != nil {
 		log.Println("ERROR: fetching market data: ", err)
 		return
@@ -248,7 +252,7 @@ func (p *PriceFetcher) FetchOrderData(client *pester.Client, baseURL string, reg
 				url := fmt.Sprintf("%s/markets/%d/orders/?datasource=tranquility&order_type=all&page=%d", baseURL, regionID, page)
 				hasMore, err := requestAndProcess(url)
 				if err != nil {
-					errChannel <- fmt.Errorf("Failed to fetch market orders: %s", err)
+					errChannel <- fmt.Errorf("Failed to fetch market orders: %s (%s)", err, url)
 					return
 				}
 
