@@ -29,6 +29,7 @@ var (
 type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal `json:"appraisal"`
 	ShowFull  bool                  `json:"show_full,omitempty"`
+	IsOwner   bool                  `json:"is_owner,omitempty"`
 }
 
 func appraisalLink(appraisal *evepraisal.Appraisal) string {
@@ -157,7 +158,12 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
 	w.Header().Add("X-Appraisal-ID", appraisal.ID)
-	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: cleanAppraisal(appraisal)})
+	ctx.render(r, w, "appraisal.html",
+		AppraisalPage{
+			Appraisal: cleanAppraisal(appraisal),
+			IsOwner:   IsAppraisalOwner(user, appraisal),
+		},
+	)
 }
 
 // HandleViewAppraisal is the handler for /a/[id]
@@ -185,12 +191,12 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	user := ctx.GetCurrentUser(r)
+	isOwner := IsAppraisalOwner(user, appraisal)
+
 	if appraisal.Private {
-		user := ctx.GetCurrentUser(r)
-		correctUser := (user != nil && appraisal.User != nil && appraisal.User.CharacterOwnerHash == user.CharacterOwnerHash)
 		correctToken := appraisal.PrivateToken == bone.GetValue(r, "privateToken")
-		log.Println(correctUser, correctToken)
-		if !(correctUser || correctToken) {
+		if !(isOwner || correctToken) {
 			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 			return
 		}
@@ -216,7 +222,12 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
+	ctx.render(r, w, "appraisal.html",
+		AppraisalPage{
+			Appraisal: appraisal,
+			ShowFull:  r.FormValue("full") != "",
+			IsOwner:   isOwner,
+		})
 }
 
 // HandleDeleteAppraisal is the handler for POST /a/delete/[id]
@@ -231,9 +242,7 @@ func (ctx *Context) HandleDeleteAppraisal(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user := ctx.GetCurrentUser(r)
-	isOwner := appraisal.User != nil && appraisal.User.CharacterOwnerHash == user.CharacterOwnerHash
-	if !isOwner {
+	if !IsAppraisalOwner(ctx.GetCurrentUser(r), appraisal) {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	}

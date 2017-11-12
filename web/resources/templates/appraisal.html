@@ -74,10 +74,12 @@
             <li><a href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></li>
             <li><a href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></li>
             <li><a href="{{.Page.Appraisal | appraisallink}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></li>
+            {{if .Page.IsOwner}}
             <li class="divider"></li>
             <li class="bg-danger">
               <a href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="glyphicon glyphicon-trash"></span> Delete</a>
             </li>
+            {{end}}
           </ul>
         </li>
       </ul>
