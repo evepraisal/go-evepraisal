@@ -70,6 +70,8 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	router := bone.New()
 	router.GetFunc("/", ctx.HandleIndex)
+	router.PostFunc("/", ctx.HandleIndex)
+	router.GetFunc("/appraisal", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/", http.StatusTemporaryRedirect) })
 
 	// Create Appraisal
 	router.PostFunc("/appraisal", ctx.HandleAppraisal)

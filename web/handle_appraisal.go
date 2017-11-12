@@ -248,7 +248,7 @@ func (ctx *Context) HandleDeleteAppraisal(w http.ResponseWriter, r *http.Request
 	}
 
 	ctx.setFlashMessage(r, w, FlashMessage{Message: fmt.Sprintf("Appraisal %s has been deleted.", appraisalID), Severity: "success"})
-	http.Redirect(w, r, "/user/history", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
 // NewPrivateAppraisalToken returns a new token to use for private appraisals

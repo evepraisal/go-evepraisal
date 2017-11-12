@@ -1,3 +1,7 @@
+.appraisal-options ul {
+  margin-right: 10px;
+}
+
 .results-table th {
   cursor: pointer;
   padding: 0px;

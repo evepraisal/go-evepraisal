@@ -11,7 +11,6 @@
       <th colspan="2" class="text-center">Sell Value</th>
       <th colspan="2" class="text-center">Buy Value</th>
       <th class="text-center">Visibility</th>
-      <th></th>
     </tr>
     {{range $appraisal := .Page.Appraisals}}
     <tr>
@@ -25,34 +24,9 @@
       <td class="text-right">{{commaf $appraisal.Totals.Buy}}</td>
       <td class="text-left">{{prettybignumber $appraisal.Totals.Buy}} ISK</td>
       <td class="text-center">{{if $appraisal.Private}}<span class="badge alert-info">Private</span>{{else}}<span class="badge badge-primary">Public</span>{{end}}</td>
-      <td class="text-center">
-      <form name="delete-appraisal-{{$appraisal.ID}}" action="/a/delete/{{$appraisal.ID}}" method="POST">
-        <button type="submit" style="font-size:10px" class="btn btn-sm btn-link" href="submit" role="button">
-          <span class="glyphicon glyphicon-remove" />
-        </button>
-      </form>
-    </td>
     </tr>
     {{end}}
   </table>
-
-  <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-header">
-                  ...
-              </div>
-              <div class="modal-body">
-                  ...
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                  <a class="btn btn-danger btn-ok">Delete</a>
-              </div>
-          </div>
-      </div>
-  </div>
-
 
   <nav aria-label="Navigate history">
     <ul class="pagination justify-content-center">
