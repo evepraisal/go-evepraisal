@@ -35,7 +35,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <label for="permalink-input">This link is sharable to others. Anyone with this link will be able to see this appraisal.</label>
+        <label for="permalink-input">This link is sharable to others. Anyone with this URL will be able to see this appraisal {{if .Page.Appraisal.Private}}even though this appraisal is private{{end}}.</label>
         <input type="text" class="form-control" id="permalink-input" value="{{.UI.BaseURL}}{{.Page.Appraisal | appraisallink}}">
       </div>
       <div class="modal-footer">
@@ -71,7 +71,6 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <!-- permalink-input -->
             <li><a href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></li>
             <li><a href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></li>
             <li><a href="{{.Page.Appraisal | appraisallink}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></li>
