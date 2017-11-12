@@ -27,7 +27,7 @@ func (ctx *Context) setFlashMessage(r *http.Request, w http.ResponseWriter, m Fl
 
 	err := session.Save(r, w)
 	if err != nil {
-		log.Printf("Could not store session: %s", err)
+		log.Printf("WARN: Could not store session: %s", err)
 	}
 }
 
@@ -46,7 +46,7 @@ func (ctx *Context) getFlashMessages(r *http.Request, w http.ResponseWriter) []F
 
 	err := session.Save(r, w)
 	if err != nil {
-		log.Printf("Could not store session: %s", err)
+		log.Printf("WARN: Could not store session: %s", err)
 	}
 
 	return messages
@@ -72,7 +72,7 @@ func (ctx *Context) setSessionValue(r *http.Request, w http.ResponseWriter, name
 
 	err := session.Save(r, w)
 	if err != nil {
-		log.Printf("Could not store session: %s", err)
+		log.Printf("WARN: Could not store session: %s", err)
 	}
 }
 
