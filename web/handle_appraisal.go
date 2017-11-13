@@ -70,6 +70,8 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 // HandleAppraisal is the handler for POST /appraisal
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
+	persist := r.FormValue("persist") != "no"
+
 	body, err := parseAppraisalBody(r)
 	if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
@@ -136,10 +138,12 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	appraisal.PrivateToken = NewPrivateAppraisalToken()
 
 	// Persist Appraisal to the database
-	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
-	if err != nil {
-		ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
-		return
+	if persist {
+		err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
+		if err != nil {
+			ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
+			return
+		}
 	}
 
 	username := ""

@@ -22,7 +22,7 @@ type Totals struct {
 }
 
 type Appraisal struct {
-	ID           string          `json:"id"`
+	ID           string          `json:"id,omitempty"`
 	Created      int64           `json:"created"`
 	Kind         string          `json:"kind"`
 	MarketName   string          `json:"market_name"`

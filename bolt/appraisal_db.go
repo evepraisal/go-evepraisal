@@ -160,6 +160,7 @@ func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 
 func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	queriedCount := 0
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
 		c := b.Cursor()
@@ -190,6 +191,10 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 			if len(appraisals) >= reqCount {
 				break
 			}
+
+			if queriedCount >= reqCount*10 {
+				break
+			}
 		}
 
 		return nil
@@ -200,6 +205,7 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 
 func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string, after string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	queriedCount := 0
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
 		byIDBucket := tx.Bucket([]byte("appraisals"))
@@ -238,6 +244,10 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 			appraisals = append(appraisals, appraisal)
 
 			if len(appraisals) >= reqCount {
+				break
+			}
+
+			if queriedCount >= reqCount*10 {
 				break
 			}
 		}

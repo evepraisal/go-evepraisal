@@ -81,7 +81,7 @@ pre {
 </code></pre>
 
   <h3>Create Appraisal <span class="badge badge-primary">POST /appraisal.json</span></h3>
-  <p>This enpoint creates a new appraisal.</p>
+  <p>This enpoint creates a new appraisal. Adding the parameter <i>"persist=no"</i> will avoid persisting a new appraisal and won't have an ID. Use this if there isn't a need to reference results later.</p>
 
   <h4>CURL Example</h4>
   <pre><code>curl -XPOST "https://evepraisal.com/appraisal.json?market=jita&raw_textarea=avatar"</code></pre>
