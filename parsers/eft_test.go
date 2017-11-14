@@ -14,7 +14,7 @@ Warp Disruptor I
 200mm AutoCannon I, EMP S
 200mm AutoCannon I, EMP S
 [empty high slot]
-[empty high slot]
+[Empty High slot]
 Garde I x5`,
 		&EFT{
 			FittingName: "Fleet Tackle",
