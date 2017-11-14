@@ -1,6 +1,6 @@
 <div class="panel panel-default form-group">
   <form id="appraisalform" action="/appraisal" method="POST" enctype="multipart/form-data">
-  <div class="panel-heading">
+  <div class="panel-heading paste-panel-heading">
     Quick Estimate
     <span class="pull-right fileUpload glyphicon glyphicon-upload">
       <input type="file" name="uploadappraisal" id="uploadappraisal" class="upload" />
@@ -12,6 +12,13 @@
     </div>
     <div class="clearfix pull-right">
       <div class="form-inline">
+        {{if .UI.User}}
+        <select id="visibility" name="visibility" class="form-control">
+        {{range $visibility := .UI.Visibilities}}
+          <option value="{{$visibility.Name}}" {{if eq $.UI.SelectedVisibility $visibility.Name }}selected{{end}}>{{$visibility.DisplayName}}</option>
+        {{end}}
+        </select>
+        {{end}}
         <select id="market" name="market" class="form-control">
         {{range $market := .UI.Markets}}
           <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>

@@ -20,6 +20,19 @@ func (ctx *Context) GetCurrentUser(r *http.Request) *evepraisal.User {
 	return &user
 }
 
+// IsAppraisalOwner determines if a user owns the given appraisal
+func IsAppraisalOwner(user *evepraisal.User, appraisal *evepraisal.Appraisal) bool {
+	if user == nil {
+		return false
+	}
+
+	if appraisal.User == nil {
+		return false
+	}
+
+	return appraisal.User.CharacterOwnerHash == user.CharacterOwnerHash
+}
+
 // HandleLogin handles /login
 func (ctx *Context) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	if ctx.OauthConfig == nil {

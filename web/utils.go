@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/dustin/go-humanize"
+	"github.com/evepraisal/go-evepraisal"
 	"github.com/leekchan/accounting"
 	"github.com/montanaflynn/stats"
 )
@@ -47,4 +48,18 @@ func humanizeVolume(f float64) string {
 	}
 	val, _ := stats.Round(f, 0)
 	return humanize.Commaf(val)
+}
+
+func cleanAppraisal(appraisal *evepraisal.Appraisal) *evepraisal.Appraisal {
+	appraisal.User = nil
+	return appraisal
+}
+
+func cleanAppraisals(appraisals []evepraisal.Appraisal) []evepraisal.Appraisal {
+	cleanedAppraisals := make([]evepraisal.Appraisal, len(appraisals))
+	for i, a := range appraisals {
+		cleanedAppraisal := cleanAppraisal(&a)
+		cleanedAppraisals[i] = *cleanedAppraisal
+	}
+	return cleanedAppraisals
 }

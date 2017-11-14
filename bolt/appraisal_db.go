@@ -126,7 +126,6 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 		return nil, err
 	}
 	go db.setLastUsedTime(dbID)
-	appraisal.User = nil
 
 	return appraisal, err
 }
@@ -161,6 +160,7 @@ func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 
 func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	queriedCount := 0
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
 		c := b.Cursor()
@@ -178,14 +178,21 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 				return err
 			}
 
+			if appraisal.Private {
+				continue
+			}
+
 			if kind != "" && appraisal.Kind != kind {
 				continue
 			}
-			appraisal.User = nil
 
 			appraisals = append(appraisals, appraisal)
 
 			if len(appraisals) >= reqCount {
+				break
+			}
+
+			if queriedCount >= reqCount*10 {
 				break
 			}
 		}
@@ -196,13 +203,27 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 	return appraisals, err
 }
 
-func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string) ([]evepraisal.Appraisal, error) {
+func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string, after string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	queriedCount := 0
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
 		byIDBucket := tx.Bucket([]byte("appraisals"))
 		c := byUserBucket.Cursor()
-		c.Seek([]byte(fmt.Sprintf("%s;", user.CharacterOwnerHash)))
+
+		var suffix []byte
+		if after != "" {
+			afterDBID, err := EncodeDBID(after)
+			if err != nil {
+				return err
+			}
+			suffix = append([]byte(":"), afterDBID...)
+		} else {
+			suffix = []byte(";")
+		}
+
+		c.Seek([]byte(append([]byte(user.CharacterOwnerHash), suffix...)))
+
 		for key, val := c.Prev(); strings.HasPrefix(string(key), user.CharacterOwnerHash); key, val = c.Prev() {
 			buf, err := snappy.Decode(nil, byIDBucket.Get(val))
 			if err != nil {
@@ -219,11 +240,14 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 			if kind != "" && appraisal.Kind != kind {
 				continue
 			}
-			appraisal.User = nil
 
 			appraisals = append(appraisals, appraisal)
 
 			if len(appraisals) >= reqCount {
+				break
+			}
+
+			if queriedCount >= reqCount*10 {
 				break
 			}
 		}

@@ -27,16 +27,19 @@ var templateFuncs = template.FuncMap{
 	"divide":   func(a, b int64) float64 { return float64(a) / float64(b) },
 	"multiply": func(a, b float64) float64 { return a * b },
 
+	// Appraisal-specific
+	"appraisallink": appraisalLink,
+
 	// Only for debugging
 	"spew": spew.Sdump,
 }
 
-type displayMarket struct {
+type namedThing struct {
 	Name        string
 	DisplayName string
 }
 
-var selectableMarkets = []displayMarket{
+var selectableMarkets = []namedThing{
 	{Name: "jita", DisplayName: "Jita"},
 	{Name: "universe", DisplayName: "Universe"},
 	{Name: "amarr", DisplayName: "Amarr"},
@@ -45,16 +48,24 @@ var selectableMarkets = []displayMarket{
 	{Name: "rens", DisplayName: "Rens"},
 }
 
+var selectableVisibilities = []namedThing{
+	{Name: "public", DisplayName: "Public"},
+	{Name: "private", DisplayName: "Private"},
+}
+
 // PageRoot is basically the root of the page. It includes some details that are given on every page and page-specific data
 type PageRoot struct {
 	UI struct {
 		SelectedMarket       string
-		Markets              []displayMarket
+		Markets              []namedThing
+		SelectedVisibility   string
+		Visibilities         []namedThing
 		BaseURL              string
 		BaseURLWithoutScheme string
 		User                 *evepraisal.User
 		LoginEnabled         bool
 		RawTextAreaDefault   string
+		FlashMessages        []FlashMessage
 	}
 	Page interface{}
 }
@@ -73,10 +84,13 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(root.Page)
 	} else {
-		root.UI.SelectedMarket = ctx.getDefaultMarket(r)
+		root.UI.SelectedMarket = ctx.getSessionValueWithDefault(r, "market", "jita")
 		root.UI.Markets = selectableMarkets
+		root.UI.SelectedVisibility = ctx.getSessionValueWithDefault(r, "visibility", "public")
+		root.UI.Visibilities = selectableVisibilities
 		root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
 		root.UI.BaseURL = ctx.BaseURL
+		root.UI.FlashMessages = ctx.getFlashMessages(r, w)
 		if ctx.OauthConfig != nil {
 			root.UI.LoginEnabled = true
 			root.UI.User = ctx.GetCurrentUser(r)

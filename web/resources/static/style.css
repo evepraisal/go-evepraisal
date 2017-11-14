@@ -1,3 +1,11 @@
+.paste-panel-heading {
+  padding-bottom: 0;
+}
+
+.appraisal-options ul {
+  margin-right: 10px;
+}
+
 .results-table th {
   cursor: pointer;
   padding: 0px;

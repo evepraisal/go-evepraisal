@@ -1,6 +1,53 @@
 {{define "title"}}Evepraisal - Appraisal Result {{.Page.Appraisal.ID}} [{{.Page.Appraisal.Kind}}]{{end}}
 
 {{define "content"}}
+<!-- Delete Modal -->
+<div class="modal fade" id="delete-appraisal-modal" tabindex="-1" role="dialog" aria-labelledby="delete-appraisal-modal-label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title pull-left" id="delete-appraisal-modal-label">Delete this appraisal?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Clicking the 'Delete' button below will delete this appraisal permanently. This action cannot be undone!
+      </div>
+      <div class="modal-footer">
+        <form name="delete-appraisal-{{.Page.Appraisal.ID}}" action="/a/delete/{{.Page.Appraisal.ID}}" method="POST">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger" role="button">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Permalink Modal -->
+<div class="modal fade" id="permalink-modal" tabindex="-1" role="dialog" aria-labelledby="permalink-modal-label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title pull-left" id="permalink-modal-label">Permanent Link</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="permalink-input">This link is sharable to others. Anyone with this URL will be able to see this appraisal {{if .Page.Appraisal.Private}}even though this appraisal is private{{end}}.</label>
+        <input type="text" class="form-control" id="permalink-input" value="{{.UI.BaseURL}}{{.Page.Appraisal | appraisallink}}">
+      </div>
+      <div class="modal-footer">
+        <form name="delete-appraisal-{{.Page.Appraisal.ID}}" action="/a/delete/{{.Page.Appraisal.ID}}" method="POST">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Done</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Real Content -->
 <div class="row">
   <div class="col-lg-4">
     {{template "_paste-panel.html" .}}
@@ -19,16 +66,27 @@
     </div>
     {{end}}
 
-    <div class="pull-right">
-      <p>
-        <a href="/a/{{.Page.Appraisal.ID}}">{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}</a> |
-        <a href="/a/{{.Page.Appraisal.ID}}.raw" target="_blank">Raw</a> |
-        <a href="/a/{{.Page.Appraisal.ID}}.json" target="_blank">JSON</a>
-      </p>
+    <div class="appraisal-options">
+      <ul class="nav navbar-nav nav-pills nav-fill">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></li>
+            <li><a href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></li>
+            <li><a href="{{.Page.Appraisal | appraisallink}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></li>
+            {{if .Page.IsOwner}}
+            <li class="divider"></li>
+            <li class="bg-danger">
+              <a href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+            </li>
+            {{end}}
+          </ul>
+        </li>
+      </ul>
     </div>
 
     <div>
-      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}</p>
+      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if .Page.Appraisal.Private}} (private){{end}}</p>
     </div>
 
     <div>
@@ -101,8 +159,12 @@
     </table>
 
     <script type="text/javascript">
-      window.history.replaceState({}, "", "/a/{{.Page.Appraisal.ID}}");
+      window.history.replaceState({}, "", "{{.Page.Appraisal | appraisallink}}");
       $(document).ready(function() {
+        $('#permalink-modal').on('shown.bs.modal', function (event) {
+          $('#permalink-input').select();
+        });
+
         $("#results").tablesorter({
           textExtraction : function(node, table, cellIndex){
               n = $(node);

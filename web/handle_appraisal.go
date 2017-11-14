@@ -3,9 +3,11 @@ package web
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"path/filepath"
 	"sort"
@@ -27,6 +29,14 @@ var (
 type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal `json:"appraisal"`
 	ShowFull  bool                  `json:"show_full,omitempty"`
+	IsOwner   bool                  `json:"is_owner,omitempty"`
+}
+
+func appraisalLink(appraisal *evepraisal.Appraisal) string {
+	if appraisal.Private {
+		return fmt.Sprintf("/a/%s/%s", appraisal.ID, appraisal.PrivateToken)
+	}
+	return fmt.Sprintf("/a/%s", appraisal.ID)
 }
 
 func parseAppraisalBody(r *http.Request) (string, error) {
@@ -59,6 +69,8 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 
 // HandleAppraisal is the handler for POST /appraisal
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
+
+	persist := r.FormValue("persist") != "no"
 
 	body, err := parseAppraisalBody(r)
 	if err != nil {
@@ -102,6 +114,14 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := ctx.GetCurrentUser(r)
+
+	visibility := r.FormValue("visibility")
+	private := false
+	if visibility == "private" && user != nil {
+		private = true
+	}
+
 	// Actually do the appraisal
 	appraisal, err := ctx.App.StringToAppraisal(market, body)
 	if err == evepraisal.ErrNoValidLinesFound {
@@ -114,23 +134,27 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appraisal.User = ctx.GetCurrentUser(r)
+	appraisal.Private = private
+	appraisal.PrivateToken = NewPrivateAppraisalToken()
 
 	// Persist Appraisal to the database
-	err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
-	if err != nil {
-		ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
-		return
+	if persist {
+		err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
+		if err != nil {
+			ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
+			return
+		}
 	}
 
 	username := ""
-	user := ctx.GetCurrentUser(r)
 	if user != nil {
 		username = user.CharacterName
 	}
-	log.Printf("[New appraisal] id=%s, market=%s, items=%d, unparsed=%d, user=%s", appraisal.ID, appraisal.MarketName, len(appraisal.Items), len(appraisal.Unparsed), username)
+	log.Printf("[New appraisal] id=%s, market=%s, kind=%s, items=%d, unparsed=%d, user=%s", appraisal.ID, appraisal.MarketName, appraisal.Kind, len(appraisal.Items), len(appraisal.Unparsed), username)
 
 	// Set new session variable
-	ctx.setDefaultMarket(r, w, market)
+	ctx.setSessionValue(r, w, "market", market)
+	ctx.setSessionValue(r, w, "visibility", visibility)
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
@@ -138,7 +162,12 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
 	w.Header().Add("X-Appraisal-ID", appraisal.ID)
-	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal})
+	ctx.render(r, w, "appraisal.html",
+		AppraisalPage{
+			Appraisal: cleanAppraisal(appraisal),
+			IsOwner:   IsAppraisalOwner(user, appraisal),
+		},
+	)
 }
 
 // HandleViewAppraisal is the handler for /a/[id]
@@ -166,6 +195,26 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	user := ctx.GetCurrentUser(r)
+	isOwner := IsAppraisalOwner(user, appraisal)
+
+	if appraisal.Private {
+		correctToken := appraisal.PrivateToken == bone.GetValue(r, "privateToken")
+		if !(isOwner || correctToken) {
+			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+			return
+		}
+	} else if bone.GetValue(r, "privateToken") != "" {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	}
+
+	appraisal = cleanAppraisal(appraisal)
+
+	sort.Slice(appraisal.Items, func(i, j int) bool {
+		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
+	})
+
 	if r.Header.Get("format") == "json" {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(appraisal)
@@ -177,9 +226,50 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	sort.Slice(appraisal.Items, func(i, j int) bool {
-		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
-	})
+	ctx.render(r, w, "appraisal.html",
+		AppraisalPage{
+			Appraisal: appraisal,
+			ShowFull:  r.FormValue("full") != "",
+			IsOwner:   isOwner,
+		})
+}
 
-	ctx.render(r, w, "appraisal.html", AppraisalPage{Appraisal: appraisal, ShowFull: r.FormValue("full") != ""})
+// HandleDeleteAppraisal is the handler for POST /a/delete/[id]
+func (ctx *Context) HandleDeleteAppraisal(w http.ResponseWriter, r *http.Request) {
+	appraisalID := bone.GetValue(r, "appraisalID")
+	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
+	if err == evepraisal.AppraisalNotFound {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	} else if err != nil {
+		ctx.renderServerError(r, w, err)
+		return
+	}
+
+	if !IsAppraisalOwner(ctx.GetCurrentUser(r), appraisal) {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	}
+
+	err = ctx.App.AppraisalDB.DeleteAppraisal(appraisalID)
+	if err == evepraisal.AppraisalNotFound {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
+	} else if err != nil {
+		ctx.renderServerError(r, w, err)
+		return
+	}
+
+	ctx.setFlashMessage(r, w, FlashMessage{Message: fmt.Sprintf("Appraisal %s has been deleted.", appraisalID), Severity: "success"})
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+// NewPrivateAppraisalToken returns a new token to use for private appraisals
+func NewPrivateAppraisalToken() string {
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	result := make([]byte, 16)
+	for i := range result {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }
