@@ -59,7 +59,7 @@ func ParseEFT(input Input) (ParserResult, Input) {
 
 	// remove blacklisted lines
 	for i, line := range itemsInput {
-		_, blacklisted := eftBlacklist[line]
+		_, blacklisted := eftBlacklist[strings.ToLower(line)]
 		if blacklisted {
 			eft.lines = append(eft.lines, i)
 			delete(itemsInput, i)
