@@ -10,7 +10,7 @@
     <div class="form-group">
      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="6" placeholder="paste stuff to evaluate here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
     </div>
-    <div class="clearfix pull-right">
+    <div class="clearfix">
       <div class="form-inline">
         {{if .UI.User}}
         <select id="visibility" name="visibility" class="form-control">
@@ -24,8 +24,10 @@
           <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
         {{end}}
         </select>
-        <button type="reset" class="btn">Reset</button>
-        <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
+        <div class="pull-right">
+          <button type="reset" class="btn">Reset</button>
+          <input type="submit" class="btn btn-primary" href="submit" role="button" value="Submit &raquo;" />
+        </div>
       </div>
     </div>
   </div>
