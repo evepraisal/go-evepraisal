@@ -66,6 +66,20 @@ func (ctx *Context) getSessionValueWithDefault(r *http.Request, key string, defa
 	return strValue
 }
 
+func (ctx *Context) getSessionBooleanWithDefault(r *http.Request, key string, defaultValue bool) bool {
+	value := ctx.getSessionValue(r, key)
+	if value == nil {
+		return defaultValue
+	}
+
+	boolValue, ok := value.(bool)
+	if !ok {
+		return defaultValue
+	}
+
+	return boolValue
+}
+
 func (ctx *Context) setSessionValue(r *http.Request, w http.ResponseWriter, name string, value interface{}) {
 	session, _ := ctx.CookieStore.Get(r, sessionKey)
 	session.Values[name] = value

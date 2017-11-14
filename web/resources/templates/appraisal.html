@@ -66,6 +66,7 @@
     </div>
     {{end}}
 
+    {{if ne .Page.Appraisal.ID ""}}
     <div class="appraisal-options">
       <ul class="nav navbar-nav nav-pills nav-fill">
         <li class="dropdown">
@@ -84,6 +85,7 @@
         </li>
       </ul>
     </div>
+    {{end}}
 
     <div>
       <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if .Page.Appraisal.Private}} (private){{end}}</p>
@@ -159,7 +161,9 @@
     </table>
 
     <script type="text/javascript">
+      {{if ne .Page.Appraisal.ID ""}}
       window.history.replaceState({}, "", "{{.Page.Appraisal | appraisallink}}");
+      {{end}}
       $(document).ready(function() {
         $('#permalink-modal').on('shown.bs.modal', function (event) {
           $('#permalink-input').select();

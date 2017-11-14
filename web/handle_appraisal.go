@@ -155,6 +155,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	// Set new session variable
 	ctx.setSessionValue(r, w, "market", market)
 	ctx.setSessionValue(r, w, "visibility", visibility)
+	ctx.setSessionValue(r, w, "persist", persist)
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()

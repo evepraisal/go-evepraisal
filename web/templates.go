@@ -60,6 +60,7 @@ type PageRoot struct {
 		Markets              []namedThing
 		SelectedVisibility   string
 		Visibilities         []namedThing
+		SelectedPersist      bool
 		BaseURL              string
 		BaseURLWithoutScheme string
 		User                 *evepraisal.User
@@ -88,6 +89,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		root.UI.Markets = selectableMarkets
 		root.UI.SelectedVisibility = ctx.getSessionValueWithDefault(r, "visibility", "public")
 		root.UI.Visibilities = selectableVisibilities
+		root.UI.SelectedPersist = ctx.getSessionBooleanWithDefault(r, "persist", true)
 		root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
 		root.UI.BaseURL = ctx.BaseURL
 		root.UI.FlashMessages = ctx.getFlashMessages(r, w)
