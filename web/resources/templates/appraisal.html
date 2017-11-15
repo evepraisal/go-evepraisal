@@ -88,7 +88,7 @@
     {{end}}
 
     <div>
-      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if .Page.Appraisal.Private}} (private){{end}}</p>
+      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if (and (ne .Page.Appraisal.ID "") .Page.Appraisal.Private)}} (private){{end}}</p>
     </div>
 
     <div>

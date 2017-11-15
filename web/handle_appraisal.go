@@ -146,11 +146,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	username := ""
-	if user != nil {
-		username = user.CharacterName
-	}
-	log.Printf("[New appraisal] id=%s, market=%s, kind=%s, items=%d, unparsed=%d, user=%s", appraisal.ID, appraisal.MarketName, appraisal.Kind, len(appraisal.Items), len(appraisal.Unparsed), username)
+	// Log for later analyics
+	log.Println(appraisal)
 
 	// Set new session variable
 	ctx.setSessionValue(r, w, "market", market)

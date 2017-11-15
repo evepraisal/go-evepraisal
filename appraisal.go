@@ -39,6 +39,23 @@ func (appraisal *Appraisal) CreatedTime() time.Time {
 	return time.Unix(appraisal.Created, 0)
 }
 
+func (appraisal *Appraisal) String() string {
+	appraisalID := appraisal.ID
+	if appraisalID == "" {
+		appraisalID = "-"
+	}
+	s := fmt.Sprintf(
+		"[Appraisal] id=%s, market=%s, kind=%s, items=%d, unparsed=%d",
+		appraisalID, appraisal.MarketName, appraisal.Kind, len(appraisal.Items), len(appraisal.Unparsed))
+	if appraisal.User != nil {
+		s += ", user=" + appraisal.User.CharacterName
+	}
+	if appraisal.Private {
+		s += ", private"
+	}
+	return s
+}
+
 type AppraisalItem struct {
 	Name       string  `json:"name"`
 	TypeID     int64   `json:"typeID"`
