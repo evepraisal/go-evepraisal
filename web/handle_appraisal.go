@@ -162,8 +162,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("X-Appraisal-ID", appraisal.ID)
 	ctx.render(r, w, "appraisal.html",
 		AppraisalPage{
-			Appraisal: cleanAppraisal(appraisal),
 			IsOwner:   IsAppraisalOwner(user, appraisal),
+			Appraisal: cleanAppraisal(appraisal),
 		},
 	)
 }
