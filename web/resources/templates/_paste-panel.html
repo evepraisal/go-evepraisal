@@ -24,15 +24,6 @@
         {{end}}
 
         <div class="form-group">
-          <label for="market">Market</label>
-          <select id="market" name="market" class="form-control">
-          {{range $market := .UI.Markets}}
-            <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
-          {{end}}
-          </select>
-        </div>
-
-        <div class="form-group">
           <label for="persist">Persist appraisals for later</label>
           <select id="persist" name="persist" class="form-control">
           <option value="yes"{{if .UI.SelectedPersist}} selected{{end}}>Yes</option>
@@ -62,6 +53,12 @@
       <div class="form-inline">
         <a href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="glyphicon glyphicon-cog"></span></a>
         <div class="pull-right">
+          <select id="market" name="market" class="form-control input-sm">
+          {{range $market := .UI.Markets}}
+            <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+          {{end}}
+          </select>
+
           <button type="reset" class="btn btn-sm">Reset</button>
           <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
         </div>

@@ -9,9 +9,10 @@ import (
 	"strings"
 	"time"
 
-	// Imported to register boltdb with bleve
 	"github.com/blevesearch/bleve"
+	// Imported to register the standard analysis
 	_ "github.com/blevesearch/bleve/analysis/analyzer/standard"
+	// Imported to register boltdb with bleve
 	_ "github.com/blevesearch/bleve/index/store/boltdb"
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal/typedb"
@@ -87,6 +88,9 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 			index, err = bleve.OpenUsing(indexFilename, map[string]interface{}{
 				"read_only": true,
 			})
+			if err != nil {
+				return nil, err
+			}
 		}
 
 	} else {

@@ -67,35 +67,28 @@
     {{end}}
 
     {{if ne .Page.Appraisal.ID ""}}
-    <div class="appraisal-options">
-      <ul class="nav navbar-nav nav-pills nav-fill">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></li>
-            <li><a href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></li>
-            <li><a href="{{.Page.Appraisal | appraisallink}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></li>
-            {{if .Page.IsOwner}}
-            <li class="divider"></li>
-            <li class="bg-danger">
-              <a href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="glyphicon glyphicon-trash"></span> Delete</a>
-            </li>
-            {{end}}
-          </ul>
-        </li>
-      </ul>
+    <div class="pull-right appraisal-options">
+      <a role="button" class="btn btn-primary btn-xs" type="button" href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></button>
+      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></button>
+      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | appraisallink}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></button>
+
+      {{if .Page.IsOwner}}
+      <a role="button" class="btn btn-danger btn-xs" type="button" href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></button>
+      {{end}}
     </div>
     {{end}}
 
     <div>
-      <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if (and (ne .Page.Appraisal.ID "") .Page.Appraisal.Private)}} (private){{end}}</p>
-    </div>
+      <div>
+        <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if (and (ne .Page.Appraisal.ID "") .Page.Appraisal.Private)}} (private){{end}}</p>
+      </div>
 
-    <div>
-      <h4>
-        <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
-        <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
-      </h4>
+      <div>
+        <h4>
+          <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
+          <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
+        </h4>
+      </div>
     </div>
 
     <table id="results" class="table table-sm table-condensed table-striped results-table">
