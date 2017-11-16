@@ -35,7 +35,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <label for="permalink-input">This link is sharable to others. Anyone with this URL will be able to see this appraisal {{if .Page.Appraisal.Private}}even though this appraisal is private{{end}}.</label>
+        <label for="permalink-input">This link is sharable to others. Anyone with this URL will be able to see this appraisal{{if .Page.Appraisal.Private}} even though this appraisal is private{{end}}.</label>
         <input type="text" class="form-control" id="permalink-input" value="{{.UI.BaseURL}}{{.Page.Appraisal | appraisallink}}">
       </div>
       <div class="modal-footer">
