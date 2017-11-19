@@ -10,7 +10,7 @@ pre {
   <h3>General guidelines</h3>
   <ul>
     <li>Please use this API responsibly. Please don't create a system that creates hundreds of appraisals per minute. If you have any questions with this where the limits are, contact me. <a href="/about">See the bottom of the about page to see how you can get ahold of me.</a></li>
-    <li>Please add a "Content-Type" HTTP header that identifies your tool, service, etc.</li>
+    <li>Please add a "Content-Type" HTTP header that identifies your tool, service, etc. I will block clients that don't identify themselves enough for me to reach them if they are doing something that's abusive.</li>
   </ul>
 
   <h3>Get an Appraisal <span class="badge badge-primary">GET /a/[appraisal-id].json</span></h3>
@@ -81,9 +81,73 @@ pre {
 </code></pre>
 
   <h3>Create Appraisal <span class="badge badge-primary">POST /appraisal.json</span></h3>
-  <p>This enpoint creates a new appraisal. Adding the parameter <i>"persist=no"</i> will avoid persisting a new appraisal and won't have an ID. Use this if there isn't a need to reference results later.</p>
+  <p>This enpoint creates a new appraisal.</p>
 
-  <h4>CURL Example</h4>
+  <h4>CURL Example (without persisting)</h4>
+  <pre><code>curl -XPOST "https://evepraisal.com/appraisal.json?market=jita&raw_textarea=avatar&persist=no"</code></pre>
+
+  <pre><code>{
+    "appraisal": {
+        "created": 1505593417,
+        "items": [
+            {
+                "meta": {
+                    "bpc": false
+                },
+                "name": "avatar",
+                "prices": {
+                    "all": {
+                        "avg": 0,
+                        "max": 64840457150.95,
+                        "median": 64840457150.95,
+                        "min": 64840457150.95,
+                        "order_count": 0,
+                        "percentile": 64840457150.95,
+                        "stddev": 0,
+                        "volume": 0
+                    },
+                    "buy": {
+                        "avg": 0,
+                        "max": 64840457150.95,
+                        "median": 64840457150.95,
+                        "min": 64840457150.95,
+                        "order_count": 0,
+                        "percentile": 64840457150.95,
+                        "stddev": 0,
+                        "volume": 0
+                    },
+                    "sell": {
+                        "avg": 0,
+                        "max": 64840457150.95,
+                        "median": 64840457150.95,
+                        "min": 64840457150.95,
+                        "order_count": 0,
+                        "percentile": 64840457150.95,
+                        "stddev": 0,
+                        "volume": 0
+                    },
+                    "strategy": "ccp",
+                    "updated": "2017-09-16T20:22:26.885313357Z"
+                },
+                "quantity": 1,
+                "typeID": 11567,
+                "typeName": "Avatar",
+                "typeVolume": 10000000
+            }
+        ],
+        "kind": "listing",
+        "market_name": "jita",
+        "raw": "avatar",
+        "totals": {
+            "buy": 64840457150.95,
+            "sell": 64840457150.95,
+            "volume": 10000000
+        },
+        "unparsed": {}
+    }
+}</code></pre>
+
+  <h4>CURL Example (with persisting)</h4>
   <pre><code>curl -XPOST "https://evepraisal.com/appraisal.json?market=jita&raw_textarea=avatar"</code></pre>
 
   <pre><code>{
