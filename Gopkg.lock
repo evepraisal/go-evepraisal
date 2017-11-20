@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
-  revision = "97ae7fbaf81620fe97840685304a78a306a39c64"
+  revision = "843330b8a375e6460183b08e030190b1a1eaea13"
 
 [[projects]]
   branch = "master"
@@ -29,7 +29,7 @@
   branch = "master"
   name = "github.com/boltdb/bolt"
   packages = ["."]
-  revision = "fa5367d20c994db73282594be0146ab221657943"
+  revision = "9da31745363232bc1e27dbab3569e77383a51585"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -47,7 +47,7 @@
   branch = "master"
   name = "github.com/dustin/go-humanize"
   packages = ["."]
-  revision = "79e699ccd02f240a1f1fbbdcee7e64c1c12e41aa"
+  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
 
 [[projects]]
   branch = "master"
@@ -71,7 +71,7 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "11b8df160996e00fd4b55cbaafb3d84ec6d50fa8"
+  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
 
 [[projects]]
   branch = "master"
@@ -95,19 +95,19 @@
   branch = "master"
   name = "github.com/gorilla/sessions"
   packages = ["."]
-  revision = "b61c93cb7f67533c8bfbb5ea450efc07e5833c5e"
+  revision = "a3acf13e802c358d65f249324d14ed24aac11370"
 
 [[projects]]
   branch = "master"
   name = "github.com/gregjones/httpcache"
   packages = ["."]
-  revision = "787624de3eb7bd915c329cba748687a3b22666a6"
+  revision = "2bcd89a1743fd4b373f7370ce8ddc14dfbd18229"
 
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
-  revision = "68e816d1c783414e79bc65b3994d9ab6b0a722ab"
+  revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
   name = "github.com/husobee/vestigo"
@@ -143,7 +143,7 @@
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "d0303fe809921458f417bcf828397a65db30a7e4"
+  revision = "06020f85339e21b2478f756a78e295255ffa4d6a"
 
 [[projects]]
   name = "github.com/montanaflynn/stats"
@@ -154,20 +154,14 @@
 [[projects]]
   name = "github.com/newrelic/go-agent"
   packages = [".","internal","internal/jsonx","internal/logger","internal/sysinfo","internal/utilization"]
-  revision = "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17"
-  version = "v1.9.0"
-
-[[projects]]
-  name = "github.com/pelletier/go-buffruneio"
-  packages = ["."]
-  revision = "c37440a7cf42ac63b919c752ca73a85067e05992"
-  version = "v0.2.0"
+  revision = "462a146a1270954750aac98c5b3e83dec6a9adfd"
+  version = "v1.10.0"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
-  revision = "5ccdfb18c776b740aecaf085c4d9a2779199c279"
-  version = "v1.0.0"
+  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -179,13 +173,13 @@
   branch = "master"
   name = "github.com/sethgrid/pester"
   packages = ["."]
-  revision = "a86a2d88f4dc3c7dbf3a6a6bbbfb095690b834b6"
+  revision = "0af5bab1e1ea2860c5aef8e77427bab011d774d8"
 
 [[projects]]
-  branch = "master"
   name = "github.com/spf13/afero"
   packages = [".","mem"]
-  revision = "ee1bd8ee15a1306d1f9201acc41ef39cd9f99a1b"
+  revision = "8d919cbe7e2627e417f3e45c3c0e489a5b7e2536"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -206,10 +200,10 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "25b30aa063fc18e48662b86996252eabdcf2f0c7"
-  version = "v1.0.0"
+  revision = "4dddf7c62e16bce5807744018f5b753bfe21bbd2"
 
 [[projects]]
   branch = "master"
@@ -227,31 +221,31 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["acme","acme/autocert"]
-  revision = "b0c9c05bfe149df95eb1d25642162cca051e0466"
+  revision = "9f005a07e0d31d45e6656d241bb5c0f2efd4bc94"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
-  revision = "8351a756f30f1297fe94bbf4b767ec589c6ea6d0"
+  revision = "9dfe39835686865bff950a07b394c12a98ddc811"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "13449ad91cb26cb47661c1b080790392170385fd"
+  revision = "f95fa95eaa936d9d87489b15d1d18b97c1ba9c28"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "062cd7e4e68206d8bab9b18396626e855c992658"
+  revision = "0ac51a24ef1c37380f98ba8b98f56e3bffd59850"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["internal/gen","internal/triegen","internal/ucd","transform","unicode/cldr","unicode/norm"]
-  revision = "1cbadb444a806fd9430d14ad08967ed91da4fa0a"
+  revision = "88f656faf3f37f690df1a32515b479415e1a6769"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -269,7 +263,7 @@
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
+  revision = "287cf08546ab5e7e37d55a84f7ed3fd1db036de5"
   source = "https://github.com/go-yaml/yaml.git"
 
 [solve-meta]

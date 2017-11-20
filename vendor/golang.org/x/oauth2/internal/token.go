@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package internal contains support packages for oauth2 package.
 package internal
 
 import (
@@ -21,7 +20,7 @@ import (
 	"golang.org/x/net/context/ctxhttp"
 )
 
-// Token represents the crendentials used to authorize
+// Token represents the credentials used to authorize
 // the requests to access protected resources on the OAuth 2.0
 // provider's backend.
 //
@@ -107,6 +106,7 @@ var brokenAuthHeaderProviders = []string{
 	"https://login.microsoftonline.com/",
 	"https://login.salesforce.com/",
 	"https://login.windows.net",
+	"https://login.live.com/",
 	"https://oauth.sandbox.trainingpeaks.com/",
 	"https://oauth.trainingpeaks.com/",
 	"https://oauth.vk.com/",
