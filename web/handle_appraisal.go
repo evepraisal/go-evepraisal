@@ -185,7 +185,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	}
 
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
-	if err == evepraisal.AppraisalNotFound {
+	if err == evepraisal.ErrAppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
@@ -236,7 +236,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 func (ctx *Context) HandleDeleteAppraisal(w http.ResponseWriter, r *http.Request) {
 	appraisalID := bone.GetValue(r, "appraisalID")
 	appraisal, err := ctx.App.AppraisalDB.GetAppraisal(appraisalID)
-	if err == evepraisal.AppraisalNotFound {
+	if err == evepraisal.ErrAppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {
@@ -250,7 +250,7 @@ func (ctx *Context) HandleDeleteAppraisal(w http.ResponseWriter, r *http.Request
 	}
 
 	err = ctx.App.AppraisalDB.DeleteAppraisal(appraisalID)
-	if err == evepraisal.AppraisalNotFound {
+	if err == evepraisal.ErrAppraisalNotFound {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
 	} else if err != nil {

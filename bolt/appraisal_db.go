@@ -143,7 +143,7 @@ func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 		b := tx.Bucket([]byte("appraisals"))
 		buf := b.Get(dbID)
 		if buf == nil {
-			return evepraisal.AppraisalNotFound
+			return evepraisal.ErrAppraisalNotFound
 		}
 
 		buf, err = snappy.Decode(nil, buf)
@@ -272,7 +272,7 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 	appraisal, err := db.getAppraisal(appraisalID)
 	appraisalFound := true
-	if err == evepraisal.AppraisalNotFound {
+	if err == evepraisal.ErrAppraisalNotFound {
 		appraisalFound = true
 	} else if err != nil {
 		return err

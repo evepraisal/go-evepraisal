@@ -9,9 +9,9 @@ import (
 	"github.com/newrelic/go-agent"
 )
 
+// App holds references to all of the app state that's needed. This is typically created in the 'evepraisal' package.
 type App struct {
 	AppraisalDB         AppraisalDB
-	CacheDB             CacheDB
 	TypeDB              typedb.TypeDB
 	PriceDB             PriceDB
 	Parser              parsers.Parser
@@ -19,13 +19,7 @@ type App struct {
 	NewRelicApplication newrelic.Application
 }
 
-type CacheDB interface {
-	Put(key string, val []byte) error
-	Get(key string) ([]byte, error)
-	Delete(key string) error
-	Close() error
-}
-
+// AppraisalDB allows for creating, deleting and retreiving appraisals
 type AppraisalDB interface {
 	PutNewAppraisal(appraisal *Appraisal) error
 	GetAppraisal(appraisalID string) (*Appraisal, error)
@@ -37,29 +31,30 @@ type AppraisalDB interface {
 }
 
 var (
-	AppraisalNotFound = errors.New("Appraisal not found")
+	// ErrAppraisalNotFound is returned whenever an appraisal by a given ID can't be found
+	ErrAppraisalNotFound = errors.New("Appraisal not found")
 )
 
+// PriceDB holds prices for eve online items. Something else should update them
 type PriceDB interface {
 	GetPrice(market string, typeID int64) (Prices, bool)
 	UpdatePrice(market string, typeID int64, prices Prices) error
 	Close() error
 }
 
+// TransactionLogger is used to log general events and HTTP requests
 type TransactionLogger interface {
 	StartTransaction(identifier string) Transaction
 	StartWebTransaction(identifier string, w http.ResponseWriter, r *http.Request) Transaction
 }
 
+// Transaction is used to signal the normal or abnormal end to a given event
 type Transaction interface {
 	NoticeError(error) error
 	End() error
 }
 
-type TrackingCodeProvider interface {
-	TrackingJS() string
-}
-
+// WebContext holds HTTP handlers and stuff
 type WebContext interface {
 	HTTPHandler() http.Handler
 	Reload() error
