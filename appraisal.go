@@ -22,17 +22,18 @@ type Totals struct {
 }
 
 type Appraisal struct {
-	ID           string          `json:"id,omitempty"`
-	Created      int64           `json:"created"`
-	Kind         string          `json:"kind"`
-	MarketName   string          `json:"market_name"`
-	Totals       Totals          `json:"totals"`
-	Items        []AppraisalItem `json:"items"`
-	Raw          string          `json:"raw"`
-	Unparsed     map[int]string  `json:"unparsed"`
-	User         *User           `json:"user,omitempty"`
-	Private      bool            `json:"private"`
-	PrivateToken string          `json:"private_token,omitempty"`
+	ID              string          `json:"id,omitempty"`
+	Created         int64           `json:"created"`
+	Kind            string          `json:"kind"`
+	MarketName      string          `json:"market_name"`
+	Totals          Totals          `json:"totals"`
+	Items           []AppraisalItem `json:"items"`
+	Raw             string          `json:"raw"`
+	Unparsed        map[int]string  `json:"unparsed"`
+	User            *User           `json:"user,omitempty"`
+	Private         bool            `json:"private"`
+	PrivateToken    string          `json:"private_token,omitempty"`
+	PricePercentage float64         `json:"price_percentage,omitempty"`
 }
 
 func (appraisal *Appraisal) CreatedTime() time.Time {
@@ -72,7 +73,7 @@ type AppraisalItem struct {
 		Routed     bool    `json:"routed,omitempty"`
 		Volume     float64 `json:"volume,omitempty"`
 		Distance   string  `json:"distance,omitempty"`
-		BPC        bool    `json:"bpc"`
+		BPC        bool    `json:"bpc,omitempty"`
 		BPCRuns    int64   `json:"bpcRuns,omitempty"`
 	} `json:"meta,omitempty"`
 }
@@ -193,27 +194,27 @@ func (prices Prices) Sub(p Prices) Prices {
 	return prices
 }
 
-func (prices Prices) Mul(quantity float64) Prices {
-	prices.All.Average *= quantity
-	prices.All.Max *= quantity
-	prices.All.Min *= quantity
-	prices.All.Median *= quantity
-	prices.All.Percentile *= quantity
-	prices.All.Stddev *= quantity
+func (prices Prices) Mul(multiplier float64) Prices {
+	prices.All.Average *= multiplier
+	prices.All.Max *= multiplier
+	prices.All.Min *= multiplier
+	prices.All.Median *= multiplier
+	prices.All.Percentile *= multiplier
+	prices.All.Stddev *= multiplier
 
-	prices.Buy.Average *= quantity
-	prices.Buy.Max *= quantity
-	prices.Buy.Min *= quantity
-	prices.Buy.Median *= quantity
-	prices.Buy.Percentile *= quantity
-	prices.Buy.Stddev *= quantity
+	prices.Buy.Average *= multiplier
+	prices.Buy.Max *= multiplier
+	prices.Buy.Min *= multiplier
+	prices.Buy.Median *= multiplier
+	prices.Buy.Percentile *= multiplier
+	prices.Buy.Stddev *= multiplier
 
-	prices.Sell.Average *= quantity
-	prices.Sell.Max *= quantity
-	prices.Sell.Min *= quantity
-	prices.Sell.Median *= quantity
-	prices.Sell.Percentile *= quantity
-	prices.Sell.Stddev *= quantity
+	prices.Sell.Average *= multiplier
+	prices.Sell.Max *= multiplier
+	prices.Sell.Min *= multiplier
+	prices.Sell.Median *= multiplier
+	prices.Sell.Percentile *= multiplier
+	prices.Sell.Stddev *= multiplier
 	return prices
 }
 
@@ -287,10 +288,11 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 	return prices, nil
 }
 
-func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
+func (app *App) StringToAppraisal(market string, s string, pricePercentage float64) (*Appraisal, error) {
 	appraisal := &Appraisal{
-		Created: time.Now().Unix(),
-		Raw:     s,
+		Created:         time.Now().Unix(),
+		Raw:             s,
+		PricePercentage: pricePercentage,
 	}
 
 	result, unparsed := app.Parser(parsers.StringToInput(s))
@@ -322,6 +324,9 @@ func (app *App) StringToAppraisal(market string, s string) (*Appraisal, error) {
 		prices, err := app.PricesForItem(market, items[i])
 		if err != nil {
 			continue
+		}
+		if pricePercentage > 0 {
+			prices = prices.Mul(pricePercentage / 100)
 		}
 		items[i].Prices = prices
 		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)

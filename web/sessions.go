@@ -80,6 +80,20 @@ func (ctx *Context) getSessionBooleanWithDefault(r *http.Request, key string, de
 	return boolValue
 }
 
+func (ctx *Context) getSessionFloat64WithDefault(r *http.Request, key string, defaultValue float64) float64 {
+	value := ctx.getSessionValue(r, key)
+	if value == nil {
+		return defaultValue
+	}
+
+	float64Value, ok := value.(float64)
+	if !ok {
+		return defaultValue
+	}
+
+	return float64Value
+}
+
 func (ctx *Context) setSessionValue(r *http.Request, w http.ResponseWriter, name string, value interface{}) {
 	session, _ := ctx.CookieStore.Get(r, sessionKey)
 	session.Values[name] = value

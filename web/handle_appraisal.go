@@ -71,6 +71,14 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	persist := r.FormValue("persist") != "no"
+	pricePercentageStr := "100"
+	if r.FormValue("price_percentage") != "" {
+		pricePercentageStr = r.FormValue("price_percentage")
+	}
+	pricePercentage, err := strconv.ParseFloat(pricePercentageStr, 64)
+	if err != nil {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid price_percentage value", err.Error())
+	}
 
 	body, err := parseAppraisalBody(r)
 	if err != nil {
@@ -123,7 +131,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Actually do the appraisal
-	appraisal, err := ctx.App.StringToAppraisal(market, body)
+	appraisal, err := ctx.App.StringToAppraisal(market, body, pricePercentage)
 	if err == evepraisal.ErrNoValidLinesFound {
 		log.Println("No valid lines found:", spew.Sdump(body))
 		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
@@ -153,6 +161,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	ctx.setSessionValue(r, w, "market", market)
 	ctx.setSessionValue(r, w, "visibility", visibility)
 	ctx.setSessionValue(r, w, "persist", persist)
+	ctx.setSessionValue(r, w, "price_percentage", pricePercentage)
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()

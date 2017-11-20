@@ -26,9 +26,17 @@
         <div class="form-group">
           <label for="persist">Persist appraisals for later</label>
           <select id="persist" name="persist" class="form-control">
-          <option value="yes"{{if .UI.SelectedPersist}} selected{{end}}>Yes</option>
-          <option value="no"{{if not .UI.SelectedPersist}} selected{{end}}>No</option>
+            <option value="yes"{{if .UI.SelectedPersist}} selected{{end}}>Yes</option>
+            <option value="no"{{if not .UI.SelectedPersist}} selected{{end}}>No</option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label for="price_percentage">Price Percentage</label>
+          <div class="input-group">
+            <input type="text" class="form-control number-only" value="{{$.UI.PricePercentage}}" placeholder="100" name="price_percentage" id="price_percentage">
+            <div class="input-group-addon">%</div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -69,6 +77,17 @@
 </form>
 
 <script type="text/javascript">
+$(".number-only").bind("keypress", function(e){
+  if(isNaN(this.value+""+String.fromCharCode(e.charCode))) {
+    return false;
+  }
+});
+$(".number-only").bind("paste", function(e){
+  if(isNaN(e.originalEvent.clipboardData.getData('text'))) {
+    e.preventDefault();
+  }
+});
+
 $("body").bind("paste", function(e){
     if ( !$(e.originalEvent.target).is( "input" ) && !$(e.originalEvent.target).is( "textarea" ) ) {
       $("textarea#raw_textarea").val(e.originalEvent.clipboardData.getData('text'));

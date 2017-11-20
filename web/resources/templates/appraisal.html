@@ -56,7 +56,13 @@
   <div class="col-lg-8">
     {{ if .Page.Appraisal.Unparsed }}
     <div class="alert alert-warning" role="alert">
-      <strong>Bad lines!</strong> <strong>{{ .Page.Appraisal.Unparsed | len }}</strong> of the lines could not be parsed.
+      <strong>Bad lines! {{ .Page.Appraisal.Unparsed | len }}</strong> of the lines could not be parsed.
+    </div>
+    {{end}}
+
+    {{if ne .Page.Appraisal.PricePercentage 100.0}}
+    <div class="alert alert-warning" role="alert">
+      <strong>Percentage Prices:</strong> The prices shown below are <strong>{{.Page.Appraisal.PricePercentage}}%</strong> of the prices that you'd expect to see in the {{.Page.Appraisal.MarketName}} market.
     </div>
     {{end}}
 
@@ -79,10 +85,18 @@
     {{end}}
 
     <div>
-      <div>
-        <p class="text-left"><strong>{{.Page.Appraisal.Kind}}</strong> priced in <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}{{if (and (ne .Page.Appraisal.ID "") .Page.Appraisal.Private)}} (private){{end}}</p>
-      </div>
-
+      <span class="nowrap">
+        <strong>
+          {{if (and (ne .Page.Appraisal.ID "") .Page.Appraisal.Private)}}<span class="text-primary">private</span>{{end}} 
+          {{.Page.Appraisal.Kind}}
+        </strong>
+        priced {{if eq .Page.Appraisal.PricePercentage 100.0}}
+         in
+        {{else}}
+         at <strong><span class="text-warning">{{.Page.Appraisal.PricePercentage}}%</span></strong> of
+        {{end}}
+        <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}
+      </span>
       <div>
         <h4>
           <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
