@@ -143,7 +143,9 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	appraisal.User = ctx.GetCurrentUser(r)
 	appraisal.Private = private
-	appraisal.PrivateToken = NewPrivateAppraisalToken()
+	if private {
+		appraisal.PrivateToken = NewPrivateAppraisalToken()
+	}
 
 	// Persist Appraisal to the database
 	if persist {
