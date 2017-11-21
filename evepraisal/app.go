@@ -129,6 +129,7 @@ func appMain() {
 				parsers.ParseLootHistory,
 				parsers.ParsePI,
 				parsers.ParseViewContents,
+				parsers.ParseMiningLedger,
 				parsers.ParseWallet,
 				parsers.ParseSurveyScan,
 				parsers.ParseContract,

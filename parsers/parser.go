@@ -15,6 +15,7 @@ var AllParsers = []Parser{
 	ParseLootHistory,
 	ParsePI,
 	ParseViewContents,
+	ParseMiningLedger,
 	ParseWallet,
 	ParseSurveyScan,
 	ParseContract,

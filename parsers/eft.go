@@ -33,12 +33,11 @@ var eftBlacklist = map[string]bool{
 }
 
 func ParseEFT(input Input) (ParserResult, Input) {
-	inputLines := input.Strings()
-	if len(inputLines) == 0 {
+	if len(input) == 0 {
 		return nil, input
 	}
 
-	line0 := inputLines[0]
+	line0 := input[0]
 	if !strings.Contains(line0, "[") || !strings.Contains(line0, "]") {
 		return nil, input
 	}
@@ -53,7 +52,7 @@ func ParseEFT(input Input) (ParserResult, Input) {
 	eft.Ship = headerParts[1]
 	eft.FittingName = headerParts[2]
 
-	itemsInput := StringsToInput(inputLines)
+	itemsInput := StringsToInput(input.Strings())
 	// remove the header line (it was done this way to maintain the correct line numbers)
 	delete(itemsInput, 0)
 

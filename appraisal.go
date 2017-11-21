@@ -487,6 +487,10 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 					Quantity: item.Quantity,
 				})
 		}
+	case *parsers.MiningLedger:
+		for _, item := range r.Items {
+			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
+		}
 	case *parsers.HeuristicResult:
 		for _, item := range r.Items {
 			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
