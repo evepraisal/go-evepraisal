@@ -27,6 +27,7 @@ type ListingItem struct {
 var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?(?:x|X)? ([\S ]+)$`)
 var reListing2 = regexp.MustCompile(`^([\S ]+?) (?:x|X)? ?([\d,'\.]+)$`)
 var reListing3 = regexp.MustCompile(`^([\S ]+)$`)
+var reListing4 = regexp.MustCompile(`^\s*([\d,'\.]+)\t([\S ]+?)$`)
 var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ?([a-zA-Z][\S ]+)$`)
 
 func ParseListing(input Input) (ParserResult, Input) {
@@ -36,9 +37,12 @@ func ParseListing(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reListing, rest)
 	matches2, rest := regexParseLines(reListing2, rest)
 	matches3, rest := regexParseLines(reListing3, rest)
+	matches4, rest := regexParseLines(reListing4, rest)
+
 	listing.lines = append(listing.lines, regexMatchedLines(matches)...)
 	listing.lines = append(listing.lines, regexMatchedLines(matches2)...)
 	listing.lines = append(listing.lines, regexMatchedLines(matches3)...)
+	listing.lines = append(listing.lines, regexMatchedLines(matches4)...)
 	listing.lines = append(listing.lines, regexMatchedLines(matchesWithAmmo)...)
 
 	// collect items
@@ -53,6 +57,10 @@ func ParseListing(input Input) (ParserResult, Input) {
 
 	for _, match := range matches3 {
 		matchgroup[ListingItem{Name: CleanTypeName(match[1])}] += 1
+	}
+
+	for _, match := range matches4 {
+		matchgroup[ListingItem{Name: CleanTypeName(match[2])}] += ToInt(match[1])
 	}
 
 	for _, match := range matchesWithAmmo {

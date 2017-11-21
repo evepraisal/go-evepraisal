@@ -67,5 +67,34 @@ Tritanium X 1`,
 		},
 		Input{},
 		false,
+	}, {
+		"with starting whitespace",
+		` 450	125mm Railgun I
+ 150	Griffin
+ 150	Maulus
+ 300	Scan Resolution Dampening Script
+ 150	Signal Distortion Amplifier I
+ 150	Small Shield Extender I
+ 600	Stasis Webifier I
+ 300	Targeting Range Dampening Script
+ 300	Tracking Speed Disruption Script
+1200	Warrior I`,
+		&Listing{
+			Items: []ListingItem{
+				{Name: "125mm Railgun I", Quantity: 450},
+				{Name: "Griffin", Quantity: 150},
+				{Name: "Maulus", Quantity: 150},
+				{Name: "Scan Resolution Dampening Script", Quantity: 300},
+				{Name: "Signal Distortion Amplifier I", Quantity: 150},
+				{Name: "Small Shield Extender I", Quantity: 150},
+				{Name: "Stasis Webifier I", Quantity: 600},
+				{Name: "Targeting Range Dampening Script", Quantity: 300},
+				{Name: "Tracking Speed Disruption Script", Quantity: 300},
+				{Name: "Warrior I", Quantity: 1200},
+			},
+			lines: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+		},
+		Input{},
+		false,
 	},
 }
