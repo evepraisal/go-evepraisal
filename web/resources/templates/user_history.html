@@ -7,7 +7,8 @@
       <th>ID</th>
       <th>Format</th>
       <th>Location</th>
-      <th colspan="2" class="text-center">Created</th>
+      <th class="text-right hidden-md hidden-sm hidden-xs">Item Count</th>
+      <th colspan="2" class="text-center hidden-md hidden-sm hidden-xs">Created</th>
       <th colspan="2" class="text-center">Sell Value</th>
       <th colspan="2" class="text-center">Buy Value</th>
       <th class="text-center">Visibility</th>
@@ -17,8 +18,9 @@
       <td><a href="{{$appraisal | appraisallink}}">{{$appraisal.ID}}</a></td>
       <td>{{$appraisal.Kind}}</td>
       <td><span class="badge alrt-default">{{$appraisal.MarketName}}</span>{{if $appraisal.UsingPercentage}} <span class="badge alert-warning">{{$appraisal.PricePercentage}}%</span>{{end}}</td>
-      <td class="text-right">{{relativetime $appraisal.CreatedTime}}</td>
-      <td class="text-left">{{timefmt $appraisal.CreatedTime}}</td>
+      <td class="text-right hidden-md hidden-sm hidden-xs">{{$appraisal.Items | len | commai}}</td>
+      <td class="text-right hidden-md hidden-sm hidden-xs">{{relativetime $appraisal.CreatedTime}}</td>
+      <td class="text-left hidden-md hidden-sm hidden-xs">{{timefmt $appraisal.CreatedTime}}</td>
       <td class="text-right">{{commaf $appraisal.Totals.Sell}}</td>
       <td class="text-left">{{prettybignumber $appraisal.Totals.Sell}} ISK</td>
       <td class="text-right">{{commaf $appraisal.Totals.Buy}}</td>
