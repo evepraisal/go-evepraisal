@@ -69,6 +69,17 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 		}
 	}
 
+	matches4, rest := regexParseLines(reListing4, rest)
+	for i, match := range matches4 {
+		name := CleanTypeName(match[2])
+		if p.typeDB.HasType(name) {
+			matchgroup[ListingItem{Name: name}] += ToInt(match[1])
+			listing.lines = append(listing.lines, i)
+		} else {
+			rest[i] = input[i]
+		}
+	}
+
 	// add items w/totals
 	for item, quantity := range matchgroup {
 		item.Quantity = quantity
