@@ -15,6 +15,7 @@ import (
 	"github.com/evepraisal/go-evepraisal"
 )
 
+var spewConfig = spew.ConfigState{Indent: "    ", SortKeys: true}
 var templateFuncs = template.FuncMap{
 	"humanizeVolume":  humanizeVolume,
 	"comma":           humanize.Comma,
@@ -32,7 +33,7 @@ var templateFuncs = template.FuncMap{
 	"appraisallink": appraisalLink,
 
 	// Only for debugging
-	"spew": spew.Sdump,
+	"spew": spewConfig.Sdump,
 }
 
 type namedThing struct {

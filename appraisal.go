@@ -22,18 +22,19 @@ type Totals struct {
 }
 
 type Appraisal struct {
-	ID              string          `json:"id,omitempty"`
-	Created         int64           `json:"created"`
-	Kind            string          `json:"kind"`
-	MarketName      string          `json:"market_name"`
-	Totals          Totals          `json:"totals"`
-	Items           []AppraisalItem `json:"items"`
-	Raw             string          `json:"raw"`
-	Unparsed        map[int]string  `json:"unparsed"`
-	User            *User           `json:"user,omitempty"`
-	Private         bool            `json:"private"`
-	PrivateToken    string          `json:"private_token,omitempty"`
-	PricePercentage float64         `json:"price_percentage,omitempty"`
+	ID              string           `json:"id,omitempty"`
+	Created         int64            `json:"created"`
+	Kind            string           `json:"kind"`
+	MarketName      string           `json:"market_name"`
+	Totals          Totals           `json:"totals"`
+	Items           []AppraisalItem  `json:"items"`
+	Raw             string           `json:"raw"`
+	ParserLines     map[string][]int `json:"parser_lines,omitempty"`
+	Unparsed        map[int]string   `json:"unparsed"`
+	User            *User            `json:"user,omitempty"`
+	Private         bool             `json:"private"`
+	PrivateToken    string           `json:"private_token,omitempty"`
+	PricePercentage float64          `json:"price_percentage,omitempty"`
 }
 
 func (appraisal *Appraisal) UsingPercentage() bool {
@@ -47,7 +48,7 @@ func (appraisal *Appraisal) CreatedTime() time.Time {
 	return time.Unix(appraisal.Created, 0)
 }
 
-func (appraisal *Appraisal) String() string {
+func (appraisal *Appraisal) Summary() string {
 	appraisalID := appraisal.ID
 	if appraisalID == "" {
 		appraisalID = "-"
@@ -312,6 +313,7 @@ func (app *App) StringToAppraisal(market string, s string, pricePercentage float
 	}
 	appraisal.Kind = kind
 	appraisal.MarketName = market
+	appraisal.ParserLines = parserResultToParserLines(result)
 
 	items := parserResultToAppraisalItems(result)
 	for i := 0; i < len(items); i++ {
@@ -364,6 +366,19 @@ func findKind(result parsers.ParserResult) (string, error) {
 		}
 	}
 	return largestLinesParser, nil
+}
+
+func parserResultToParserLines(result parsers.ParserResult) map[string][]int {
+	parserLines := make(map[string][]int)
+	switch r := result.(type) {
+	case *parsers.MultiParserResult:
+		for _, subResult := range r.Results {
+			parserLines[subResult.Name()] = subResult.Lines()
+		}
+	default:
+		parserLines[result.Name()] = result.Lines()
+	}
+	return parserLines
 }
 
 func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {

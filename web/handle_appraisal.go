@@ -17,6 +17,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/legacy"
+	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/go-zoo/bone"
 )
 
@@ -30,6 +31,19 @@ type AppraisalPage struct {
 	Appraisal *evepraisal.Appraisal `json:"appraisal"`
 	ShowFull  bool                  `json:"show_full,omitempty"`
 	IsOwner   bool                  `json:"is_owner,omitempty"`
+}
+
+type AppraisalDebugPage struct {
+	Appraisal    *evepraisal.Appraisal `json:"appraisal"`
+	Lines        []AppraisalDebugLine  `json:"lines"`
+	ParserResult parsers.ParserResult  `json:"parser_result"`
+}
+
+type AppraisalDebugLine struct {
+	Number int    `json:"number"`
+	Parsed bool   `json:"parsed"`
+	Parser string `json:"parser"`
+	Text   string `json:"text"`
 }
 
 func appraisalLink(appraisal *evepraisal.Appraisal) string {
@@ -157,7 +171,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log for later analyics
-	log.Println(appraisal)
+	log.Println(appraisal.Summary())
 
 	// Set new session variable
 	ctx.setSessionValue(r, w, "market", market)
@@ -235,11 +249,52 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if r.Header.Get("format") == "debug" {
+		ctx.renderAppraisalDebug(w, r, appraisal)
+		return
+	}
+
 	ctx.render(r, w, "appraisal.html",
 		AppraisalPage{
 			Appraisal: appraisal,
 			ShowFull:  r.FormValue("full") != "",
 			IsOwner:   isOwner,
+		})
+}
+
+func (ctx *Context) renderAppraisalDebug(w http.ResponseWriter, r *http.Request, appraisal *evepraisal.Appraisal) {
+
+	lines := strings.Split(appraisal.Raw, "\n")
+	debugLines := make([]AppraisalDebugLine, len(lines))
+
+	lineParsers := make(map[int]string)
+	for parser, lines := range appraisal.ParserLines {
+		for _, line := range lines {
+			lineParsers[line] = parser
+		}
+	}
+
+	for i, line := range lines {
+		_, unparsed := appraisal.Unparsed[i]
+		parser, ok := lineParsers[i]
+		if !ok {
+			parser = "unknown"
+		}
+
+		debugLines[i] = AppraisalDebugLine{
+			Number: i,
+			Parsed: !unparsed,
+			Parser: parser,
+			Text:   line,
+		}
+	}
+
+	result, _ := ctx.App.Parser(parsers.StringToInput(appraisal.Raw))
+	ctx.render(r, w, "appraisal_debug.html",
+		AppraisalDebugPage{
+			Appraisal:    appraisal,
+			Lines:        debugLines,
+			ParserResult: result,
 		})
 }
 

@@ -166,6 +166,9 @@ func (ctx *Context) HTTPHandler() http.Handler {
 			} else if strings.HasSuffix(r.URL.Path, ".raw") {
 				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".raw")
 				r.Header.Set("format", "raw")
+			} else if strings.HasSuffix(r.URL.Path, ".debug") {
+				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".debug")
+				r.Header.Set("format", "debug")
 			} else {
 				r.Header.Set("format", "")
 			}
