@@ -60,7 +60,7 @@
     </div>
     {{end}}
 
-    {{if ne .Page.Appraisal.PricePercentage 100.0}}
+    {{if .Page.Appraisal.UsingPercentage}}
     <div class="alert alert-warning" role="alert">
       <strong>Percentage Prices:</strong> The prices shown below are <strong>{{.Page.Appraisal.PricePercentage}}%</strong> of the prices that you'd expect to see in the {{.Page.Appraisal.MarketName}} market.
     </div>
@@ -90,10 +90,10 @@
           {{if (and (ne .Page.Appraisal.ID "") .Page.Appraisal.Private)}}<span class="text-primary">private</span>{{end}} 
           {{.Page.Appraisal.Kind}}
         </strong>
-        priced {{if eq .Page.Appraisal.PricePercentage 100.0}}
-         in
-        {{else}}
+        priced {{if .Page.Appraisal.UsingPercentage}}
          at <strong><span class="text-warning">{{.Page.Appraisal.PricePercentage}}%</span></strong> of
+        {{else}}
+         in
         {{end}}
         <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}
       </span>

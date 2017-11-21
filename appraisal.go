@@ -36,6 +36,13 @@ type Appraisal struct {
 	PricePercentage float64         `json:"price_percentage,omitempty"`
 }
 
+func (appraisal *Appraisal) UsingPercentage() bool {
+	if appraisal.PricePercentage == 0 || appraisal.PricePercentage == 100.0 {
+		return false
+	}
+	return true
+}
+
 func (appraisal *Appraisal) CreatedTime() time.Time {
 	return time.Unix(appraisal.Created, 0)
 }

@@ -16,7 +16,7 @@
     <tr>
       <td><a href="{{$appraisal | appraisallink}}">{{$appraisal.ID}}</a></td>
       <td>{{$appraisal.Kind}}</td>
-      <td>{{$appraisal.MarketName}}</td>
+      <td><span class="badge alrt-default">{{$appraisal.MarketName}}</span>{{if $appraisal.UsingPercentage}} <span class="badge alert-warning">{{$appraisal.PricePercentage}}%</span>{{end}}</td>
       <td class="text-right">{{relativetime $appraisal.CreatedTime}}</td>
       <td class="text-left">{{timefmt $appraisal.CreatedTime}}</td>
       <td class="text-right">{{commaf $appraisal.Totals.Sell}}</td>

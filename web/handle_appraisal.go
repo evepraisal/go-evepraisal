@@ -76,7 +76,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		pricePercentageStr = r.FormValue("price_percentage")
 	}
 	pricePercentage, err := strconv.ParseFloat(pricePercentageStr, 64)
-	if err != nil {
+	if err != nil || pricePercentage <= 0 || pricePercentage > 1000 {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid price_percentage value", err.Error())
 	}
 
