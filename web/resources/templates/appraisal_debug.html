@@ -11,19 +11,23 @@
 
   <div class="tab-content">
     <div class="tab-pane active" id="tab-parsed-lines" role="tabpanel">
-      <table class="table table-condensed table-striped">
-        <tr class="header">
-          <td>#</td>
-          <td>parser</td>
-          <td></td>
-        </tr>
+      <table class="table table-condensed table-striped raw-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>parser</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
         {{range $line := .Page.Lines}}
-        <tr class="{{if not $line.Parsed}}danger{{end}}">
-          <td>{{$line.Number}}</td>
-          <td>{{$line.Parser}}</td>
-          <td>{{$line.Text}}</td>
-        </tr>
+          <tr class="{{if not $line.Parsed}}danger{{end}}">
+            <td style="padding: 0px 5px; vertical-align: middle;">{{$line.Number}}</td>
+            <td style="padding: 0px 5px; vertical-align: middle;">{{$line.Parser}}</td>
+            <td style="padding: 0px 5px; vertical-align: middle;"><pre>{{$line.Text}}</pre></td>
+          </tr>
         {{end}}
+        </tbody>
       </table>
     </div>
   </div>
