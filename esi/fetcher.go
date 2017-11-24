@@ -11,6 +11,7 @@ import (
 	"github.com/sethgrid/pester"
 )
 
+// MarketOrder represents a market order in ESI
 type MarketOrder struct {
 	ID            int64   `json:"order_id"`
 	Type          int64   `json:"type_id"`
@@ -25,6 +26,7 @@ type MarketOrder struct {
 	Range         string  `json:"range"`
 }
 
+// SpecialRegions defines which regions we care about
 var SpecialRegions = []struct {
 	name     string
 	stations []int64
@@ -52,6 +54,7 @@ var SpecialRegions = []struct {
 	},
 }
 
+// PriceFetcher fetches prices and populates the given priceDB
 type PriceFetcher struct {
 	db      evepraisal.PriceDB
 	client  *pester.Client
@@ -61,6 +64,7 @@ type PriceFetcher struct {
 	wg   *sync.WaitGroup
 }
 
+// NewPriceFetcher returns a new PriceFetcher
 func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.Client) (*PriceFetcher, error) {
 
 	p := &PriceFetcher{
@@ -89,6 +93,7 @@ func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.
 	return p, nil
 }
 
+// Close should be called to stop the fetcher worker(s)
 func (p *PriceFetcher) Close() error {
 	close(p.stop)
 	p.wg.Wait()
@@ -173,6 +178,7 @@ func (p *PriceFetcher) freshPriceMap() map[string]map[int64]evepraisal.Prices {
 	return priceMap
 }
 
+// FetchPriceData fetches CCP's pricing information for every type
 func (p *PriceFetcher) FetchPriceData(client *pester.Client, baseURL string) (map[int64]evepraisal.Prices, error) {
 	start := time.Now()
 	url := fmt.Sprintf("%s/markets/prices/?datasource=tranquility", baseURL)
@@ -210,6 +216,7 @@ func (p *PriceFetcher) FetchPriceData(client *pester.Client, baseURL string) (ma
 	return allPrices, nil
 }
 
+// FetchOrderData concurrently fetches from each region that we care about
 func (p *PriceFetcher) FetchOrderData(client *pester.Client, baseURL string, regionIDs []int) (map[string]map[int64]evepraisal.Prices, error) {
 	allOrdersByType := make(map[int64][]MarketOrder)
 	finished := make(chan bool, 1)

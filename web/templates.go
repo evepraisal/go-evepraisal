@@ -84,7 +84,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		return fmt.Errorf("Could not find template named '%s'", templateName)
 	}
 
-	if r.Header.Get("format") == "json" {
+	if r.Header.Get("format") == formatJSON {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(root.Page)
 	} else {

@@ -5,6 +5,8 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
+// NewContextMultiParser impliments a parser that knows about what types exist. This makes it much more powerful
+// and prevents accidentally parsing one format as another
 func NewContextMultiParser(typeDB typedb.TypeDB, parserList []parsers.Parser) parsers.Parser {
 	return parsers.Parser(
 		func(input parsers.Input) (parsers.ParserResult, parsers.Input) {

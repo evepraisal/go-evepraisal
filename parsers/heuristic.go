@@ -8,16 +8,16 @@ import (
 )
 
 const (
-	HEURISTIC_ITEM     = iota
-	HEURISTIC_QUANTITY = iota
-	HEURISTIC_IGNORE   = iota
+	sHeuristicItem     = iota
+	sHeuristicQuantity = iota
+	sHeuristicIgnore   = iota
 )
 
 var HeuristicSpecs = [][]int{
-	{HEURISTIC_IGNORE, HEURISTIC_ITEM, HEURISTIC_IGNORE, HEURISTIC_QUANTITY},
-	{HEURISTIC_QUANTITY, HEURISTIC_IGNORE, HEURISTIC_ITEM},
-	{HEURISTIC_ITEM, HEURISTIC_QUANTITY},
-	{HEURISTIC_QUANTITY, HEURISTIC_ITEM},
+	{sHeuristicIgnore, sHeuristicItem, sHeuristicIgnore, sHeuristicQuantity},
+	{sHeuristicQuantity, sHeuristicIgnore, sHeuristicItem},
+	{sHeuristicItem, sHeuristicQuantity},
+	{sHeuristicQuantity, sHeuristicItem},
 }
 
 type HeuristicParser struct {
@@ -125,14 +125,14 @@ func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
 		matched := true
 		for index, specPart := range spec {
 			switch specPart {
-			case HEURISTIC_IGNORE:
-			case HEURISTIC_ITEM:
+			case sHeuristicIgnore:
+			case sHeuristicItem:
 				name = parts[index]
 				if !p.typeDB.HasType(name) {
 					matched = false
 					break
 				}
-			case HEURISTIC_QUANTITY:
+			case sHeuristicQuantity:
 				quantity = ToInt(parts[index])
 				if quantity == 0 {
 					matched = false

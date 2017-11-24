@@ -16,7 +16,7 @@ type SearchPage struct {
 // HandleSearch handles searching for items
 func (ctx *Context) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	results := ctx.App.TypeDB.Search(r.FormValue("q"))
-	if r.Header.Get("format") == "json" {
+	if r.Header.Get("format") == formatJSON {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(results)
 		return

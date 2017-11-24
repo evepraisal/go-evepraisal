@@ -24,6 +24,10 @@ import (
 var (
 	errInputTooBig = errors.New("Input value is too big")
 	errInputEmpty  = errors.New("Input value is empty")
+
+	formatJSON  = "json"
+	formatRaw   = "raw"
+	formatDebug = "debug"
 )
 
 // AppraisalPage contains data used on the appraisal page
@@ -238,18 +242,18 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
-	if r.Header.Get("format") == "json" {
+	if r.Header.Get("format") == formatJSON {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(appraisal)
 		return
 	}
 
-	if r.Header.Get("format") == "raw" {
+	if r.Header.Get("format") == formatRaw {
 		io.WriteString(w, appraisal.Raw)
 		return
 	}
 
-	if r.Header.Get("format") == "debug" {
+	if r.Header.Get("format") == formatDebug {
 		ctx.renderAppraisalDebug(w, r, appraisal)
 		return
 	}

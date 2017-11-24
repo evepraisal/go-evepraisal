@@ -16,15 +16,15 @@ func getPriceAggregatesForOrders(orders []MarketOrder) evepraisal.Prices {
 		if order.Buy {
 			buyPrices = append(buyPrices, order.Price)
 			prices.Buy.Volume += order.Volume
-			prices.Buy.OrderCount += 1
+			prices.Buy.OrderCount++
 		} else {
 			sellPrices = append(sellPrices, order.Price)
 			prices.Sell.Volume += order.Volume
-			prices.Sell.OrderCount += 1
+			prices.Sell.OrderCount++
 		}
 		allPrices = append(allPrices, order.Price)
 		prices.All.Volume += order.Volume
-		prices.All.OrderCount += 1
+		prices.All.OrderCount++
 	}
 
 	// Buy

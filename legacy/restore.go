@@ -15,6 +15,7 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
+// RestoreLegacyFile will load a given restore file into the database
 func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.TypeDB, filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -28,7 +29,11 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 	}
 
 	csvReader := csv.NewReader(gzipReader)
-	csvReader.Read() // Read once for the header
+	_, err = csvReader.Read() // Read once for the header
+	if err != nil {
+		return err
+	}
+
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {

@@ -3,6 +3,7 @@ package bolt
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -56,15 +57,21 @@ func (c *HTTPCache) Get(key string) (resp []byte, ok bool) {
 }
 
 func (c *HTTPCache) Set(key string, resp []byte) {
-	c.db.Update(func(tx *bolt.Tx) error {
+	err := c.db.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket([]byte("httpcache")).Put([]byte(key), resp)
 	})
+	if err != nil {
+		log.Println("Error: saving in httpcache: ", err)
+	}
 }
 
 func (c *HTTPCache) Delete(key string) {
-	c.db.Update(func(tx *bolt.Tx) error {
+	err := c.db.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket([]byte("httpcache")).Delete([]byte(key))
 	})
+	if err != nil {
+		log.Println("Error: deleving in httpcache: ", err)
+	}
 }
 
 func (c *HTTPCache) Close() error {

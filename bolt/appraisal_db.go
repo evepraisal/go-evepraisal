@@ -222,7 +222,7 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 			suffix = []byte(";")
 		}
 
-		c.Seek([]byte(append([]byte(user.CharacterOwnerHash), suffix...)))
+		c.Seek(append([]byte(user.CharacterOwnerHash), suffix...))
 
 		for key, val := c.Prev(); strings.HasPrefix(string(key), user.CharacterOwnerHash); key, val = c.Prev() {
 			buf, err := snappy.Decode(nil, byIDBucket.Get(val))

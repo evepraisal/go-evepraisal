@@ -1,7 +1,7 @@
 package web
 
 import (
-	"crypto/md5"
+	"crypto/sha512"
 	"encoding/hex"
 	"strings"
 )
@@ -15,7 +15,7 @@ func (ctx *Context) GenerateStaticEtags() {
 		}
 		data, _ := Asset(name)
 
-		hasher := md5.New()
+		hasher := sha512.New()
 		hasher.Write(data)
 		etags["/"+name] = hex.EncodeToString(hasher.Sum(nil))
 	}

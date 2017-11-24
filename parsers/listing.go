@@ -56,7 +56,7 @@ func ParseListing(input Input) (ParserResult, Input) {
 	}
 
 	for _, match := range matches3 {
-		matchgroup[ListingItem{Name: CleanTypeName(match[1])}] += 1
+		matchgroup[ListingItem{Name: CleanTypeName(match[1])}]++
 	}
 
 	for _, match := range matches4 {
@@ -64,8 +64,8 @@ func ParseListing(input Input) (ParserResult, Input) {
 	}
 
 	for _, match := range matchesWithAmmo {
-		matchgroup[ListingItem{Name: CleanTypeName(match[1])}] += 1
-		matchgroup[ListingItem{Name: CleanTypeName(match[2])}] += 1
+		matchgroup[ListingItem{Name: CleanTypeName(match[1])}]++
+		matchgroup[ListingItem{Name: CleanTypeName(match[2])}]++
 	}
 
 	// add items w/totals
