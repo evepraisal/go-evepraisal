@@ -22,6 +22,7 @@ setup:
 	go get -u github.com/cespare/reflex
 	go get -u github.com/jstemmer/go-junit-report
 	go get -u github.com/alecthomas/gometalinter
+	${GOPATH}/bin/gometalinter --install
 	${GOPATH}/bin/dep ensure
 
 build: generate
