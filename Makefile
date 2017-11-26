@@ -21,7 +21,7 @@ setup:
 	go get -u github.com/jteeuwen/go-bindata/...
 	go get -u github.com/cespare/reflex
 	go get -u github.com/jstemmer/go-junit-report
-	go get -u gopkg.in/alecthomas/gometalinter.v1
+	go get -u github.com/alecthomas/gometalinter
 	${GOPATH}/bin/dep ensure
 
 build: generate

@@ -22,9 +22,6 @@ dependencies:
     - make dist
 
 test:
-  pre:
-    - go get -u github.com/jstemmer/go-junit-report
-    - go get -u gopkg.in/alecthomas/gometalinter.v1
   override:
     - make lint
     - make test:
