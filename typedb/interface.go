@@ -1,5 +1,6 @@
 package typedb
 
+// TypeDB defines the interface for storing and retreiving types
 type TypeDB interface {
 	GetType(typeName string) (EveType, bool)
 	HasType(typeName string) bool
@@ -10,6 +11,7 @@ type TypeDB interface {
 	Close() error
 }
 
+// EveType holds the information on a single type
 type EveType struct {
 	ID                int64       `json:"id"`
 	GroupID           int64       `json:"group_id"`
@@ -23,6 +25,7 @@ type EveType struct {
 	BaseComponents    []Component `json:"base_components,omitempty"`
 }
 
+// Component defines what is needed and how many is needed to make something else
 type Component struct {
 	Quantity int64 `json:"quantity"`
 	TypeID   int64 `json:"type_id"`

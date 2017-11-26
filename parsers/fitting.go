@@ -6,15 +6,18 @@ import (
 	"sort"
 )
 
+// Fitting is the result from the fitting parser
 type Fitting struct {
 	Items []ListingItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *Fitting) Name() string {
 	return "fitting"
 }
 
+// Lines returns the lines that this result is made from
 func (r *Fitting) Lines() []int {
 	return r.lines
 }
@@ -30,6 +33,7 @@ var fittingBlacklist = map[string]bool{
 	"Fuel":         true,
 }
 
+// ParseFitting parses fittings
 func ParseFitting(input Input) (ParserResult, Input) {
 	fitting := &Fitting{}
 

@@ -6,19 +6,23 @@ import (
 	"sort"
 )
 
+// Listing is the result from the listing parser
 type Listing struct {
 	Items []ListingItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *Listing) Name() string {
 	return "listing"
 }
 
+// Lines returns the lines that this result is made from
 func (r *Listing) Lines() []int {
 	return r.lines
 }
 
+// ListingItem is a single item from a listing result
 type ListingItem struct {
 	Name     string
 	Quantity int64
@@ -30,6 +34,7 @@ var reListing3 = regexp.MustCompile(`^([\S ]+)$`)
 var reListing4 = regexp.MustCompile(`^\s*([\d,'\.]+)\t([\S ]+?)$`)
 var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ?([a-zA-Z][\S ]+)$`)
 
+// ParseListing parses a list of eve items
 func ParseListing(input Input) (ParserResult, Input) {
 	listing := &Listing{}
 

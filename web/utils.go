@@ -34,7 +34,10 @@ func HumanLargeNumber(n float64) string {
 
 	exp := int((math.Log(math.Abs(n)) / math.Log(1000)))
 	suffix := humanThresholds[int(math.Min(float64(exp-1), 10))]
-	val, _ := stats.Round(n/math.Pow(1000, float64(exp)), 2)
+	val, err := stats.Round(n/math.Pow(1000, float64(exp)), 2)
+	if err != nil {
+		return humanize.Commaf(n)
+	}
 	return humanize.Commaf(val) + " " + suffix
 }
 
@@ -46,7 +49,10 @@ func humanizeVolume(f float64) string {
 	if float64(int64(f)) != f {
 		return humanize.Commaf(f)
 	}
-	val, _ := stats.Round(f, 0)
+	val, err := stats.Round(f, 0)
+	if err != nil {
+		return humanize.Commaf(f)
+	}
 	return humanize.Commaf(val)
 }
 

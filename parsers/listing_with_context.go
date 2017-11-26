@@ -7,15 +7,18 @@ import (
 	"github.com/evepraisal/go-evepraisal/typedb"
 )
 
+// ContextListingParser is a parser which uses the typeDB to help parse a listing
 type ContextListingParser struct {
 	typeDB typedb.TypeDB
 }
 
+// NewContextListingParser returns a new listing (w/context) parser
 func NewContextListingParser(typeDB typedb.TypeDB) Parser {
 	p := &ContextListingParser{typeDB: typeDB}
 	return p.Parse
 }
 
+// Parse parses a listing
 func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	listing := &Listing{}
 

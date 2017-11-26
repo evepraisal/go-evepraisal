@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// ViewContents is the result from the view contents parser
 type ViewContents struct {
 	Items []ViewContentsItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *ViewContents) Name() string {
 	return "view_contents"
 }
 
+// Lines returns the lines that this result is made from
 func (r *ViewContents) Lines() []int {
 	return r.lines
 }
 
+// ViewContentsItem is a single item from a view contents result
 type ViewContentsItem struct {
 	Name     string
 	Group    string
@@ -40,6 +44,7 @@ var reViewContents2 = regexp.MustCompile(strings.Join([]string{
 	`([\d,'\.]+)$`, // quantity
 }, ""))
 
+// ParseViewContents parses view contents text
 func ParseViewContents(input Input) (ParserResult, Input) {
 	viewContents := &ViewContents{}
 	matches, rest := regexParseLines(reViewContents, input)

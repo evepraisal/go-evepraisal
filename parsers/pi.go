@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// PI is the result from the planetary interaction parser
 type PI struct {
 	Items []PIItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *PI) Name() string {
 	return "pi"
 }
 
+// Lines returns the lines that this result is made from
 func (r *PI) Lines() []int {
 	return r.lines
 }
 
+// PIItem is a single item from a planetary interaction result
 type PIItem struct {
 	Name     string
 	Quantity int64
@@ -46,6 +50,7 @@ var rePI3 = regexp.MustCompile(strings.Join([]string{
 	`([\d,'\.]+)$`, // quantity
 }, ""))
 
+// ParsePI parses text from the planetary interaction screens
 func ParsePI(input Input) (ParserResult, Input) {
 	pi := &PI{}
 	matches1, rest := regexParseLines(rePI1, input)

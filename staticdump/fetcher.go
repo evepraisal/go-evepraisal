@@ -13,6 +13,7 @@ import (
 	"github.com/sethgrid/pester"
 )
 
+// StaticFetcher continually fetches a new static dump and updates the type database with the current types
 type StaticFetcher struct {
 	dbPath   string
 	callback func(typeDB typedb.TypeDB)
@@ -22,6 +23,7 @@ type StaticFetcher struct {
 	wg   *sync.WaitGroup
 }
 
+// NewStaticFetcher returns a new static data fetcher
 func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB typedb.TypeDB)) (*StaticFetcher, error) {
 	fetcher := &StaticFetcher{
 		dbPath:   dbPath,
@@ -60,6 +62,7 @@ func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB
 	return fetcher, nil
 }
 
+// RunOnce will fetch, parse and call the callback with a fresh type database
 func (f *StaticFetcher) RunOnce() error {
 	staticDumpURL, err := FindLastStaticDumpURL(f.client)
 	if err != nil {
@@ -68,8 +71,8 @@ func (f *StaticFetcher) RunOnce() error {
 	//
 	staticDumpURLBase := filepath.Base(staticDumpURL)
 	typedbPath := filepath.Join(f.dbPath, "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
-	if _, err := os.Stat(typedbPath); os.IsNotExist(err) {
-		err := f.loadTypes(typedbPath, staticDumpURL)
+	if _, err = os.Stat(typedbPath); os.IsNotExist(err) {
+		err = f.loadTypes(typedbPath, staticDumpURL)
 		if err != nil {
 			return err
 		}
@@ -89,6 +92,7 @@ func (f *StaticFetcher) RunOnce() error {
 	return nil
 }
 
+// Close cleans up the worker
 func (f *StaticFetcher) Close() error {
 	close(f.stop)
 	f.wg.Wait()
@@ -107,7 +111,7 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 	cachepath := staticCacheFile + ".zip"
 	if _, err := os.Stat(cachepath); os.IsNotExist(err) {
 		log.Printf("Downloading static dump to %s", cachepath)
-		err := downloadTypes(f.client, staticDumpURL, cachepath)
+		err = downloadTypes(f.client, staticDumpURL, cachepath)
 		if err != nil {
 			return err
 		}
@@ -130,7 +134,7 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 			typeDB.Close()
 		} else {
 			log.Println("Deleting new typedb because it was stopped before finishing")
-			err := typeDB.Delete()
+			err = typeDB.Delete()
 			if err != nil {
 				log.Printf("Error deleting old typedb: %s", err)
 			}

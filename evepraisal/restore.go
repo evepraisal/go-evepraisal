@@ -35,7 +35,7 @@ func restoreMain() {
 
 	filenames := strings.Split(*filenamesStr, ",")
 	for _, file := range filenames {
-		if _, err := os.Stat(file); os.IsNotExist(err) {
+		if _, err = os.Stat(file); os.IsNotExist(err) {
 			restoreCmd.PrintDefaults()
 			log.Fatalf("File path does not exist: %s", file)
 		} else if err != nil {
@@ -74,25 +74,38 @@ func restoreMain() {
 	}()
 
 	saver := func(appraisal *evepraisal.Appraisal) error {
-		var buf bytes.Buffer
-		err := json.NewEncoder(&buf).Encode(appraisal)
+		var (
+			buf bytes.Buffer
+			req *http.Request
+			err error
+		)
+		err = json.NewEncoder(&buf).Encode(appraisal)
 		if err != nil {
 			return err
 		}
 
-		req, _ := http.NewRequest("POST", "http://"+viper.GetString("management_addr")+"/restore", &buf)
+		req, err = http.NewRequest("POST", "http://"+viper.GetString("management_addr")+"/restore", &buf)
+		if err != nil {
+			return err
+		}
+
 		req.Header.Add("Content-Type", "application/json")
-		resp, err := http.DefaultClient.Do(req)
+
+		var resp *http.Response
+		resp, err = http.DefaultClient.Do(req)
 		if err != nil {
 			return err
 		}
 		if resp.StatusCode != 200 {
-			body, _ := ioutil.ReadAll(resp.Body)
+			var body []byte
+			body, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
 			log.Printf("ERROR: %s: %s", resp.Status, string(body))
 		}
-		resp.Body.Close()
 
-		return nil
+		return resp.Body.Close()
 	}
 
 	for _, filename := range filenames {

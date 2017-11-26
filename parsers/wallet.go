@@ -7,20 +7,24 @@ import (
 	"strings"
 )
 
+// Wallet is the result from the wallet parser
 type Wallet struct {
 	Transactions         []WalletTransaction
 	ItemizedTransactions []WalletItemizedTransaction
 	lines                []int
 }
 
+// Name returns the parser name
 func (r *Wallet) Name() string {
 	return "view_contents"
 }
 
+// Lines returns the lines that this result is made from
 func (r *Wallet) Lines() []int {
 	return r.lines
 }
 
+// WalletTransaction is a transaction line from a wallet log
 type WalletTransaction struct {
 	Datetime        string
 	TransactionType string
@@ -29,6 +33,7 @@ type WalletTransaction struct {
 	Description     string
 }
 
+// WalletItemizedTransaction is an itemized transaction line from a wallet log
 type WalletItemizedTransaction struct {
 	Datetime string
 	Name     string
@@ -59,6 +64,7 @@ var reWallet2 = regexp.MustCompile(strings.Join([]string{
 	`([\S ]+)$`,                           // location
 }, ""))
 
+// ParseWallet parses wallet text
 func ParseWallet(input Input) (ParserResult, Input) {
 	wallet := &Wallet{}
 	matches, rest := regexParseLines(reWallet, input)

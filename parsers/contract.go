@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// Contract is the result from the contract parser
 type Contract struct {
 	Items []ContractItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *Contract) Name() string {
 	return "contract"
 }
 
+// Lines returns the lines that this result is made from
 func (r *Contract) Lines() []int {
 	return r.lines
 }
 
+// ContractItem is a single item from a contract result
 type ContractItem struct {
 	Name     string
 	Quantity int64
@@ -47,6 +51,7 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 
 var reBPCDetails = regexp.MustCompile(`BLUEPRINT COPY - Runs: ([\d]+) - .*`)
 
+// ParseContract parses a contract
 func ParseContract(input Input) (ParserResult, Input) {
 	contract := &Contract{}
 	matches, rest := regexParseLines(reContract, input)

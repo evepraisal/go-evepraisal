@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// SurveyScan is the result from the survey scan parser
 type SurveyScan struct {
 	Items []ScanItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *SurveyScan) Name() string {
 	return "loot_history"
 }
 
+// Lines returns the lines that this result is made from
 func (r *SurveyScan) Lines() []int {
 	return r.lines
 }
 
+// ScanItem is a single item from a cargo scan result
 type ScanItem struct {
 	Name     string
 	Quantity int64
@@ -32,6 +36,7 @@ var reSurveyScanner = regexp.MustCompile(strings.Join([]string{
 	`([\d,'\.]*\ (m|km))$`, // Distance
 }, ""))
 
+// ParseSurveyScan parses text from a the survey scan screen
 func ParseSurveyScan(input Input) (ParserResult, Input) {
 	surveyScan := &SurveyScan{}
 	matches, rest := regexParseLines(reSurveyScanner, input)

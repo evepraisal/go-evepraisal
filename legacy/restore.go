@@ -62,12 +62,12 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 		appraisal.Raw = record[2]
 
 		// Prices
-		var priceBase LegacyPriceBase
+		var priceBase PriceBase
 		err = json.Unmarshal([]byte(record[4]), &priceBase)
 		if err != nil {
 			log.Printf("WARN: Could not parse price table (%s): %s", record[4], err)
 		}
-		priceMap := make(map[int64]LegacyPrices, 0)
+		priceMap := make(map[int64]Prices, 0)
 		for _, priceTuple := range priceBase {
 			if len(priceTuple) != 2 {
 				log.Printf("WARN: Could not parse price table (%s): %s", spew.Sdump(priceTuple), err)
@@ -78,7 +78,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 				log.Printf("WARN: Could not parse price typeID (%s): %s", priceTuple[0], err)
 			}
 
-			var lprices LegacyPrices
+			var lprices Prices
 			err = json.Unmarshal(priceTuple[1], &lprices)
 			if err != nil {
 				log.Printf("WARN: Could not parse price data (%s): %s", priceTuple[1], err)
@@ -87,7 +87,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 		}
 
 		// Types
-		var types LegacyTypeBase
+		var types TypeBase
 		err = json.Unmarshal([]byte(record[3]), &types)
 		if err != nil {
 			log.Printf("WARN: Could not parse types (%s): %s", record[3], err)
@@ -111,7 +111,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 			var items []evepraisal.AppraisalItem
 			switch kind {
 			case "killmail":
-				var km LegacyKillmail
+				var km Killmail
 				err = json.Unmarshal(typeTuple[1], &km)
 				if err != nil {
 					log.Printf("WARN: Could not parse type data (%s): %s", kind, err)
@@ -119,7 +119,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 				}
 				items = append(items, km.ToNewItems()...)
 			case "eft":
-				var t LegacyType
+				var t Type
 				err = json.Unmarshal(typeTuple[1], &t)
 				if err != nil {
 					log.Printf("WARN: Could not parse type data (%s): %s", kind, err)
@@ -127,7 +127,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 				}
 				items = append(items, t.ToNewItems()...)
 			case "chat":
-				var chat LegacyChat
+				var chat Chat
 				err = json.Unmarshal(typeTuple[1], &chat)
 				if err != nil {
 					log.Printf("WARN: Could not parse type data (%s): %s", kind, err)
@@ -136,7 +136,7 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 				items = append(items, chat.ToNewItems()...)
 
 			default:
-				var legacyTypes []LegacyType
+				var legacyTypes []Type
 				err = json.Unmarshal(typeTuple[1], &legacyTypes)
 				if err != nil {
 					log.Printf("WARN: Could not parse type data (%s): %s", kind, err)
@@ -199,8 +199,11 @@ func RestoreLegacyFile(saver func(*evepraisal.Appraisal) error, typeDB typedb.Ty
 	return nil
 }
 
-type LegacyPriceBase [][]json.RawMessage
-type LegacyPrices struct {
+// PriceBase is used because there's some positional JSON nonsense going on here
+type PriceBase [][]json.RawMessage
+
+// Prices defines all of the prices for an item
+type Prices struct {
 	Sell struct {
 		Min        float64 `json:"min"`
 		Max        float64 `json:"max"`
@@ -233,7 +236,8 @@ type LegacyPrices struct {
 	} `json:"all"`
 }
 
-func (p LegacyPrices) ToNewPrices() evepraisal.Prices {
+// ToNewPrices converts legacy Prices to the new evepraisal.Prices
+func (p Prices) ToNewPrices() evepraisal.Prices {
 	var prices evepraisal.Prices
 	prices.Sell.Average += p.Sell.Avg
 	prices.Sell.Max += p.Sell.Max
@@ -261,8 +265,11 @@ func (p LegacyPrices) ToNewPrices() evepraisal.Prices {
 	return prices
 }
 
-type LegacyTypeBase [][]json.RawMessage
-type LegacyType struct {
+// TypeBase exists because there is positional JSON nonsense
+type TypeBase [][]json.RawMessage
+
+// Type is the old style of Types
+type Type struct {
 	Name      string  `json:"name"`
 	Quantity  float64 `json:"quantity"`
 	Details   string  `json:"details"`
@@ -279,7 +286,8 @@ type LegacyType struct {
 	Ammo string `json:"ammo"`
 }
 
-func (t LegacyType) ToNewItems() []evepraisal.AppraisalItem {
+// ToNewItems converts the old Type to new []evepraisal.AppraisalItem
+func (t Type) ToNewItems() []evepraisal.AppraisalItem {
 	items := make([]evepraisal.AppraisalItem, 0)
 	item := evepraisal.AppraisalItem{
 		Name:     t.Name,
@@ -296,11 +304,13 @@ func (t LegacyType) ToNewItems() []evepraisal.AppraisalItem {
 	return items
 }
 
-type LegacyChat struct {
-	Items []LegacyType `json:"items"`
+// Chat is used to get the items from a chat appraisal result
+type Chat struct {
+	Items []Type `json:"items"`
 }
 
-func (t LegacyChat) ToNewItems() []evepraisal.AppraisalItem {
+// ToNewItems converts Chat to []evepraisal.AppraisalItem
+func (t Chat) ToNewItems() []evepraisal.AppraisalItem {
 	items := make([]evepraisal.AppraisalItem, 0)
 	for _, item := range t.Items {
 		items = append(items, item.ToNewItems()...)
@@ -308,7 +318,8 @@ func (t LegacyChat) ToNewItems() []evepraisal.AppraisalItem {
 	return items
 }
 
-type LegacyKillmail struct {
+// Killmail is used to parse Legacy killmail results
+type Killmail struct {
 	Victim struct {
 		Destroyed string `json:"destroyed"`
 	} `json:"victim"`
@@ -322,7 +333,8 @@ type LegacyKillmail struct {
 	} `json:"destroyed"`
 }
 
-func (t LegacyKillmail) ToNewItems() []evepraisal.AppraisalItem {
+// ToNewItems converts Killmail to []evepraisal.AppraisalItem
+func (t Killmail) ToNewItems() []evepraisal.AppraisalItem {
 	ship := evepraisal.AppraisalItem{Name: t.Victim.Destroyed, Quantity: 1}
 	ship.Extra.Destroyed = true
 	items := []evepraisal.AppraisalItem{ship}
@@ -345,7 +357,8 @@ func (t LegacyKillmail) ToNewItems() []evepraisal.AppraisalItem {
 	return items
 }
 
-func ApplyPriceAndTypeInfo(appraisal *evepraisal.Appraisal, item *evepraisal.AppraisalItem, priceMap map[int64]LegacyPrices, typeDB typedb.TypeDB) {
+// ApplyPriceAndTypeInfo will add type and price information to the given item. This works by side-effects
+func ApplyPriceAndTypeInfo(appraisal *evepraisal.Appraisal, item *evepraisal.AppraisalItem, priceMap map[int64]Prices, typeDB typedb.TypeDB) {
 	eveType, found := typeDB.GetType(item.Name)
 	if found {
 		item.TypeID = eveType.ID

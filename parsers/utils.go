@@ -9,6 +9,7 @@ import (
 
 var cleanIntegers = regexp.MustCompile(`[,\'\.\ ` + "\xc2\xa0" + `]`)
 
+// ToInt parses a string into an integer. It will return 0 on failure
 func ToInt(s string) int64 {
 	if s == "" {
 		return 0
@@ -23,6 +24,7 @@ func ToInt(s string) int64 {
 	return i
 }
 
+// ToFloat64 parses a string into a float64. It will return 0.0 on failure
 func ToFloat64(s string) float64 {
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
@@ -31,6 +33,7 @@ func ToFloat64(s string) float64 {
 	return f
 }
 
+// CleanTypeName will remove leading and trailing whitespace and leading asterisks.
 func CleanTypeName(s string) string {
 	return strings.TrimSuffix(strings.Trim(s, " "), "*")
 }

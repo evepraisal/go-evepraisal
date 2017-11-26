@@ -13,13 +13,15 @@ const (
 	sHeuristicIgnore   = iota
 )
 
-var HeuristicSpecs = [][]int{
+var heuristicSpecs = [][]int{
 	{sHeuristicIgnore, sHeuristicItem, sHeuristicIgnore, sHeuristicQuantity},
 	{sHeuristicQuantity, sHeuristicIgnore, sHeuristicItem},
 	{sHeuristicItem, sHeuristicQuantity},
 	{sHeuristicQuantity, sHeuristicItem},
 }
 
+// HeuristicParser is a parser that tries several strategies to parse out items and quantities from the given text.
+// This is different from other parsers because it accesses the TypeDB
 type HeuristicParser struct {
 	typeDB typedb.TypeDB
 }
@@ -42,29 +44,35 @@ func removeEmpty(parts []string) []string {
 	return newParts
 }
 
+// HeuristicResult is the result from the heuristic parser
 type HeuristicResult struct {
 	Items []HeuristicItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *HeuristicResult) Name() string {
 	return "heuristic"
 }
 
+// Lines returns the lines that this result is made from
 func (r *HeuristicResult) Lines() []int {
 	return r.lines
 }
 
+// HeuristicItem is a single item from a the heuristic result
 type HeuristicItem struct {
 	Name     string
 	Quantity int64
 }
 
+// NewHeuristicParser returns a new HeuristicParser given a typeDB
 func NewHeuristicParser(typeDB typedb.TypeDB) Parser {
 	p := &HeuristicParser{typeDB: typeDB}
 	return p.Parse
 }
 
+// Parse is the actual parse function for the HeuristicParser
 func (p *HeuristicParser) Parse(input Input) (ParserResult, Input) {
 	var items []HeuristicItem
 	var lines []int
@@ -115,7 +123,7 @@ func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
 		return nil
 	}
 
-	for _, spec := range HeuristicSpecs {
+	for _, spec := range heuristicSpecs {
 		if len(parts) < len(spec) {
 			continue
 		}

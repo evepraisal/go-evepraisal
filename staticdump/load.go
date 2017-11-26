@@ -16,6 +16,7 @@ import (
 
 var userAgent = "go-evepraisal"
 
+// FindLastStaticDumpURL returns the URL of the last eve static data dump
 func FindLastStaticDumpURL(client *pester.Client) (string, error) {
 	i := 0
 	current := time.Now()
@@ -73,6 +74,7 @@ func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath s
 	return nil
 }
 
+// Type is an eve online type
 type Type struct {
 	GroupID       int64 `yaml:"groupID"`
 	MarketGroupID int64 `yaml:"marketGroupID"`
@@ -84,6 +86,7 @@ type Type struct {
 	BasePrice float64
 }
 
+// Blueprint is an eve online blueprint
 type Blueprint struct {
 	BlueprintTypeID int64 `yaml:"blueprintTypeID"`
 	Activities      struct {

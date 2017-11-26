@@ -8,24 +8,29 @@ import (
 
 var miningLedgerHeader = "Timestamp	Ore Type	Quantity	Volume	Est. Price	Solar System	Ore TypeID	SolarSystemID"
 
+// MiningLedger is the result from the mining ledger parser
 type MiningLedger struct {
 	Items []MiningLedgerItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *MiningLedger) Name() string {
 	return "mining_ledger"
 }
 
+// Lines returns the lines that this result is made from
 func (r *MiningLedger) Lines() []int {
 	return r.lines
 }
 
+// MiningLedgerItem is a single item from a mining ledger result
 type MiningLedgerItem struct {
 	Name     string
 	Quantity int64
 }
 
+// ParseMiningLedger parses a mining ledger
 func ParseMiningLedger(input Input) (ParserResult, Input) {
 	ledger := &MiningLedger{}
 

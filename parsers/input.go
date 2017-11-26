@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
+// Input is used as the input to parsers. This exists so that the first part of parsing the text isn't duplicated for each parser
 type Input map[int]string
 
+// StringsToInput converts an array of strings into an Input object
 func StringsToInput(lines []string) Input {
 	m := make(Input)
 	for i, line := range lines {
@@ -15,11 +17,13 @@ func StringsToInput(lines []string) Input {
 	return m
 }
 
+// StringToInput converts a strings into an Input object
 func StringToInput(s string) Input {
 	s = strings.Replace(s, "\r", "", -1)
 	return StringsToInput(strings.Split(s, "\n"))
 }
 
+// Strings returns an array of strings from an Input object
 func (m Input) Strings() []string {
 	keys := make([]int, 0)
 	for k := range m {
@@ -35,6 +39,7 @@ func (m Input) Strings() []string {
 	return lines
 }
 
+// String returns a string from an Input object
 func (m Input) String() string {
 	var buffer bytes.Buffer
 	for _, line := range m.Strings() {

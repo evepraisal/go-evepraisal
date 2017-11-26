@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/golang/snappy"
 )
 
+// TypeDB holds all EveTypes
 type TypeDB struct {
 	db            *bolt.DB
 	index         bleve.Index
@@ -30,6 +32,7 @@ var aliases = map[string]string{
 	"skill injector": "large skill injector",
 }
 
+// NewTypeDB returns a new TypeDB
 func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	opts := &bolt.Options{Timeout: 1 * time.Second}
 	var (
@@ -50,7 +53,7 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 
 		// Init our buckets in case this is a fresh DB
 		err = db.Update(func(tx *bolt.Tx) error {
-			_, err := tx.CreateBucket([]byte("types_by_name"))
+			_, err = tx.CreateBucket([]byte("types_by_name"))
 			if err != nil && err != bolt.ErrBucketExists {
 				return err
 			}
@@ -68,7 +71,7 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 
 	var index bleve.Index
 	indexFilename := filename + ".index"
-	if _, err := os.Stat(indexFilename); os.IsNotExist(err) {
+	if _, err = os.Stat(indexFilename); os.IsNotExist(err) {
 		if !writable {
 			return nil, fmt.Errorf("Index (%s) does not exist so it cannot be opened in read-only mode", indexFilename)
 		}
@@ -100,6 +103,7 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	return &TypeDB{db: db, index: index, filename: filename, indexFilename: indexFilename}, err
 }
 
+// GetType returns the EveType given a name
 func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
 	lower := strings.ToLower(typeName)
 	newLower, ok := aliases[lower]
@@ -130,6 +134,7 @@ func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
 	return evetype, true
 }
 
+// HasType returns whether or not the type exists given a name
 func (db *TypeDB) HasType(typeName string) bool {
 	lower := strings.ToLower(typeName)
 	newLower, ok := aliases[lower]
@@ -150,6 +155,7 @@ func (db *TypeDB) HasType(typeName string) bool {
 	return true
 }
 
+// GetTypeByID returns the EveType that matches the integer ID
 func (db *TypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
 	encodedEveTypeID := make([]byte, 8)
 	binary.BigEndian.PutUint64(encodedEveTypeID, uint64(typeID))
@@ -178,6 +184,7 @@ func (db *TypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
 	return evetype, true
 }
 
+// PutType will insert/update the given EveType
 func (db *TypeDB) PutType(eveType typedb.EveType) error {
 	typeBytes, err := json.Marshal(eveType)
 	if err != nil {
@@ -189,7 +196,7 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 
 	err = db.db.Update(func(tx *bolt.Tx) error {
 		byName := tx.Bucket([]byte("types_by_name"))
-		err := byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
+		err = byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
 		if err != nil {
 			return err
 		}
@@ -209,6 +216,7 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 	return db.index.Index(strconv.FormatInt(eveType.ID, 10), eveType.Name)
 }
 
+// Search allows for searching based on an incomplete name of a type
 func (db *TypeDB) Search(s string) []typedb.EveType {
 	searchString := strings.ToLower(s)
 
@@ -238,7 +246,10 @@ func (db *TypeDB) Search(s string) []typedb.EveType {
 
 	results := make([]typedb.EveType, len(searchResults.Hits))
 	for i, result := range searchResults.Hits {
-		id, _ := strconv.ParseInt(result.ID, 10, 64)
+		id, err := strconv.ParseInt(result.ID, 10, 64)
+		if err != nil {
+			log.Println("error parsing the search ID into an integer", err)
+		}
 		t, _ := db.GetTypeByID(id)
 		results[i] = t
 	}
@@ -246,6 +257,7 @@ func (db *TypeDB) Search(s string) []typedb.EveType {
 	return results
 }
 
+// Delete will delete the entire type DB
 func (db *TypeDB) Delete() error {
 	err := os.RemoveAll(db.filename)
 	if err != nil {
@@ -255,6 +267,7 @@ func (db *TypeDB) Delete() error {
 	return os.RemoveAll(db.indexFilename)
 }
 
+// Close will close the type database
 func (db *TypeDB) Close() error {
 	err := db.db.Close()
 	if err != nil {

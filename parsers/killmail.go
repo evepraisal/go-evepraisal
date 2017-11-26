@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Killmail is the result from the killmail parser
 type Killmail struct {
 	Datetime  string
 	Victim    map[string]interface{}
@@ -15,10 +16,12 @@ type Killmail struct {
 	lineCount int
 }
 
+// Name returns the parser name
 func (r *Killmail) Name() string {
 	return "killmail"
 }
 
+// Lines returns the lines that this result is made from
 func (r *Killmail) Lines() []int {
 	lines := make([]int, r.lineCount)
 	for i := 0; i < r.lineCount; i++ {
@@ -27,6 +30,7 @@ func (r *Killmail) Lines() []int {
 	return lines
 }
 
+// KillmailItem is a single item from a killmail result
 type KillmailItem struct {
 	Name     string
 	Quantity int64
@@ -38,6 +42,7 @@ var reKillmailPlayerLine = regexp.MustCompile(`^([\w\s]+): ([\S ]+)$`)
 var reKillmailInvolvedLine = regexp.MustCompile(`^([\w ]+): ([\S ]+?)( \(laid the final blow\))?$`)
 var reKillmailItemLine = regexp.MustCompile(`^([\w '-]+?)(?:, Qty: (\d+))?(?: \(([\w ]+)\))?$`)
 
+// ParseKillmail parses a killmail
 func ParseKillmail(input Input) (ParserResult, Input) {
 	killmail := &Killmail{}
 	if len(input) == 0 {

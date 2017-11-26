@@ -6,19 +6,23 @@ import (
 	"sort"
 )
 
+// LootHistory is the result from the loot history parser
 type LootHistory struct {
 	Items []LootItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *LootHistory) Name() string {
 	return "loot_history"
 }
 
+// Lines returns the lines that this result is made from
 func (r *LootHistory) Lines() []int {
 	return r.lines
 }
 
+// LootItem is a single item from a loot history result
 type LootItem struct {
 	Time       string
 	Name       string
@@ -28,6 +32,7 @@ type LootItem struct {
 
 var reLootHistory = regexp.MustCompile(`(\d\d:\d\d:\d\d) ([\S ]+) has looted ([\d,'\.\ ]+) x ([\S ]+)$`)
 
+// ParseLootHistory parses loot history text
 func ParseLootHistory(input Input) (ParserResult, Input) {
 	lootHistory := &LootHistory{}
 	matches, rest := regexParseLines(reLootHistory, input)

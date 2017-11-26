@@ -34,7 +34,7 @@ func (ctx *Context) HandleRestore(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Handler for /backup/appraisals
+// HandleBackup is the handler for /backup/appraisals
 func (ctx *Context) HandleBackup(w http.ResponseWriter, req *http.Request) {
 	db, ok := ctx.App.AppraisalDB.(*boltdb.AppraisalDB)
 	if !ok {

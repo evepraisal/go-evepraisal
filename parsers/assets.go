@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// AssetList is the result from the asset parser
 type AssetList struct {
 	Items []AssetItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *AssetList) Name() string {
 	return "assets"
 }
 
+// Lines returns the lines that this result is made from
 func (r *AssetList) Lines() []int {
 	return r.lines
 }
 
+// AssetItem is a single item parsed from an asset list
 type AssetItem struct {
 	Name          string
 	Quantity      int64
@@ -46,6 +50,7 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`(?:\t([\d,'\.\ ]+) ISK)?$`,            // price estimate
 }, ""))
 
+// ParseAssets will parse an asset listing
 func ParseAssets(input Input) (ParserResult, Input) {
 	assetList := &AssetList{}
 	matches, rest := regexParseLines(reAssetList, input)

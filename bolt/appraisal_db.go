@@ -17,12 +17,14 @@ import (
 
 var expireTime = time.Hour * 24 * 90
 
+// AppraisalDB holds all appraisals
 type AppraisalDB struct {
 	DB   *bolt.DB
 	wg   *sync.WaitGroup
 	stop chan (bool)
 }
 
+// NewAppraisalDB returns a new AppraisalDB with the buckets created
 func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 	db, err := bolt.Open(filename, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
@@ -30,7 +32,8 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 	}
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucket([]byte("appraisals"))
+		var b *bolt.Bucket
+		b, err = tx.CreateBucket([]byte("appraisals"))
 		if err == nil {
 			err = b.SetSequence(20000000)
 			if err != nil {
@@ -69,13 +72,18 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 	return appraisalDB, nil
 }
 
+// PutNewAppraisal stores the given appraisal
 func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 	var dbID []byte
 	err := db.DB.Update(func(tx *bolt.Tx) error {
 		byIDBucket := tx.Bucket([]byte("appraisals"))
-		var err error
+		var (
+			err error
+			id  uint64
+		)
+
 		if appraisal.ID == "" {
-			id, err := byIDBucket.NextSequence()
+			id, err = byIDBucket.NextSequence()
 			if err != nil {
 				return err
 			}
@@ -115,6 +123,7 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 	return err
 }
 
+// GetAppraisal returns the given appraisal by ID
 func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
 	appraisal, err := db.getAppraisal(appraisalID)
 	if err != nil {
@@ -131,7 +140,11 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 }
 
 func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
-	dbID, err := EncodeDBID(appraisalID)
+	var (
+		dbID []byte
+		err  error
+	)
+	dbID, err = EncodeDBID(appraisalID)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +152,6 @@ func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 	appraisal := &evepraisal.Appraisal{}
 
 	err = db.DB.View(func(tx *bolt.Tx) error {
-		var err error
 		b := tx.Bucket([]byte("appraisals"))
 		buf := b.Get(dbID)
 		if buf == nil {
@@ -158,6 +170,7 @@ func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 	return appraisal, err
 }
 
+// LatestAppraisals returns the global latest appraisals
 func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
 	queriedCount := 0
@@ -203,6 +216,7 @@ func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal
 	return appraisals, err
 }
 
+// LatestAppraisalsByUser returns the latest appraisals by the given user
 func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string, after string) ([]evepraisal.Appraisal, error) {
 	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
 	queriedCount := 0
@@ -258,6 +272,7 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 	return appraisals, err
 }
 
+// TotalAppraisals returns the number of total appraisals
 func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	var total int64
 	err := db.DB.View(func(tx *bolt.Tx) error {
@@ -269,6 +284,7 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	return total, err
 }
 
+// DeleteAppraisal deletes an appraisal by ID
 func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 	appraisal, err := db.getAppraisal(appraisalID)
 	appraisalFound := true
@@ -307,6 +323,7 @@ func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 	})
 }
 
+// Close closes the database
 func (db *AppraisalDB) Close() error {
 	close(db.stop)
 	db.wg.Wait()
@@ -378,16 +395,20 @@ func (db *AppraisalDB) startReaper() {
 	}
 }
 
+// EncodeDBID encodes an appraisalID (which is seen by users) into a Unint64 that is used to sort appraisals properly
 func EncodeDBID(appraisalID string) ([]byte, error) {
 	return EncodeDBIDFromUint64(evepraisal.AppraisalIDToUint64(appraisalID)), nil
 }
 
+// EncodeDBIDFromUint64 converts the given uint64 into a byte array for storage. The uint64 is an intermediary form
+// and is only really used when a new appraisalID is generated.
 func EncodeDBIDFromUint64(appraisalID uint64) []byte {
 	dbID := make([]byte, 8)
 	binary.BigEndian.PutUint64(dbID, appraisalID)
 	return dbID
 }
 
+// DecodeDBID converts the database ID into the user-visible appraisalID
 func DecodeDBID(dbID []byte) (string, error) {
 	return strings.ToLower(evepraisal.Uint64ToAppraisalID(binary.BigEndian.Uint64(dbID))), nil
 }

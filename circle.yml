@@ -25,6 +25,7 @@ test:
   pre:
     - go get -u github.com/jstemmer/go-junit-report
   override:
+    - make lint
     - make test:
         environment:
           TEST_REPORT_PATH: $CIRCLE_TEST_REPORTS/

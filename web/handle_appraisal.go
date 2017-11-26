@@ -37,12 +37,14 @@ type AppraisalPage struct {
 	IsOwner   bool                  `json:"is_owner,omitempty"`
 }
 
+// AppraisalDebugPage is the data needed to render the
 type AppraisalDebugPage struct {
 	Appraisal    *evepraisal.Appraisal `json:"appraisal"`
 	Lines        []AppraisalDebugLine  `json:"lines"`
 	ParserResult parsers.ParserResult  `json:"parser_result"`
 }
 
+// AppraisalDebugLine represents a single line of an appraisal along with how it was parsed
 type AppraisalDebugLine struct {
 	Number int    `json:"number"`
 	Parsed bool   `json:"parsed"`

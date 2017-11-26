@@ -39,9 +39,9 @@ func appMain() {
 		log.Fatalf("Couldn't start price database: %s", err)
 	}
 	defer func() {
-		err := priceDB.Close()
-		if err != nil {
-			log.Fatalf("Problem closing priceDB: %s", err)
+		derr := priceDB.Close()
+		if derr != nil {
+			log.Fatalf("Problem closing priceDB: %s", derr)
 		}
 	}()
 
@@ -50,16 +50,16 @@ func appMain() {
 		log.Fatalf("Couldn't start httpCache: %s", err)
 	}
 	defer func() {
-		err := httpCache.Close()
-		if err != nil {
-			log.Fatalf("Problem closing httpCache: %s", err)
+		derr := httpCache.Close()
+		if derr != nil {
+			log.Fatalf("Problem closing httpCache: %s", derr)
 		}
 	}()
 
 	defer func() {
-		err := priceDB.Close()
-		if err != nil {
-			log.Fatalf("Problem closing priceDB: %s", err)
+		derr := priceDB.Close()
+		if derr != nil {
+			log.Fatalf("Problem closing priceDB: %s", derr)
 		}
 	}()
 
@@ -75,9 +75,9 @@ func appMain() {
 		log.Fatalf("Couldn't start price fetcher: %s", err)
 	}
 	defer func() {
-		err := priceFetcher.Close()
-		if err != nil {
-			log.Fatalf("Problem closing priceDB: %s", err)
+		derr := priceFetcher.Close()
+		if derr != nil {
+			log.Fatalf("Problem closing priceDB: %s", derr)
 		}
 	}()
 
@@ -87,9 +87,9 @@ func appMain() {
 		log.Fatalf("Couldn't start appraisal database: %s", err)
 	}
 	defer func() {
-		err := appraisalDB.Close()
-		if err != nil {
-			log.Fatalf("Problem closing appraisalDB: %s", err)
+		derr := appraisalDB.Close()
+		if derr != nil {
+			log.Fatalf("Problem closing appraisalDB: %s", derr)
 		}
 	}()
 
@@ -107,7 +107,8 @@ func appMain() {
 
 	if viper.GetString("newrelic_license-key") != "" {
 		newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
-		newRelicApplication, err := newrelic.NewApplication(newRelicConfig)
+		var newRelicApplication newrelic.Application
+		newRelicApplication, err = newrelic.NewApplication(newRelicConfig)
 		if err != nil {
 			log.Fatalf("Problem configuring new relic: %s", err)
 		}
@@ -143,7 +144,10 @@ func appMain() {
 
 		if oldTypeDB != nil {
 			log.Println("closing old typedb")
-			oldTypeDB.Close()
+			err = oldTypeDB.Close()
+			if err != nil {
+				log.Println("error closing old typedb: ", err)
+			}
 			log.Println("closed old typedb")
 		}
 	})
@@ -151,15 +155,15 @@ func appMain() {
 		log.Fatalf("Couldn't start static fetcher: %s", err)
 	}
 	defer func() {
-		err := staticFetcher.Close()
-		if err != nil {
-			log.Fatalf("Problem closing static fetcher: %s", err)
+		derr := staticFetcher.Close()
+		if derr != nil {
+			log.Fatalf("Problem closing static fetcher: %s", derr)
 		}
 
 		if app.TypeDB != nil {
-			err = app.TypeDB.Close()
-			if err != nil {
-				log.Fatalf("Problem closing typeDB: %s", err)
+			derr = app.TypeDB.Close()
+			if derr != nil {
+				log.Fatalf("Problem closing typeDB: %s", derr)
 			}
 		}
 	}()
@@ -214,11 +218,11 @@ func appMain() {
 	}
 	defer mgmtServer.Close()
 	go func() {
-		err := mgmtServer.ListenAndServe()
-		if err == http.ErrServerClosed {
+		derr := mgmtServer.ListenAndServe()
+		if derr == http.ErrServerClosed {
 			log.Println("Management HTTP server stopped")
-		} else if err != nil {
-			log.Fatalf("Management HTTP server failure: %s", err)
+		} else if derr != nil {
+			log.Fatalf("Management HTTP server failure: %s", derr)
 		}
 	}()
 
@@ -285,6 +289,7 @@ func mustStartServers(handler http.Handler) []*http.Server {
 	return servers
 }
 
+// NewRoundTripper returns an http.RoundTripper that is tooled for use in the app
 func NewRoundTripper(newrelicApp newrelic.Application, original http.RoundTripper) http.RoundTripper {
 	if original == nil {
 		original = http.DefaultTransport

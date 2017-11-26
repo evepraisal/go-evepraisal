@@ -39,12 +39,21 @@ func main() {
 	w := tabwriter.NewWriter(buf, 0, 0, 1, ' ', 0)
 	for k, v := range viper.AllSettings() {
 		if strings.Contains(k, "key") || strings.Contains(k, "secret") {
-			fmt.Fprintf(w, "\t%s\tMASKED\n", k)
+			_, err = fmt.Fprintf(w, "\t%s\tMASKED\n", k)
+			if err != nil {
+				log.Fatal(err)
+			}
 		} else {
-			fmt.Fprintf(w, "\t%s\t%#v\n", k, v)
+			_, err = fmt.Fprintf(w, "\t%s\t%#v\n", k, v)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
-	w.Flush()
+	err = w.Flush()
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Println(buf.String())
 
 	// Check for our subcommands

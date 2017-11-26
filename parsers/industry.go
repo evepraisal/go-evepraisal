@@ -6,19 +6,23 @@ import (
 	"sort"
 )
 
+// Industry is the result from the industry parser
 type Industry struct {
 	Items []IndustryItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *Industry) Name() string {
 	return "industry"
 }
 
+// Lines returns the lines that this result is made from
 func (r *Industry) Lines() []int {
 	return r.lines
 }
 
+// IndustryItem is a single item from an industry result
 type IndustryItem struct {
 	Name     string
 	Quantity int64
@@ -26,6 +30,7 @@ type IndustryItem struct {
 
 var reIndustry = regexp.MustCompile(`^([\S ]+) \(([\d]+) Units?\)$`)
 
+// ParseIndustry parses industry window text
 func ParseIndustry(input Input) (ParserResult, Input) {
 	industry := &Industry{}
 	matches, rest := regexParseLines(reIndustry, input)

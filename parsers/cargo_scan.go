@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// CargoScan is the result from the cargo scan parser
 type CargoScan struct {
 	Items []CargoScanItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r CargoScan) Name() string {
 	return "cargo_scan"
 }
 
+// Lines returns the lines that this result is made from
 func (r CargoScan) Lines() []int {
 	return r.lines
 }
 
+// CargoScanItem is a single item from a cargo scan result
 type CargoScanItem struct {
 	Name     string
 	Quantity int64
@@ -28,6 +32,7 @@ type CargoScanItem struct {
 
 var reCargoScan = regexp.MustCompile(`^([\d,'\.]+) ([\S ]+)$`)
 
+// ParseCargoScan parses cargo scans
 func ParseCargoScan(input Input) (ParserResult, Input) {
 	scan := &CargoScan{}
 	matches, rest := regexParseLines(reCargoScan, input)

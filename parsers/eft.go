@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// EFT is the result from the EFT parser
 type EFT struct {
 	FittingName string
 	Ship        string
@@ -15,10 +16,12 @@ type EFT struct {
 	lines       []int
 }
 
+// Name returns the parser name
 func (r *EFT) Name() string {
 	return "eft"
 }
 
+// Lines returns the lines that this result is made from
 func (r *EFT) Lines() []int {
 	return r.lines
 }
@@ -32,6 +35,7 @@ var eftBlacklist = map[string]bool{
 	"[empty subsystem slot]": true,
 }
 
+// ParseEFT parses EFT text
 func ParseEFT(input Input) (ParserResult, Input) {
 	if len(input) == 0 {
 		return nil, input

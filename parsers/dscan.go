@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
+// DScan is the result from the cargo scan parser
 type DScan struct {
 	Items []DScanItem
 	lines []int
 }
 
+// Name returns the parser name
 func (r *DScan) Name() string {
 	return "dscan"
 }
 
+// Lines returns the lines that this result is made from
 func (r *DScan) Lines() []int {
 	return r.lines
 }
 
+// DScanItem is a single item from a dscan result
 type DScanItem struct {
 	Name         string
 	Distance     int64
@@ -32,6 +36,7 @@ var reDScan = regexp.MustCompile(strings.Join([]string{
 	`((?:([\d,'\.` + "\xc2\xa0" + `]*) (m|km|AU))|-)`, // Distance
 }, ""))
 
+// ParseDScan parses a d-scan
 func ParseDScan(input Input) (ParserResult, Input) {
 	dscan := &DScan{}
 	matches, rest := regexParseLines(reDScan, input)
