@@ -22,7 +22,6 @@ setup:
 	go get -u github.com/cespare/reflex
 	go get -u github.com/jstemmer/go-junit-report
 	go get -u gopkg.in/alecthomas/gometalinter.v1
-	go install vendor/...
 	${GOPATH}/bin/dep ensure
 
 build: generate
@@ -48,7 +47,7 @@ test-reload:
 	${GOPATH}/bin/reflex -c reflex.test.conf
 
 lint:
-	gometalinter \
+	${GOPATH}/bin/gometalinter \
 		--vendored-linters \
 		--vendor \
 		--disable-all \
