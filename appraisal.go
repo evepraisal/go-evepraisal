@@ -39,6 +39,7 @@ type Appraisal struct {
 	Private         bool             `json:"private"`
 	PrivateToken    string           `json:"private_token,omitempty"`
 	PricePercentage float64          `json:"price_percentage,omitempty"`
+	Live            bool             `json:"live"`
 }
 
 // UsingPercentage returns if a custom percentage is specified for the appraisal
@@ -317,6 +318,40 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 	return prices, nil
 }
 
+// PopulateItems will populate appraisal items with type and price information
+func (app *App) PopulateItems(appraisal *Appraisal) {
+	appraisal.Totals.Buy = 0
+	appraisal.Totals.Sell = 0
+	appraisal.Totals.Volume = 0
+
+	for i := 0; i < len(appraisal.Items); i++ {
+		t, ok := app.TypeDB.GetType(appraisal.Items[i].Name)
+		if !ok {
+			log.Printf("WARN: parsed out name that isn't a type: %q", appraisal.Items[i].Name)
+			continue
+		}
+		appraisal.Items[i].TypeID = t.ID
+		appraisal.Items[i].TypeName = t.Name
+		if t.PackagedVolume != 0.0 {
+			appraisal.Items[i].TypeVolume = t.PackagedVolume
+		} else {
+			appraisal.Items[i].TypeVolume = t.Volume
+		}
+
+		prices, err := app.PricesForItem(appraisal.MarketName, appraisal.Items[i])
+		if err != nil {
+			continue
+		}
+		if appraisal.PricePercentage > 0 {
+			prices = prices.Mul(appraisal.PricePercentage / 100)
+		}
+		appraisal.Items[i].Prices = prices
+		appraisal.Totals.Buy += prices.Buy.Max * float64(appraisal.Items[i].Quantity)
+		appraisal.Totals.Sell += prices.Sell.Min * float64(appraisal.Items[i].Quantity)
+		appraisal.Totals.Volume += appraisal.Items[i].TypeVolume * float64(appraisal.Items[i].Quantity)
+	}
+}
+
 // StringToAppraisal is the big function that everything is based on. It returns a full appraisal at the given
 // market with a string of the appraisal contents (and pricePercentage).
 func (app *App) StringToAppraisal(market string, s string, pricePercentage float64) (*Appraisal, error) {
@@ -337,36 +372,8 @@ func (app *App) StringToAppraisal(market string, s string, pricePercentage float
 	appraisal.Kind = kind
 	appraisal.MarketName = market
 	appraisal.ParserLines = parserResultToParserLines(result)
-
-	items := parserResultToAppraisalItems(result)
-	for i := 0; i < len(items); i++ {
-		t, ok := app.TypeDB.GetType(items[i].Name)
-		if !ok {
-			log.Printf("WARN: parsed out name that isn't a type: %q", items[i].Name)
-			continue
-		}
-		items[i].TypeID = t.ID
-		items[i].TypeName = t.Name
-		if t.PackagedVolume != 0.0 {
-			items[i].TypeVolume = t.PackagedVolume
-		} else {
-			items[i].TypeVolume = t.Volume
-		}
-
-		prices, err := app.PricesForItem(market, items[i])
-		if err != nil {
-			continue
-		}
-		if pricePercentage > 0 {
-			prices = prices.Mul(pricePercentage / 100)
-		}
-		items[i].Prices = prices
-		appraisal.Totals.Buy += prices.Buy.Max * float64(items[i].Quantity)
-		appraisal.Totals.Sell += prices.Sell.Min * float64(items[i].Quantity)
-		appraisal.Totals.Volume += items[i].TypeVolume * float64(items[i].Quantity)
-	}
-
-	appraisal.Items = items
+	appraisal.Items = parserResultToAppraisalItems(result)
+	app.PopulateItems(appraisal)
 
 	return appraisal, nil
 }

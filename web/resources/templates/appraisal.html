@@ -75,8 +75,13 @@
     {{if ne .Page.Appraisal.ID ""}}
     <div class="pull-right appraisal-options">
       <a role="button" class="btn btn-primary btn-xs" type="button" href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></button>
-      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | appraisallink}}.raw" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></button>
-      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | appraisallink}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></button>
+      {{if not .Page.Appraisal.Live}}
+        <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | liveAppraisalLink}}"><span class="glyphicon glyphicon-record"></span> Live Prices</a></button>
+      {{else}}
+        <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | normalAppraisalLink}}"><span class="glyphicon glyphicon-time"></span> Frozen Prices</a></button>
+      {{end}}
+      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | rawAppraisalLink}}" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></button>
+      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | jsonAppraisalLink}}" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></button>
 
       {{if .Page.IsOwner}}
       <a role="button" class="btn btn-danger btn-xs" type="button" href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></button>
@@ -93,9 +98,9 @@
         priced {{if .Page.Appraisal.UsingPercentage}}
          at <strong><span class="text-warning">{{.Page.Appraisal.PricePercentage}}%</span></strong> of
         {{else}}
-         in
+         in <strong>{{.Page.Appraisal.MarketName}}</strong>
         {{end}}
-        <strong>{{.Page.Appraisal.MarketName}}</strong> {{relativetime .Page.Appraisal.CreatedTime}}
+        {{relativetime .Page.Appraisal.CreatedTime}}
       </span>
       <div>
         <h4>

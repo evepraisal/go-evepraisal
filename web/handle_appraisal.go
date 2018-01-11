@@ -9,10 +9,12 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/evepraisal/go-evepraisal"
@@ -52,11 +54,55 @@ type AppraisalDebugLine struct {
 	Text   string `json:"text"`
 }
 
-func appraisalLink(appraisal *evepraisal.Appraisal) string {
+func makeAppraisalURL(appraisal *evepraisal.Appraisal) *url.URL {
+	u := &url.URL{}
 	if appraisal.Private {
-		return fmt.Sprintf("/a/%s/%s", appraisal.ID, appraisal.PrivateToken)
+		u.Path = fmt.Sprintf("/a/%s/%s", appraisal.ID, appraisal.PrivateToken)
+	} else {
+		u.Path = fmt.Sprintf("/a/%s", appraisal.ID)
 	}
-	return fmt.Sprintf("/a/%s", appraisal.ID)
+	return u
+}
+
+func maybeAddLiveParam(appraisal *evepraisal.Appraisal, u *url.URL) {
+	q := u.Query()
+	if appraisal.Live {
+		q.Set("live", "yes")
+	}
+	u.RawQuery = q.Encode()
+}
+
+func appraisalLink(appraisal *evepraisal.Appraisal) string {
+	u := makeAppraisalURL(appraisal)
+	maybeAddLiveParam(appraisal, u)
+	return u.String()
+}
+
+func liveAppraisalLink(appraisal *evepraisal.Appraisal) string {
+	u := makeAppraisalURL(appraisal)
+	q := u.Query()
+	q.Set("live", "yes")
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+func normalAppraisalLink(appraisal *evepraisal.Appraisal) string {
+	u := makeAppraisalURL(appraisal)
+	return u.String()
+}
+
+func rawAppraisalLink(appraisal *evepraisal.Appraisal) string {
+	u := makeAppraisalURL(appraisal)
+	u.Path = u.Path + ".raw"
+	maybeAddLiveParam(appraisal, u)
+	return u.String()
+}
+
+func jsonAppraisalLink(appraisal *evepraisal.Appraisal) string {
+	u := makeAppraisalURL(appraisal)
+	u.Path = u.Path + ".json"
+	maybeAddLiveParam(appraisal, u)
+	return u.String()
 }
 
 func parseAppraisalBody(r *http.Request) (string, error) {
@@ -236,6 +282,12 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 	} else if bone.GetValue(r, "privateToken") != "" {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
 		return
+	}
+
+	appraisal.Live = r.FormValue("live") == "yes"
+	if appraisal.Live {
+		ctx.App.PopulateItems(appraisal)
+		appraisal.Created = time.Now().Unix()
 	}
 
 	appraisal = cleanAppraisal(appraisal)

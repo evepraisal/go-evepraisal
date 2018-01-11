@@ -30,7 +30,11 @@ var templateFuncs = template.FuncMap{
 	"multiply": func(a, b float64) float64 { return a * b },
 
 	// Appraisal-specific
-	"appraisallink": appraisalLink,
+	"appraisallink":       appraisalLink,
+	"normalAppraisalLink": normalAppraisalLink,
+	"liveAppraisalLink":   liveAppraisalLink,
+	"rawAppraisalLink":    rawAppraisalLink,
+	"jsonAppraisalLink":   jsonAppraisalLink,
 
 	// Only for debugging
 	"spew": spewConfig.Sdump,
