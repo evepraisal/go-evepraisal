@@ -9,6 +9,7 @@ func init() {
 	viper.SetDefault("https_domain-whitelist", []string{"evepraisal.com"})
 	viper.SetDefault("letsencrypt_email", "")
 	viper.SetDefault("db_path", "db/")
+	viper.SetDefault("backup_path", "db/backups/")
 	viper.SetDefault("esi_baseurl", "https://esi.tech.ccp.is/latest")
 	viper.SetDefault("newrelic_app-name", "Evepraisal")
 	viper.SetDefault("newrelic_license-key", "")
