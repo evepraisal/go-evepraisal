@@ -261,7 +261,9 @@ func mustStartServers(handler http.Handler) []*http.Server {
 				log.Fatalf("HTTPS server failure: %s", err)
 			}
 		}()
-		time.Sleep(1 * time.Second)
+
+		// Wrap our http handler
+		handler = autocertManager.HTTPHandler(handler)
 	}
 
 	if viper.GetString("http_addr") != "" {
