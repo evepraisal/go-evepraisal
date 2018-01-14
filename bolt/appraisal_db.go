@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -26,7 +27,18 @@ type AppraisalDB struct {
 
 // NewAppraisalDB returns a new AppraisalDB with the buckets created
 func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
-	db, err := bolt.Open(filename, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	var nmapSize = 0
+
+	// Give 2GB of buffer space for the nmap (for backups)
+	dbStat, err := os.Stat(filename)
+	if err == nil {
+		nmapSize = int(dbStat.Size()) + 2000000000
+	}
+
+	db, err := bolt.Open(filename, 0600, &bolt.Options{
+		Timeout:         1 * time.Second,
+		InitialMmapSize: nmapSize,
+	})
 	if err != nil {
 		return nil, err
 	}
