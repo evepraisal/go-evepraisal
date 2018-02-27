@@ -13,6 +13,7 @@ endif
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
 GOPATH?=$(shell go env GOPATH)
+export PATH := $(PATH):$(GOPATH)/bin
 
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
@@ -22,8 +23,8 @@ setup:
 	go get -u github.com/cespare/reflex
 	go get -u github.com/jstemmer/go-junit-report
 	go get -u github.com/alecthomas/gometalinter
-	${GOPATH}/bin/gometalinter --install
-	${GOPATH}/bin/dep ensure
+	gometalinter --install
+	dep ensure
 
 build: generate
 	go build ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
@@ -42,13 +43,13 @@ test:
 	go vet ${PKG_DIRS}
 	mkdir -p ${TEST_REPORT_PATH}
 	go test ${PKG_DIRS} -v 2>&1 | tee ${TEST_REPORT_PATH}/test-output.txt
-	cat ${TEST_REPORT_PATH}/test-output.txt | ${GOPATH}/bin/go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/test-report.xml
+	cat ${TEST_REPORT_PATH}/test-output.txt | go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/test-report.xml
 
 test-reload:
-	${GOPATH}/bin/reflex -c reflex.test.conf
+	reflex -c reflex.test.conf
 
 lint:
-	${GOPATH}/bin/gometalinter \
+	gometalinter \
 		--vendored-linters \
 		--vendor \
 		--disable-all \
@@ -70,10 +71,10 @@ lint:
 		./...
 
 run: install
-	${GOPATH}/bin/evepraisal
+	evepraisal
 
 run-reload:
-	${GOPATH}/bin/reflex -c reflex.conf
+	reflex -c reflex.conf
 
 dist:
 	ENV=PROD GOOS=linux GOARCH=amd64 make build
