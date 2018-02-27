@@ -19,14 +19,24 @@ type App struct {
 	NewRelicApplication newrelic.Application
 }
 
+// ListAppraisalsOptions is used to pass options into AppraisalDB.ListAppraisals
+type ListAppraisalsOptions struct {
+	User             *User
+	Limit            int
+	Kind             string
+	StartAppraisalID string
+	EndAppraisalID   string
+	SortDirection    string
+}
+
 // AppraisalDB allows for creating, deleting and retreiving appraisals
 type AppraisalDB interface {
 	PutNewAppraisal(appraisal *Appraisal) error
 	GetAppraisal(appraisalID string) (*Appraisal, error)
-	LatestAppraisals(count int, kind string) ([]Appraisal, error)
-	LatestAppraisalsByUser(user User, count int, kind string, after string) ([]Appraisal, error)
+	ListAppraisals(opts ListAppraisalsOptions) ([]Appraisal, error)
 	TotalAppraisals() (int64, error)
 	DeleteAppraisal(appraisalID string) error
+	Backup(dir string) error
 	Close() error
 }
 

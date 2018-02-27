@@ -214,7 +214,7 @@ func appMain() {
 	log.Printf("Starting Management HTTP server (%s)", viper.GetString("management_addr"))
 	mgmtServer := &http.Server{
 		Addr:    viper.GetString("management_addr"),
-		Handler: management.HTTPHandler(app, filepath.Join(viper.GetString("backup_path"), "appraisals.gz")),
+		Handler: management.HTTPHandler(app, filepath.Join(viper.GetString("backup_path"))),
 	}
 	defer mgmtServer.Close()
 	go func() {

@@ -19,7 +19,13 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 		limit = 100
 	}
 
-	appraisals, err := ctx.App.AppraisalDB.LatestAppraisals(int(limit), r.FormValue("kind"))
+	opts := evepraisal.ListAppraisalsOptions{
+		Limit:         int(limit),
+		Kind:          r.FormValue("kind"),
+		SortDirection: "DESC",
+	}
+
+	appraisals, err := ctx.App.AppraisalDB.ListAppraisals(opts)
 	if err != nil {
 		ctx.renderServerError(r, w, err)
 		return

@@ -2,11 +2,15 @@ package bolt
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/binary"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -21,12 +25,15 @@ var expireTime = time.Hour * 24 * 90
 // AppraisalDB holds all appraisals
 type AppraisalDB struct {
 	DB   *bolt.DB
-	wg   *sync.WaitGroup
-	stop chan (bool)
+	path string
+
+	lock    *sync.RWMutex
+	wg      *sync.WaitGroup
+	stop    chan (bool)
+	stopped bool
 }
 
-// NewAppraisalDB returns a new AppraisalDB with the buckets created
-func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
+func openDB(filename string) (*bolt.DB, error) {
 	var nmapSize = 0
 
 	// Give 2GB of buffer space for the nmap (for backups)
@@ -35,10 +42,15 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 		nmapSize = int(dbStat.Size()) + 2000000000
 	}
 
-	db, err := bolt.Open(filename, 0600, &bolt.Options{
+	return bolt.Open(filename, 0600, &bolt.Options{
 		Timeout:         1 * time.Second,
 		InitialMmapSize: nmapSize,
 	})
+}
+
+// NewAppraisalDB returns a new AppraisalDB with the buckets created
+func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
+	db, err := openDB(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +87,8 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 
 	appraisalDB := &AppraisalDB{
 		DB:   db,
+		path: filename,
+		lock: &sync.RWMutex{},
 		wg:   &sync.WaitGroup{},
 		stop: make(chan bool),
 	}
@@ -86,6 +100,9 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 
 // PutNewAppraisal stores the given appraisal
 func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+
 	var dbID []byte
 	err := db.DB.Update(func(tx *bolt.Tx) error {
 		byIDBucket := tx.Bucket([]byte("appraisals"))
@@ -152,129 +169,138 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 }
 
 func (db *AppraisalDB) getAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+
 	var (
 		dbID []byte
 		err  error
+		a    evepraisal.Appraisal
 	)
 	dbID, err = EncodeDBID(appraisalID)
 	if err != nil {
 		return nil, err
 	}
 
-	appraisal := &evepraisal.Appraisal{}
-
+	var appraisal *evepraisal.Appraisal
 	err = db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
 		buf := b.Get(dbID)
 		if buf == nil {
 			return evepraisal.ErrAppraisalNotFound
 		}
-
-		buf, err = snappy.Decode(nil, buf)
+		a, err = decodeAppraisal(buf)
 		if err != nil {
-			return fmt.Errorf("Error when decoding: %s", err)
+			return err
 		}
-
-		decoder := gob.NewDecoder(bytes.NewBuffer(buf))
-		return decoder.Decode(appraisal)
+		appraisal = &a
+		return nil
 	})
 
 	return appraisal, err
 }
 
-// LatestAppraisals returns the global latest appraisals
-func (db *AppraisalDB) LatestAppraisals(reqCount int, kind string) ([]evepraisal.Appraisal, error) {
-	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
-	queriedCount := 0
-	err := db.DB.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("appraisals"))
-		c := b.Cursor()
-		for key, val := c.Last(); key != nil; key, val = c.Prev() {
-			appraisal := evepraisal.Appraisal{}
+// ListAppraisals returns the latest appraisals by the given user
+func (db *AppraisalDB) ListAppraisals(opts evepraisal.ListAppraisalsOptions) ([]evepraisal.Appraisal, error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
 
-			buf, err := snappy.Decode(nil, val)
-			if err != nil {
-				return fmt.Errorf("Error when decoding: %s", err)
-			}
+	var (
+		startingKey     string
+		endingCondition func(string) bool
+		seekTo          []byte
+		nextFn          func(*bolt.Cursor) ([]byte, []byte)
+	)
 
-			decoder := gob.NewDecoder(bytes.NewBuffer(buf))
-			err = decoder.Decode(&appraisal)
-			if err != nil {
-				return err
-			}
+	if opts.SortDirection == "" || opts.SortDirection == "ASC" {
+		startingKey = opts.StartAppraisalID
+		endingCondition = func(key string) bool { return opts.EndAppraisalID != "" && key > opts.EndAppraisalID }
+		nextFn = func(c *bolt.Cursor) ([]byte, []byte) { return c.Next() }
+	} else if opts.SortDirection == "DESC" {
+		startingKey = opts.EndAppraisalID
+		endingCondition = func(key string) bool { return opts.StartAppraisalID != "" && key < opts.StartAppraisalID }
+		nextFn = func(c *bolt.Cursor) ([]byte, []byte) { return c.Prev() }
+	} else {
+		return nil, fmt.Errorf("SortDirection is not valid: %s", opts.SortDirection)
+	}
 
-			if appraisal.Private {
-				continue
-			}
-
-			if kind != "" && appraisal.Kind != kind {
-				continue
-			}
-
-			appraisals = append(appraisals, appraisal)
-
-			if len(appraisals) >= reqCount {
-				break
-			}
-
-			if queriedCount >= reqCount*10 {
-				break
-			}
+	if startingKey != "" {
+		afterDBID, err := EncodeDBID(startingKey)
+		if err != nil {
+			return nil, err
 		}
+		seekTo = afterDBID
+	} else {
+		seekTo = []byte(";")
+	}
 
-		return nil
-	})
+	if opts.User != nil {
+		// the appraisals-by-user bucket has keys formatted like "{character owner hash}:{encoded appraisal id}"
+		b := bytes.NewBuffer([]byte(opts.User.CharacterOwnerHash))
+		_ = b.WriteByte(':')   /* #nosec */
+		_, _ = b.Write(seekTo) /* #nosec */
+		seekTo = b.Bytes()
+	}
 
-	return appraisals, err
-}
-
-// LatestAppraisalsByUser returns the latest appraisals by the given user
-func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int, kind string, after string) ([]evepraisal.Appraisal, error) {
-	appraisals := make([]evepraisal.Appraisal, 0, reqCount)
+	appraisals := make([]evepraisal.Appraisal, 0, opts.Limit)
 	queriedCount := 0
+
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		byUserBucket := tx.Bucket([]byte("appraisals-by-user"))
 		byIDBucket := tx.Bucket([]byte("appraisals"))
-		c := byUserBucket.Cursor()
-
-		var suffix []byte
-		if after != "" {
-			afterDBID, err := EncodeDBID(after)
-			if err != nil {
-				return err
-			}
-			suffix = append([]byte(":"), afterDBID...)
+		var (
+			c              *bolt.Cursor
+			keyConstraints func(string) bool
+		)
+		if opts.User == nil {
+			c = byIDBucket.Cursor()
+			keyConstraints = func(key string) bool { return key != "" }
 		} else {
-			suffix = []byte(";")
+			c = byUserBucket.Cursor()
+			keyConstraints = func(key string) bool { return strings.HasPrefix(string(key), opts.User.CharacterOwnerHash) }
 		}
 
-		c.Seek(append([]byte(user.CharacterOwnerHash), suffix...))
+		c.Seek(seekTo)
 
-		for key, val := c.Prev(); strings.HasPrefix(string(key), user.CharacterOwnerHash); key, val = c.Prev() {
-			buf, err := snappy.Decode(nil, byIDBucket.Get(val))
-			if err != nil {
-				return fmt.Errorf("Error when decoding: %s", err)
+		for key, val := nextFn(c); keyConstraints(string(key)); key, val = nextFn(c) {
+			if opts.User != nil {
+				val = byIDBucket.Get(val)
 			}
 
-			appraisal := evepraisal.Appraisal{}
-			decoder := gob.NewDecoder(bytes.NewBuffer(buf))
-			err = decoder.Decode(&appraisal)
+			appraisal, err := decodeAppraisal(val)
 			if err != nil {
 				return err
 			}
 
-			if kind != "" && appraisal.Kind != kind {
+			if opts.Kind != "" && appraisal.Kind != opts.Kind {
 				continue
+			}
+
+			if endingCondition(appraisal.ID) {
+				break
 			}
 
 			appraisals = append(appraisals, appraisal)
 
-			if len(appraisals) >= reqCount {
-				break
+			if opts.Limit > 0 {
+				if len(appraisals) >= opts.Limit {
+					break
+				}
+
+				if queriedCount >= opts.Limit*10 {
+					break
+				}
 			}
 
-			if queriedCount >= reqCount*10 {
-				break
+			// Extra protection
+			if opts.User != nil {
+				if appraisal.User == nil {
+					break
+				}
+
+				if appraisal.User.CharacterOwnerHash != opts.User.CharacterOwnerHash {
+					break
+				}
 			}
 		}
 
@@ -286,6 +312,9 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 
 // TotalAppraisals returns the number of total appraisals
 func (db *AppraisalDB) TotalAppraisals() (int64, error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+
 	var total int64
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("appraisals"))
@@ -298,6 +327,9 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 
 // DeleteAppraisal deletes an appraisal by ID
 func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+
 	appraisal, err := db.getAppraisal(appraisalID)
 	appraisalFound := true
 	if err == evepraisal.ErrAppraisalNotFound {
@@ -335,11 +367,132 @@ func (db *AppraisalDB) DeleteAppraisal(appraisalID string) error {
 	})
 }
 
+// resetDB is used to re-initialize the database because boltdb is weird and can't grow the database with
+// pending readers.
+func (db *AppraisalDB) resetDB() error {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	err := db.DB.Close()
+	if err != nil {
+		return err
+	}
+
+	db.DB, err = openDB(db.path)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Backup writes out a backup to the given directory
+func (db *AppraisalDB) Backup(dir string) error {
+	log.Println("BACKUP: Backup to directory:", dir)
+
+	// Load the meta file that tells us the latest appraisal ID so we know where to start
+	var startAppraisalID string
+	startAppraisalIDBytes, err := ioutil.ReadFile(filepath.Join(dir, "_meta"))
+	if os.IsNotExist(err) {
+		startAppraisalID = "0"
+	} else if err != nil {
+		return err
+	} else {
+		startAppraisalID = string(startAppraisalIDBytes)
+	}
+
+	// We might need a little time to query, if it takes too long, the db freezes up when trying to grow the db file
+	err = db.resetDB()
+	if err != nil {
+		return err
+	}
+
+	fetchAndBackupAppraisals := func(appraisalID string) (string, error) {
+		log.Println("BACKUP: starting new query at", appraisalID)
+		limit := 10000
+		opts := evepraisal.ListAppraisalsOptions{
+			StartAppraisalID: appraisalID,
+			Limit:            limit + 1,
+			SortDirection:    "ASC",
+		}
+
+		var appraisals []evepraisal.Appraisal
+		appraisals, err = db.ListAppraisals(opts)
+		if err != nil {
+			return "", err
+		}
+
+		next := ""
+		if len(appraisals) > limit {
+			next = appraisals[len(appraisals)-1].ID
+			appraisals = appraisals[0:limit]
+		}
+
+		if len(appraisals) == 0 {
+			log.Println("BACKUP: finished", appraisalID)
+			return "", nil
+		}
+
+		first := appraisals[0].ID
+		last := appraisals[len(appraisals)-1].ID
+		filename := fmt.Sprintf("appraisals-%s-%s.json", first, last)
+		filepath := filepath.Join(dir, filename)
+
+		log.Printf("BACKUP: got %d appraisals for file %s", len(appraisals), filepath)
+		var f *os.File
+		f, err = os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+		cf := gzip.NewWriter(f)
+		encoder := json.NewEncoder(cf)
+		err = encoder.Encode(appraisals)
+		if err != nil {
+			return "", err
+		}
+
+		log.Printf("BACKUP: created backed up appraisals: %s", filepath)
+
+		return next, nil
+	}
+
+	next := startAppraisalID
+	for next != "" {
+		next, err = fetchAndBackupAppraisals(next)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Close closes the database
 func (db *AppraisalDB) Close() error {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	db.stopped = true
 	close(db.stop)
 	db.wg.Wait()
 	return db.DB.Close()
+}
+
+func decodeAppraisal(val []byte) (evepraisal.Appraisal, error) {
+	appraisal := evepraisal.Appraisal{}
+
+	buf, err := snappy.Decode(nil, val)
+	if err != nil {
+		return appraisal, fmt.Errorf("Error when decoding: %s", err)
+	}
+
+	decoder := gob.NewDecoder(bytes.NewBuffer(buf))
+	if err != nil {
+		return appraisal, fmt.Errorf("Error when decoding: %s", err)
+	}
+
+	err = decoder.Decode(&appraisal)
+	return appraisal, err
+
 }
 
 func (db *AppraisalDB) setLastUsedTime(dbID []byte) {

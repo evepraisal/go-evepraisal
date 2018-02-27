@@ -12,7 +12,16 @@ func (ctx *Context) HandleUserHistoryAppraisals(w http.ResponseWriter, r *http.R
 	user := ctx.GetCurrentUser(r)
 	before := r.FormValue("before")
 	limit := 50
-	appraisals, err := ctx.App.AppraisalDB.LatestAppraisalsByUser(*user, limit+1, r.FormValue("kind"), before)
+
+	opts := evepraisal.ListAppraisalsOptions{
+		Limit:          limit + 1,
+		Kind:           r.FormValue("kind"),
+		User:           user,
+		EndAppraisalID: before,
+		SortDirection:  "DESC",
+	}
+
+	appraisals, err := ctx.App.AppraisalDB.ListAppraisals(opts)
 	if err != nil {
 		ctx.renderServerError(r, w, err)
 		return
