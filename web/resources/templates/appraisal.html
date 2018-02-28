@@ -124,7 +124,7 @@
       <tbody>
       {{range $i, $item := .Page.Appraisal.Items}}
       {{ if (or $.Page.ShowFull (lt $i 100)) }}
-        <tr class="{{if eq $item.TypeID 0}}danger{{else if eq $item.Prices.All.Volume 0}}info{{end}}">
+        <tr class="{{if eq $item.TypeID 0}}danger{{else if eq $item.Prices.All.Volume 0}}info{{else if $item.Extra.BPC}}info{{end}}">
           <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
           <td>
             {{if (and $item.TypeName (lt $i 30))}}
