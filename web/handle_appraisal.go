@@ -114,7 +114,9 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 	if err != nil && err != http.ErrNotMultipart && err != http.ErrMissingFile {
 		return "", err
 	}
-	defer f.Close()
+	if f != nil {
+		defer f.Close()
+	}
 	bodyBytes, err := ioutil.ReadAll(f)
 	if err != nil {
 		return "", err
