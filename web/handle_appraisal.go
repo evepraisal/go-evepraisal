@@ -127,7 +127,7 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 		body = r.FormValue("raw_textarea")
 	}
 
-	log.Printf("%#v", body)
+	// log.Printf("%#v", body)
 	if len(body) > 200000 {
 		return "", errInputTooBig
 	}
