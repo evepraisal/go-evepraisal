@@ -366,10 +366,11 @@ func (db *AppraisalDB) startReaper() {
 			c := b.Cursor()
 			for key, val := c.First(); key != nil; key, val = c.Next() {
 				appraisalCount++
-				if appraisalCount%10000 == 0 {
+				if appraisalCount%1000 == 0 {
 					select {
 					case <-db.stop:
 						return nil
+					default:
 					}
 				}
 
@@ -396,7 +397,17 @@ func (db *AppraisalDB) startReaper() {
 			log.Printf("ERROR: Problem querying for unused appraisals: %s", err)
 		}
 
-		for _, appraisalID := range unused {
+		log.Printf("Reaper starting to delete %d appraisals", len(unused))
+
+		for i, appraisalID := range unused {
+			if i%100 == 0 {
+				select {
+				case <-db.stop:
+					return
+				default:
+				}
+			}
+
 			err = db.DeleteAppraisal(appraisalID)
 			if err != nil {
 				log.Printf("ERROR: Problem removing unused appraisals: %s", err)
