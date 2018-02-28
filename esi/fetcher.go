@@ -1,6 +1,7 @@
 package esi
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -60,18 +61,20 @@ type PriceFetcher struct {
 	client  *pester.Client
 	baseURL string
 
+	ctx  context.Context
 	stop chan bool
 	wg   *sync.WaitGroup
 }
 
 // NewPriceFetcher returns a new PriceFetcher
-func NewPriceFetcher(priceDB evepraisal.PriceDB, baseURL string, client *pester.Client) (*PriceFetcher, error) {
+func NewPriceFetcher(ctx context.Context, priceDB evepraisal.PriceDB, baseURL string, client *pester.Client) (*PriceFetcher, error) {
 
 	p := &PriceFetcher{
 		db:      priceDB,
 		client:  client,
 		baseURL: baseURL,
 
+		ctx:  ctx,
 		stop: make(chan bool),
 		wg:   &sync.WaitGroup{},
 	}
@@ -187,7 +190,7 @@ func (p *PriceFetcher) FetchPriceData(client *pester.Client, baseURL string) (ma
 		AveragePrice  float64 `json:"average_price"`
 		AdjustedPrice float64 `json:"adjusted_price"`
 	}, 0)
-	err := fetchURL(client, url, &esiPrices)
+	err := fetchURL(p.ctx, client, url, &esiPrices)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +230,7 @@ func (p *PriceFetcher) FetchOrderData(client *pester.Client, baseURL string, reg
 	l := &sync.Mutex{}
 	requestAndProcess := func(url string) (bool, error) {
 		var orders []MarketOrder
-		err := fetchURL(client, url, &orders)
+		err := fetchURL(p.ctx, client, url, &orders)
 		if err != nil {
 			return false, err
 		}

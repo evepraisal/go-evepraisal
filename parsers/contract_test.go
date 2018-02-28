@@ -107,5 +107,16 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		},
 		Input{},
 		true,
+	}, {
+		"With spaces for separator",
+		`Zydrine	10 102	Mineral	Material	`,
+		&Contract{
+			Items: []ContractItem{
+				{Name: "Zydrine", Quantity: 10102, Type: "Mineral", Category: "Material"},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		true,
 	},
 }

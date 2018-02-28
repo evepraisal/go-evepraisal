@@ -90,7 +90,18 @@ Sleeper Data Library	1.080`,
 		`Robotics	741	Specialized Commodities			4 446 m3	76 705 081,83 ISK`,
 		&AssetList{
 			Items: []AssetItem{
-				{Name: "Robotics", Quantity: 741, Group: "Specialized Commodities"},
+				{Name: "Robotics", Quantity: 741, Group: "Specialized Commodities", PriceEstimate: 76705081.83},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
+	}, {
+		"With 'spaces' in numbers",
+		`Guardian Angels 'Advanced' Cerebral Accelerator	1	Booster		10	1 m3	37 805 997.92 ISK`,
+		&AssetList{
+			Items: []AssetItem{
+				{Name: "Guardian Angels 'Advanced' Cerebral Accelerator", Quantity: 1, Group: "Booster", Slot: "10", Volume: 1.0, PriceEstimate: 37805997.92},
 			},
 			lines: []int{0},
 		},

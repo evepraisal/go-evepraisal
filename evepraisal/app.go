@@ -39,6 +39,7 @@ func appMain() {
 		log.Fatalf("Couldn't start price database: %s", err)
 	}
 	defer func() {
+		log.Println("Stopping price db")
 		derr := priceDB.Close()
 		if derr != nil {
 			log.Fatalf("Problem closing priceDB: %s", derr)
@@ -50,16 +51,10 @@ func appMain() {
 		log.Fatalf("Couldn't start httpCache: %s", err)
 	}
 	defer func() {
+		log.Println("Stopping http cache")
 		derr := httpCache.Close()
 		if derr != nil {
 			log.Fatalf("Problem closing httpCache: %s", derr)
-		}
-	}()
-
-	defer func() {
-		derr := priceDB.Close()
-		if derr != nil {
-			log.Fatalf("Problem closing priceDB: %s", derr)
 		}
 	}()
 
@@ -70,11 +65,14 @@ func appMain() {
 	httpClient.Backoff = pester.ExponentialJitterBackoff
 	httpClient.MaxRetries = 10
 
-	priceFetcher, err := esi.NewPriceFetcher(priceDB, viper.GetString("esi_baseurl"), httpClient)
+	fetcherCtx, fetcherCancel := context.WithCancel(context.Background())
+	priceFetcher, err := esi.NewPriceFetcher(fetcherCtx, priceDB, viper.GetString("esi_baseurl"), httpClient)
 	if err != nil {
 		log.Fatalf("Couldn't start price fetcher: %s", err)
 	}
 	defer func() {
+		log.Println("Stopping price fetcher")
+		fetcherCancel()
 		derr := priceFetcher.Close()
 		if derr != nil {
 			log.Fatalf("Problem closing priceDB: %s", derr)
@@ -87,6 +85,7 @@ func appMain() {
 		log.Fatalf("Couldn't start appraisal database: %s", err)
 	}
 	defer func() {
+		log.Println("Stopping appraisal DB")
 		derr := appraisalDB.Close()
 		if derr != nil {
 			log.Fatalf("Problem closing appraisalDB: %s", derr)
@@ -155,6 +154,7 @@ func appMain() {
 		log.Fatalf("Couldn't start static fetcher: %s", err)
 	}
 	defer func() {
+		log.Println("Stopping static content fetcher")
 		derr := staticFetcher.Close()
 		if derr != nil {
 			log.Fatalf("Problem closing static fetcher: %s", derr)
@@ -216,7 +216,7 @@ func appMain() {
 		Addr:    viper.GetString("management_addr"),
 		Handler: management.HTTPHandler(app, filepath.Join(viper.GetString("backup_path"), "appraisals.gz")),
 	}
-	defer mgmtServer.Close()
+
 	go func() {
 		derr := mgmtServer.ListenAndServe()
 		if derr == http.ErrServerClosed {

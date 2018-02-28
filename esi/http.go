@@ -1,6 +1,7 @@
 package esi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,7 +9,7 @@ import (
 	"github.com/sethgrid/pester"
 )
 
-func fetchURL(client *pester.Client, url string, r interface{}) error {
+func fetchURL(ctx context.Context, client *pester.Client, url string, r interface{}) error {
 	// log.Printf("Fetching %s", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -16,7 +17,7 @@ func fetchURL(client *pester.Client, url string, r interface{}) error {
 	}
 
 	req.Header.Add("User-Agent", "go-evepraisal")
-	resp, err := client.Do(req)
+	resp, err := client.Do(req.WithContext(ctx))
 	if err != nil {
 		return err
 	}

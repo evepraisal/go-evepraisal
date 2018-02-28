@@ -111,18 +111,21 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 
 	var body string
 	f, _, err := r.FormFile("uploadappraisal")
-	if err == http.ErrNotMultipart || err == http.ErrMissingFile {
-		body = r.FormValue("raw_textarea")
-	} else if err != nil {
+	if err != nil && err != http.ErrNotMultipart && err != http.ErrMissingFile {
 		return "", err
-	} else {
-		defer f.Close()
-		bodyBytes, err := ioutil.ReadAll(f)
-		if err != nil {
-			return "", err
-		}
-		body = string(bodyBytes)
 	}
+	defer f.Close()
+	bodyBytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+	body = string(bodyBytes)
+
+	if body == "" {
+		body = r.FormValue("raw_textarea")
+	}
+
+	log.Printf("%#v", body)
 	if len(body) > 200000 {
 		return "", errInputTooBig
 	}

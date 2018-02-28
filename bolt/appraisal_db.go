@@ -366,6 +366,12 @@ func (db *AppraisalDB) startReaper() {
 			c := b.Cursor()
 			for key, val := c.First(); key != nil; key, val = c.Next() {
 				appraisalCount++
+				if appraisalCount%10000 == 0 {
+					select {
+					case <-db.stop:
+						return nil
+					}
+				}
 
 				var timestamp time.Time
 				if val != nil {

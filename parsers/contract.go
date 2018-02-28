@@ -36,17 +36,17 @@ type ContractItem struct {
 }
 
 var reContract = regexp.MustCompile(strings.Join([]string{
-	`^([\S ]*)\t`,   // Name
-	`([\d,'\.]*)\t`, // Quantity
-	`([\S ]*)\t`,    // type
-	`([\S ]*)\t`,    // Category
-	`([\S ]*)$`,     // Details
+	`^([\S ]*)\t`,                 // Name
+	`(` + bigNumberRegex + `*)\t`, // Quantity
+	`([\S ]*)\t`,                  // type
+	`([\S ]*)\t`,                  // Category
+	`([\S ]*)$`,                   // Details
 }, ""))
 
 var reContractShort = regexp.MustCompile(strings.Join([]string{
-	`^([\S ]*)\t`,   // Name
-	`([\d,'\.]*)\t`, // Quantity
-	`([\S ]*)$`,     // type
+	`^([\S ]*)\t`,                 // Name
+	`(` + bigNumberRegex + `*)\t`, // Quantity
+	`([\S ]*)$`,                   // type
 }, ""))
 
 var reBPCDetails = regexp.MustCompile(`BLUEPRINT COPY - Runs: ([\d]+) - .*`)
