@@ -115,13 +115,13 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 		return "", err
 	}
 	if f != nil {
+		bodyBytes, err := ioutil.ReadAll(f)
+		if err != nil {
+			return "", err
+		}
+		body = string(bodyBytes)
 		defer f.Close()
 	}
-	bodyBytes, err := ioutil.ReadAll(f)
-	if err != nil {
-		return "", err
-	}
-	body = string(bodyBytes)
 
 	if body == "" {
 		body = r.FormValue("raw_textarea")
