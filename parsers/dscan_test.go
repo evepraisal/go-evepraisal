@@ -31,7 +31,7 @@ Wreck	Tayra	82 km`,
 		"that's no moon!",
 		"Otanuomi V - Moon 11	Moon	10.4 AU",
 		&DScan{
-			Items: []DScanItem{{Name: "Moon", Distance: 104, DistanceUnit: "AU"}},
+			Items: []DScanItem{{Name: "Moon", Distance: 10.4, DistanceUnit: "AU"}},
 			lines: []int{0},
 		},
 		Input{},

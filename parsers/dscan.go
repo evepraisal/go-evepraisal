@@ -26,7 +26,7 @@ func (r *DScan) Lines() []int {
 // DScanItem is a single item from a dscan result
 type DScanItem struct {
 	Name         string
-	Distance     int64
+	Distance     float64
 	DistanceUnit string
 }
 
@@ -42,7 +42,7 @@ func ParseDScan(input Input) (ParserResult, Input) {
 	matches, rest := regexParseLines(reDScan, input)
 	dscan.lines = regexMatchedLines(matches)
 	for _, match := range matches {
-		dscan.Items = append(dscan.Items, DScanItem{Name: CleanTypeName(match[2]), Distance: ToInt(match[4]), DistanceUnit: match[5]})
+		dscan.Items = append(dscan.Items, DScanItem{Name: CleanTypeName(match[2]), Distance: ToFloat64(match[4]), DistanceUnit: match[5]})
 	}
 
 	sort.Slice(dscan.Items, func(i, j int) bool {

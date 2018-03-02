@@ -96,5 +96,18 @@ Tritanium X 1`,
 		},
 		Input{},
 		false,
+	}, {
+		"quantities with a decimal, for some reason",
+		`123.12	Griffin
+456.3	Maulus`,
+		&Listing{
+			Items: []ListingItem{
+				{Name: "Griffin", Quantity: 123},
+				{Name: "Maulus", Quantity: 456},
+			},
+			lines: []int{0, 1},
+		},
+		Input{},
+		false,
 	},
 }

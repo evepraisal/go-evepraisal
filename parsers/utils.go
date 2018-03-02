@@ -12,13 +12,35 @@ var bigNumberRegex = `[\d,'\.\ ` + "\xc2\xa0" + `]`
 
 var cleanIntegers = regexp.MustCompile(`[,\'\.\ ` + "\xc2\xa0" + `]`)
 
-var separatorCharacters = []rune{
-	',',
-	'.',
-	' ',
-	'\'',
-	'\xc2',
-	'\xa0',
+var separatorCharacters = map[rune]bool{
+	',':    true,
+	'.':    true,
+	' ':    true,
+	'\'':   true,
+	'\xc2': true,
+	'\xa0': true,
+}
+
+func splitDecimal(s string) (string, string) {
+	runes := []rune(s)
+	if len(runes) > 3 {
+		_, twodecimal := separatorCharacters[runes[len(runes)-3]]
+		if twodecimal {
+			whole := string(runes[0 : len(runes)-3])
+			decimal := string(runes[len(runes)-2:])
+			return whole, decimal
+		}
+	}
+	if len(runes) > 2 {
+		_, onedecimal := separatorCharacters[runes[len(runes)-2]]
+		if onedecimal {
+			whole := string(runes[0 : len(runes)-2])
+			decimal := string(runes[len(runes)-1:])
+			return whole, decimal
+		}
+	}
+
+	return s, ""
 }
 
 // ToInt parses a string into an integer. It will return 0 on failure
@@ -27,13 +49,15 @@ func ToInt(s string) int64 {
 		return 0
 	}
 
-	s = cleanIntegers.ReplaceAllString(s, "")
+	whole, _ := splitDecimal(s)
+	cleaned := cleanIntegers.ReplaceAllString(whole, "")
 
-	i, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return int64(ToFloat64(s))
+	i, err := strconv.ParseInt(cleaned, 10, 64)
+	if err == nil {
+		return i
 	}
-	return i
+
+	return 0
 }
 
 // ToFloat64 parses a string into a float64. It will return 0.0 on failure
@@ -44,20 +68,10 @@ func ToFloat64(s string) float64 {
 		return f
 	}
 
-	runes := []rune(s)
-	if len(runes) > 3 {
-		for _, char := range separatorCharacters {
+	whole, decimal := splitDecimal(s)
+	f, _ = strconv.ParseFloat(fmt.Sprintf("%d.%s", ToInt(string(whole)), string(decimal)), 64)
 
-			if runes[len(runes)-3] == char {
-				whole := runes[0 : len(runes)-3]
-				decimal := runes[len(runes)-2:]
-				f, _ = strconv.ParseFloat(fmt.Sprintf("%d.%s", ToInt(string(whole)), string(decimal)), 64)
-				return f
-			}
-		}
-	}
-
-	return 0
+	return f
 }
 
 // CleanTypeName will remove leading and trailing whitespace and leading asterisks.
