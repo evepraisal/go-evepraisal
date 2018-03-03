@@ -69,10 +69,12 @@ func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	resp, err := client.Get(ctx.OauthVerifyURL)
 	if err != nil {
 		ctx.renderServerError(r, w, err)
+		return
 	}
 
 	if resp.StatusCode != 200 {
 		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", fmt.Sprintf("Invalid response when verifying identity (%d)", resp.StatusCode))
+		return
 	}
 
 	user := &evepraisal.User{}
@@ -80,6 +82,7 @@ func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	if err != nil {
 		ctx.renderServerError(r, w, err)
+		return
 	}
 
 	ctx.setSessionValue(r, w, "user", &user)
