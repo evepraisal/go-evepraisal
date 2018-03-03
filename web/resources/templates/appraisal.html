@@ -96,7 +96,7 @@
           {{.Page.Appraisal.Kind}}
         </strong>
         priced {{if .Page.Appraisal.UsingPercentage}}
-         at <strong><span class="text-warning">{{.Page.Appraisal.PricePercentage}}%</span></strong> of
+         at <strong><span class="text-warning">{{.Page.Appraisal.PricePercentage}}%</span></strong> of <strong>{{.Page.Appraisal.MarketName}}</strong>
         {{else}}
          in <strong>{{.Page.Appraisal.MarketName}}</strong>
         {{end}}
