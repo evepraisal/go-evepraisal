@@ -107,5 +107,17 @@ Sleeper Data Library	1.080`,
 		},
 		Input{},
 		false,
+	}, {
+		"With 'spaces' in numbers 2",
+		"Mexallon\t1\u00a0667\u00a0487\tMineral\t\t\t16\u00a0674,87 m3\t128\u00a0696\u00a0646,66 ISK",
+		&AssetList{
+			Items: []AssetItem{
+				{Name: "Mexallon", Quantity: 1667487, Group: "Mineral", Volume: 16674.87, PriceEstimate: 128696646.66},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
+	//
 }

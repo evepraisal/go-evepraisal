@@ -1,14 +1,13 @@
 <div class="media">
   <div class="media-body">
-    <div class="col-md-8">
+    <div class="col-md-9">
+      <span class="pull-right">
+        <a role="button" class="btn btn-default btn-xs" type="button" href="https://element-43.com/market/{{.Page.Type.ID}}/" target="_blank"> Element 43</a></button>
+        <a role="button" class="btn btn-default btn-xs" type="button" href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank"> Eve Info</a></button>
+        <a role="button" class="btn btn-default btn-xs" type="button" href="/item/{{.Page.Type.ID}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></button>
+      </span>
       <h4 class="mt-0">
         <img class="media-image" src="https://image.eveonline.com/Type/{{.Page.Type.ID}}_64.png" alt="{{.Page.Type.Name}}" /> {{.Page.Type.Name}}
-
-        <small>
-          | <a href="https://element-43.com/market/{{.Page.Type.ID}}/" target="_blank">Element 43</a>
-          | <a href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank">Eve Info</a>
-          | <a href="https://eve-central.com/home/quicklook.html?typeid={{.Page.Type.ID}}" target="_blank">Eve Central</a>
-        </small>
       </h4>
     </div>
     <div class="col-md-3">

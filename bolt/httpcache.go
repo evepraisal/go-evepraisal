@@ -81,7 +81,7 @@ func (c *HTTPCache) Delete(key string) {
 		return tx.Bucket([]byte("httpcache")).Delete([]byte(key))
 	})
 	if err != nil {
-		log.Println("Error: deleving in httpcache: ", err)
+		log.Println("Error: deleting in httpcache: ", err)
 	}
 }
 

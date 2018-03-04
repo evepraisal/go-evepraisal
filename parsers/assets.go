@@ -44,7 +44,7 @@ var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`(?:\t([\S ]*))?`,                       // Category
 	`(?:\t(XLarge|Large|Medium|Small|))?`,   // Size
 	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`,  // Slot
-	`(?:\t([\d ,\.]*) m3)?`,                 // Volume
+	`(?:\t(` + bigNumberRegex + `*) m3)?`,   // Volume
 	`(?:\t([\d]+|))?`,                       // meta level
 	`(?:\t([\d]+|))?`,                       // tech level
 	`(?:\t(` + bigNumberRegex + `+) ISK)?$`, // price estimate

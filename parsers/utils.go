@@ -8,10 +8,8 @@ import (
 	"strings"
 )
 
-var bigNumberRegex = `[\d,'\.\ ` + "\xc2\xa0" + `]`
-
-var cleanIntegers = regexp.MustCompile(`[,\'\.\ ` + "\xc2\xa0" + `]`)
-
+var bigNumberRegex = `[\d,'\.\ ` + "\u00a0\xc2\xa0" + `]`
+var cleanIntegers = regexp.MustCompile(`[,\'\.\ ` + "\u00a0\xc2\xa0" + `]`)
 var separatorCharacters = map[rune]bool{
 	',':    true,
 	'.':    true,
