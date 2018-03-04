@@ -103,17 +103,25 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 	return &TypeDB{db: db, index: index, filename: filename, indexFilename: indexFilename}, err
 }
 
+func massageTypeName(typeName string) string {
+	typeName = strings.ToLower(typeName)
+	aliasedTypeName, ok := aliases[typeName]
+	if ok {
+		typeName = aliasedTypeName
+	}
+
+	if strings.HasSuffix(typeName, "'s frozen corpse") {
+		return "frozen corpse"
+	}
+	return typeName
+}
+
 // GetType returns the EveType given a name
 func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
-	lower := strings.ToLower(typeName)
-	newLower, ok := aliases[lower]
-	if ok {
-		lower = newLower
-	}
 	evetype := typedb.EveType{}
 	var buf []byte
 	err := db.db.View(func(tx *bolt.Tx) error {
-		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(lower))
+		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(massageTypeName(typeName)))
 		return nil
 	})
 
@@ -136,15 +144,9 @@ func (db *TypeDB) GetType(typeName string) (typedb.EveType, bool) {
 
 // HasType returns whether or not the type exists given a name
 func (db *TypeDB) HasType(typeName string) bool {
-	lower := strings.ToLower(typeName)
-	newLower, ok := aliases[lower]
-	if ok {
-		lower = newLower
-	}
-
 	var buf []byte
 	err := db.db.View(func(tx *bolt.Tx) error {
-		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(lower))
+		buf = tx.Bucket([]byte("types_by_name")).Get([]byte(massageTypeName(typeName)))
 		return nil
 	})
 
