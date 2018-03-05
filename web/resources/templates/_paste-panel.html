@@ -58,7 +58,7 @@
           <span class="fas fa-upload"></span>
           <input type="file" name="uploadappraisal" id="uploadappraisal">
         </button>
-        <a role="button" class="btn btn-secondary btn-sm" href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="fas fa-cog"></span></a>
+        <a role="button" class="btn btn-secondary btn-sm" href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="fas fa-cog"></span> Options</a>
         <select id="market" name="market" class="form-control form-control-sm">
         {{range $market := .UI.Markets}}
           <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
