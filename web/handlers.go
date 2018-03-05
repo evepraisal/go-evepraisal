@@ -120,20 +120,21 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	}
 
 	mux := http.NewServeMux()
-	setCacheHeaders := func(h http.Handler) http.HandlerFunc {
+	setStaticHeaders := func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "public, max-age=3600")
 			etag, ok := ctx.etags[r.RequestURI]
 			if ok {
 				w.Header().Add("Etag", etag)
 			}
+
 			h.ServeHTTP(w, r)
 		}
 	}
 
 	// Route our bundled static files
 	var fs = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "/static/"}
-	mux.Handle("/static/", setCacheHeaders(http.StripPrefix("/static/", http.FileServer(fs))))
+	mux.Handle("/static/", setStaticHeaders(http.StripPrefix("/static/", http.FileServer(fs))))
 
 	// Mount our web app router to root
 	mux.Handle("/", router)

@@ -1,42 +1,38 @@
-<div class="media">
-  <div class="media-body">
-    <div class="col-md-9">
-      <span class="pull-right">
-        <a role="button" class="btn btn-default btn-xs" type="button" href="https://element-43.com/market/{{.Page.Type.ID}}/" target="_blank"> Element 43</a></button>
-        <a role="button" class="btn btn-default btn-xs" type="button" href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank"> Eve Info</a></button>
-        <a role="button" class="btn btn-default btn-xs" type="button" href="/item/{{.Page.Type.ID}}.json" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></button>
-      </span>
-      <h4 class="mt-0">
-        <img class="media-image" src="https://image.eveonline.com/Type/{{.Page.Type.ID}}_64.png" alt="{{.Page.Type.Name}}" /> {{.Page.Type.Name}}
-      </h4>
-    </div>
-    <div class="col-md-3">
-      <table class="table table-condensed table-striped">
-        <tr>
-          <th>ID</th>
-          <td>{{.Page.Type.ID}}</td>
-        </tr>
-        <tr>
-          <th>Group ID</th>
-          <td>{{.Page.Type.GroupID}}</td>
-        </tr>
-        {{if .Page.Type.MarketGroupID}}
-        <tr>
-          <th>Market Group ID</th>
-          <td>{{.Page.Type.MarketGroupID}}</td>
-        </tr>
-        {{end}}
-        <tr>
-          <th>Volume</th>
-          <td>{{humanizeVolume .Page.Type.Volume}} m<sup>3</sup></td>
-        </tr>
-        {{if .Page.Type.PackagedVolume}}
-        <tr>
-          <th>Packaged Volume</th>
-          <td>{{humanizeVolume .Page.Type.PackagedVolume}} m<sup>3</sup></td>
-        </tr>
-        {{end}}
-      </table>
-    </div>
-  </div>
+<div class="col-md-6">
+  <h4>
+    <img class="media-image" src="https://image.eveonline.com/Type/{{.Page.Type.ID}}_64.png" alt="{{.Page.Type.Name}}" /> {{.Page.Type.Name}}
+    <span class="float-right">
+    <a role="button" class="btn btn-secondary btn-sm" href="https://element-43.com/market/{{.Page.Type.ID}}/" target="_blank"> Element 43</a></button>
+    <a role="button" class="btn btn-secondary btn-sm" href="https://eveinfo.com/item/{{.Page.Type.ID}}" target="_blank"> Eve Info</a></button>
+    <a role="button" class="btn btn-secondary btn-sm" href="/item/{{.Page.Type.ID}}.json" target="_blank"><span class="fas fa-chevron-right"></span> JSON</a></button>
+  </span>
+  </h4>
+</div>
+<div class="col-md-6">
+  <table class="table table-sm table-condensed table-striped">
+    <tr>
+      <th>ID</th>
+      <td>{{.Page.Type.ID}}</td>
+    </tr>
+    <tr>
+      <th>Group ID</th>
+      <td>{{.Page.Type.GroupID}}</td>
+    </tr>
+    {{if .Page.Type.MarketGroupID}}
+    <tr>
+      <th>Market Group ID</th>
+      <td>{{.Page.Type.MarketGroupID}}</td>
+    </tr>
+    {{end}}
+    <tr>
+      <th>Volume</th>
+      <td>{{humanizeVolume .Page.Type.Volume}} m<sup>3</sup></td>
+    </tr>
+    {{if .Page.Type.PackagedVolume}}
+    <tr>
+      <th>Packaged Volume</th>
+      <td>{{humanizeVolume .Page.Type.PackagedVolume}} m<sup>3</sup></td>
+    </tr>
+    {{end}}
+  </table>
 </div>

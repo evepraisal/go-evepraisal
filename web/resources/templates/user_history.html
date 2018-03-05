@@ -2,7 +2,7 @@
 {{define "content"}}
 <div class="container">
   <h2>Your Appraisal History</h2>
-  <table class="table table-condensed table-striped">
+  <table class="table table-condensed table-sm table-striped">
     <tr class="header">
       <th>ID</th>
       <th>Format</th>
@@ -34,12 +34,12 @@
     <ul class="pagination justify-content-center">
       <li class="page-item">
         <a class="page-link" href="/user/history" aria-label="Latest">
-          <span aria-hidden="true"><span class="glyphicon glyphicon-repeat"></span> Latest</span>
+          <span aria-hidden="true"><span class="fas fa-redo"></span> Latest</span>
         </a>
       </li>
       <li class="page-item{{if not .Page.HasMore}} disabled{{end}}">
         <a class="page-link" href="{{.Page.Next}}" aria-label="Earlier">
-          <span aria-hidden="true">Earlier <span class="glyphicon glyphicon-forward"></span></span>
+          <span aria-hidden="true">Earlier <span class="fas fa-forward"></span></span>
         </a>
       </li>
     </ul>
