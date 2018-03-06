@@ -1,4 +1,4 @@
-<div class="row col-lg-12">
+<div class="row">
   <h4>Component Pricing</h4>
   <h5><span class="nowrap">{{ prettybignumber .Totals.Sell }} <small>estimated sell value</small></span>
     <span class="nowrap">{{ prettybignumber .Totals.Buy }} <small>estimated buy value</small></span></h5>
@@ -18,7 +18,7 @@
       <tr>
         <td>
           <a href="/item/{{$component.Type.ID}}">
-            <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$component.Type.ID}}_32.png" alt="{{$component.Type.Name}}"></a>
+            <img class="float-left media-object" src="https://image.eveonline.com/Type/{{$component.Type.ID}}_32.png" alt="{{$component.Type.Name}}"></a>
           <a href="/item/{{$component.Type.ID}}">{{$component.Type.Name}}</a>
         </td>
         <td class="text-right">{{comma $component.Quantity}}</td>

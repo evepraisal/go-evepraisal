@@ -14,7 +14,7 @@ pre {
     <li>If you have any questions with this where the limits are, contact me. <a href="/about">See the bottom of the about page to see how you can get ahold of me.</a></li>
   </ul>
 
-  <h3>Get an Appraisal <span class="badge badge-primary">GET /a/[appraisal-id].json</span></h3>
+  <h3>Get an Appraisal <small class="text-muted">GET /a/[appraisal-id].json</small></h3>
   <p>This endpoint returns the details for an appraisal in JSON format. The data includes everything needed to render the appraisal page. The most important part of the response is in the "totals" top-level key which includes the total buy price and sell price.</p>
 
   <h4>CURL Example</h4>
@@ -81,7 +81,7 @@ pre {
 }
 </code></pre>
 
-  <h3>Create Appraisal <span class="badge badge-primary">POST /appraisal.json</span></h3>
+  <h3>Create Appraisal <small class="text-muted">POST /appraisal.json</small></h3>
   <p>This enpoint creates a new appraisal.</p>
 
   <h4>CURL Example (without persisting)</h4>

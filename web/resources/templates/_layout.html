@@ -12,10 +12,12 @@
     <title>{{template "title" .}}</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="/static/thirdparty/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/thirdparty/bootstrap-3.3.7/css/cyborg.min.css" rel="stylesheet">
+    <link href="/static/thirdparty/bootstrap-4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/thirdparty/bootstrap-4.0.0/css/cyborg.min.css" rel="stylesheet">
+    <link href="/static/thirdparty/fontawesome-free-5.0.8/web-fonts-with-css/css/fontawesome-all.css" rel="stylesheet">
     <link href="/static/style.css" rel="stylesheet">
 
+    <script src="/static/thirdparty/popper.min.js"></script>
     <script src="/static/thirdparty/jquery-3.2.1.min.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -26,52 +28,47 @@
   </head>
 
   <body>
-
     <div class="container">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">Evepraisal</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-      <!-- Static navbar -->
-      <nav class="navbar navbar-default">
-        <div class="container-fluid">
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-links">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/">Evepraisal</a>
-          </div>
+        <div class="collapse navbar-collapse" id="navbarColor02">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item ">
+              <a class="nav-link" href="/latest">Latest</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/about">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/about/api">API</a>
+            </li>
 
-          <div class="collapse navbar-collapse" id="navbar-links">
-            <ul class="nav navbar-nav">
-              <li><a href="/latest">Latest</a></li>
-              <li><a href="/about">About</a></li>
-              <li><a href="/about/api">API</a></li>
-              {{if .UI.LoginEnabled}}
-                {{if .UI.User}}
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{.UI.User.CharacterName}} <span class="caret"></span></a>
-                  <ul class="dropdown-menu" role="menu">
-                    <li><a href="/user/history">History</a></li>
-                    <li class="divider"></li>
-                    <li><a href="/logout">Logout</a></li>
-                  </ul>
+            {{if .UI.LoginEnabled}}
+              {{if .UI.User}}
+              <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{.UI.User.CharacterName}} <span class="caret"></span></a>
+                <div class="dropdown-menu" role="menu">
+                  <a class="dropdown-item" href="/user/history">History</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="/logout">Logout</a>
+                </ul>
+              </li>
+              {{else}}
+                <li class="nav-item">
+                  <a class="nav-link" href="/login">Login</a>
                 </li>
-                {{else}}
-                  <li><a href="/login">Login</a></li>
-                {{end}}
               {{end}}
-            </ul>
-
-            <form class="navbar-form navbar-right" action="/search" method="GET" role="search">
-              <div class="form-group">
-                <input type="text" class="form-control typeahead" id="search" name="q" placeholder="Item Name...">
-              </div>
-              <button type="submit" class="btn btn-default">Search</button>
-            </form>
-          </div>
-
-        </div><!--/.container-fluid -->
+            {{end}}
+          </ul>
+          <form class="form-inline my-2 my-lg-0" action="/search" method="GET" role="search">
+            <input class="form-control mr-sm-2 typeahead" id="search" name="q" type="text" placeholder="Item Name...">
+            <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+          </form>
+        </div>
       </nav>
 
       {{range $i, $message := .UI.FlashMessages}}
@@ -97,7 +94,7 @@
     </div>
 
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/static/thirdparty/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="/static/thirdparty/bootstrap-4.0.0/js/bootstrap.min.js"></script>
     <script src="/static/thirdparty/jquery.tablesorter.min.js"></script>
     <script src="/static/thirdparty/typeahead.js/typeahead.bundle.min.js"></script>
 

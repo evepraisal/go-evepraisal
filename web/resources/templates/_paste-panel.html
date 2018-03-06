@@ -6,7 +6,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title pull-left" id="configure-appraisal-modal-label">Appraisal Settings</h5>
+        <h5 class="modal-title float-left" id="configure-appraisal-modal-label">Appraisal Settings</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -46,30 +46,26 @@
   </div>
 </div>
 
-<div class="panel panel-default form-group">
-  <div class="panel-heading">
-    Quick Estimate
-    <span class="pull-right fileUpload glyphicon glyphicon-upload">
-      <input type="file" name="uploadappraisal" id="uploadappraisal" class="upload" />
-    </span>
-  </div>
-  <div class="panel-body">
+<div class="card card-default form-group">
+  <div class="card-body">
+    <h5>Quick Estimate</h5></h5>
     <div class="form-group">
-     <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="6" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
+      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="6" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
     </div>
-    <div class="clearfix">
-      <div class="form-inline">
-        <a href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="glyphicon glyphicon-cog"></span></a>
-        <div class="pull-right">
-          <select id="market" name="market" class="form-control input-sm">
-          {{range $market := .UI.Markets}}
-            <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
-          {{end}}
-          </select>
-
-          <button type="reset" class="btn btn-sm">Reset</button>
-          <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
-        </div>
+    <div class="clearfix form-inline float-right">
+      <div>
+        <button class="btn btn-secondary btn-sm btn-file">
+          <span class="fas fa-upload"></span>
+          <input type="file" name="uploadappraisal" id="uploadappraisal">
+        </button>
+        <a role="button" class="btn btn-secondary btn-sm" href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="fas fa-cog"></span> Options</a>
+        <select id="market" name="market" class="form-control form-control-sm">
+        {{range $market := .UI.Markets}}
+          <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+        {{end}}
+        </select>
+        <button type="reset" class="btn btn-sm">Reset</button>
+        <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
       </div>
     </div>
   </div>

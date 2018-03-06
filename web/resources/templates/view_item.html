@@ -1,13 +1,15 @@
 {{define "title"}}Evepraisal -  {{.Page.Type.Name}} pricing{{end}}
 {{define "content"}}
-{{template "_view_item_header.html" .}}
+<div class="row">
+  {{template "_view_item_header.html" .}}
+</div>
 
-<div class="row col-lg-12">
+<div class="row">
   {{if .Page.Summaries}}
   <ul class="nav nav-tabs" role="tablist">
   {{ range $i, $summary := .Page.Summaries }}
     <li class="nav-item{{if eq $i 0}} active{{end}}">
-        <a class="nav-link{{if eq $i 0}} active{{end}}" data-toggle="tab" href="#{{$summary.MarketName}}" role="tab">{{$summary.MarketDisplayName}}</a>
+      <a class="nav-link{{if eq $i 0}} active{{end}}" data-toggle="tab" href="#{{$summary.MarketName}}" role="tab">{{$summary.MarketDisplayName}}</a>
     </li>
     {{end}}
   </ul>
@@ -32,5 +34,18 @@
   <div class="text-center">No market data found for this type.</div>
   {{end}}
 </div>
+<script>
+  $(function(){
+  var hash = window.location.hash;
+  hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+
+  $('.nav-tabs a').click(function (e) {
+    $(this).tab('show');
+    var scrollmem = $('body').scrollTop() || $('html').scrollTop();
+    window.location.hash = this.hash;
+    $('html,body').scrollTop(scrollmem);
+  });
+});
+</script>
 {{end}}
 {{template "_layout.html" .}}

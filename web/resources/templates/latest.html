@@ -2,15 +2,15 @@
 {{define "content"}}
 <div class="container">
   <h2>Latest Appraisals</h2>
-  <table class="table table-condensed table-striped">
+  <table class="table table-condensed table-sm table-striped">
     <tr class="header">
       <th>ID</th>
       <th>Format</th>
       <th>Location</th>
       <th class="text-right hidden-md hidden-sm hidden-xs">Item Count</th>
       <th colspan="2" class="text-center hidden-md hidden-sm hidden-xs">Created</th>
-      <th colspan="2" class="text-center">Sell Value</th>
-      <th colspan="2" class="text-center">Buy Value</th>
+      <th>Sell Value</th>
+      <th>Buy Value</th>
     </tr>
     {{range $appraisal := .Page.Appraisals}}
     <tr>
@@ -20,9 +20,7 @@
       <td class="text-right hidden-md hidden-sm hidden-xs">{{$appraisal.Items | len | commai}}</td>
       <td class="text-right hidden-md hidden-sm hidden-xs">{{relativetime $appraisal.CreatedTime}}</td>
       <td class="text-left hidden-md hidden-sm hidden-xs">{{timefmt $appraisal.CreatedTime}}</td>
-      <td class="text-right">{{commaf $appraisal.Totals.Sell}}</td>
       <td class="text-left">{{prettybignumber $appraisal.Totals.Sell}} ISK</td>
-      <td class="text-right">{{commaf $appraisal.Totals.Buy}}</td>
       <td class="text-left">{{prettybignumber $appraisal.Totals.Buy}} ISK</td>
     </tr>
     {{end}}

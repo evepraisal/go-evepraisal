@@ -6,7 +6,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title pull-left" id="delete-appraisal-modal-label">Delete this appraisal?</h5>
+        <h5 class="modal-title float-left" id="delete-appraisal-modal-label">Delete this appraisal?</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -29,7 +29,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title pull-left" id="permalink-modal-label">Permanent Link</h5>
+        <h5 class="modal-title float-left" id="permalink-modal-label">Permanent Link</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -73,19 +73,26 @@
     {{end}}
 
     {{if ne .Page.Appraisal.ID ""}}
-    <div class="pull-right appraisal-options">
-      <a role="button" class="btn btn-primary btn-xs" type="button" href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="glyphicon glyphicon-bookmark"></span>  Permalink</a></button>
-      {{if not .Page.Appraisal.Live}}
-        <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | liveAppraisalLink}}"><span class="glyphicon glyphicon-record"></span> Live Prices</a></button>
-      {{else}}
-        <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | normalAppraisalLink}}"><span class="glyphicon glyphicon-time"></span> Frozen Prices</a></button>
-      {{end}}
-      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | rawAppraisalLink}}" target="_blank"><span class="glyphicon glyphicon-align-justify"></span> Raw</a></button>
-      <a role="button" class="btn btn-default btn-xs" type="button" href="{{.Page.Appraisal | jsonAppraisalLink}}" target="_blank"><span class="glyphicon glyphicon-chevron-right"></span> JSON</a></button>
+    <div class="appraisal-options float-right">
+      <div class="btn-group" role="group" aria-label="controls">
+        <a role="button" class="btn btn-primary btn-sm" href="#permalink-modal" data-toggle="modal" data-target="#permalink-modal"><span class="fas fa-bookmark"></span>  Permalink</a>
+        {{if not .Page.Appraisal.Live}}
+          <a role="button" class="btn btn-secondary btn-sm" href="{{.Page.Appraisal | liveAppraisalLink}}"><span class="fas fa-dot-circle"></span> Live Prices</a>
+        {{else}}
+          <a role="button" class="btn btn-secondary btn-sm" href="{{.Page.Appraisal | normalAppraisalLink}}"><span class="fas fa--history"></span> Frozen Prices</a></button>
+        {{end}}
+        <span class="dropdown">
+          <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="exportDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export</button>
+          <div class="dropdown-menu" aria-labelledby="exportDropdownMenu">
+            <a class="dropdown-item" href="{{.Page.Appraisal | rawAppraisalLink}}" target="_blank"><span class="fas fa-align-justify"></span> Raw</a>
+            <a class="dropdown-item" href="{{.Page.Appraisal | jsonAppraisalLink}}" target="_blank"><span class="fas fa-chevron-right"></span> JSON</a>
+          </div>
+        </span>
 
-      {{if .Page.IsOwner}}
-      <a role="button" class="btn btn-danger btn-xs" type="button" href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></button>
-      {{end}}
+        {{if .Page.IsOwner}}
+        <a role="button" class="btn btn-danger btn-sm" href="#delete-appraisal-modal" data-toggle="modal" data-target="#delete-appraisal-modal"><span class="fas fa-trash"></span> Delete</a></button>
+        {{end}}
+      </div>
     </div>
     {{end}}
 
@@ -103,10 +110,10 @@
         {{relativetime .Page.Appraisal.CreatedTime}}
       </span>
       <div>
-        <h4>
+        <h5>
           <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Sell }} <small>estimated sell value</small></span>
           <span class="nowrap">{{ prettybignumber .Page.Appraisal.Totals.Buy }} <small>estimated buy value</small></span>
-        </h4>
+        </h5>
       </div>
     </div>
 
@@ -129,7 +136,7 @@
           <td>
             {{if (and $item.TypeName (lt $i 30))}}
             <a href="/item/{{$item.TypeID}}">
-              <img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
+              <img class="float-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
             </a>
             &nbsp;
             {{end}}

@@ -4,7 +4,7 @@
   {{if .Page.Results}}
   <div class="list-group">
   {{range $i, $result := .Page.Results}}
-    <a href="/item/{{$result.ID}}" class="list-group-item"><img class="pull-left media-object" src="https://image.eveonline.com/Type/{{$result.ID}}_32.png" alt="{{$result.Name}}"> &nbsp; {{$result.Name}}</a>
+    <a href="/item/{{$result.ID}}" class="list-group-item"><img class="float-left media-object" src="https://image.eveonline.com/Type/{{$result.ID}}_32.png" alt="{{$result.Name}}"> &nbsp; {{$result.Name}}</a>
   {{end}}
   </div>
   {{else}}
