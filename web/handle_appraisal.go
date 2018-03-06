@@ -225,6 +225,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 			ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
 			return
 		}
+	} else {
+		go ctx.App.AppraisalDB.IncrementTotalAppraisals()
 	}
 
 	// Log for later analyics

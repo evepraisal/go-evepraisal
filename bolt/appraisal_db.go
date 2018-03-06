@@ -45,9 +45,10 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		var b *bolt.Bucket
+		var totalAppraisals uint64
 		b, err = tx.CreateBucket([]byte("appraisals"))
 		if err == nil {
-			err = b.SetSequence(20000000)
+			err = b.SetSequence(0)
 			if err != nil {
 				return fmt.Errorf("set appraisal bucket sequence: %s", err)
 			}
@@ -55,6 +56,7 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 		} else if err != bolt.ErrBucketExists {
 			return err
 		}
+		totalAppraisals = tx.Bucket([]byte("appraisals")).Sequence()
 
 		_, err = tx.CreateBucket([]byte("appraisals-last-used"))
 		if err != nil && err != bolt.ErrBucketExists {
@@ -63,6 +65,15 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 
 		_, err = tx.CreateBucket([]byte("appraisals-by-user"))
 		if err != nil && err != bolt.ErrBucketExists {
+			return err
+		}
+
+		b, err = tx.CreateBucket([]byte("stats"))
+		if err == nil {
+			err = putTotalAppraisals(tx, totalAppraisals)
+			log.Printf("Stats bucket created at total_appraisals=%d", totalAppraisals)
+			return err
+		} else if err != bolt.ErrBucketExists {
 			return err
 		}
 
@@ -129,8 +140,9 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 		}
 		return nil
 	})
-	if err != nil {
+	if err == nil {
 		go db.setLastUsedTime(dbID)
+		go db.IncrementTotalAppraisals()
 	}
 	return err
 }
@@ -284,16 +296,36 @@ func (db *AppraisalDB) LatestAppraisalsByUser(user evepraisal.User, reqCount int
 	return appraisals, err
 }
 
+func readTotalAppraisals(tx *bolt.Tx) uint64 {
+	b := tx.Bucket([]byte("stats"))
+	return binary.BigEndian.Uint64(b.Get([]byte("total_appraisals")))
+}
+
+func putTotalAppraisals(tx *bolt.Tx, value uint64) error {
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, value)
+	return tx.Bucket([]byte("stats")).Put([]byte("total_appraisals"), buf)
+}
+
 // TotalAppraisals returns the number of total appraisals
 func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	var total int64
 	err := db.DB.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("appraisals"))
-		total = int64(b.Sequence())
+		total = int64(readTotalAppraisals(tx))
 		return nil
 	})
 
 	return total, err
+}
+
+// IncrementTotalAppraisals will increment to total appraisal count, useful to track non-persistant appraisals
+func (db *AppraisalDB) IncrementTotalAppraisals() error {
+	err := db.DB.Update(func(tx *bolt.Tx) error {
+		total := readTotalAppraisals(tx)
+		return putTotalAppraisals(tx, total+1)
+	})
+
+	return err
 }
 
 // DeleteAppraisal deletes an appraisal by ID
