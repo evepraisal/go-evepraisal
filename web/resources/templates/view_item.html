@@ -5,36 +5,34 @@
 </div>
 
 <div class="row">
-  <div class="col-lg-12">
-    {{if .Page.Summaries}}
-    <ul class="nav nav-tabs" role="tablist">
-    {{ range $i, $summary := .Page.Summaries }}
-      <li class="nav-item{{if eq $i 0}} active{{end}}">
-        <a class="nav-link{{if eq $i 0}} active{{end}}" data-toggle="tab" href="#{{$summary.MarketName}}" role="tab">{{$summary.MarketDisplayName}}</a>
-      </li>
-      {{end}}
-    </ul>
+  {{if .Page.Summaries}}
+  <ul class="nav nav-tabs" role="tablist">
+  {{ range $i, $summary := .Page.Summaries }}
+    <li class="nav-item{{if eq $i 0}} active{{end}}">
+      <a class="nav-link{{if eq $i 0}} active{{end}}" data-toggle="tab" href="#{{$summary.MarketName}}" role="tab">{{$summary.MarketDisplayName}}</a>
+    </li>
+    {{end}}
+  </ul>
 
-    <!-- Tab panes -->
-    <div class="tab-content">
-      {{ range $i, $summary := .Page.Summaries }}
-        <div class="tab-pane{{if eq $i 0}} active{{end}}" id="{{$summary.MarketName}}" role="tabpanel">
-          {{if eq $summary.Prices.Strategy "component"}}
-            {{template "_view_item_component.html" $summary}}
-          {{else if eq $summary.Prices.Strategy "ccp"}}
-            {{template "_view_item_ccp.html" $summary}}
-          {{else if eq $summary.Prices.Strategy "orders_universe"}}
-            {{template "_view_item_market_universe.html" $summary}}
-          {{else}}
-            {{template "_view_item_market.html" $summary}}
-          {{end}}
-        </div>
-      {{end}}
-    </div>
-    {{else}}
-    <div class="text-center">No market data found for this type.</div>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    {{ range $i, $summary := .Page.Summaries }}
+      <div class="tab-pane{{if eq $i 0}} active{{end}}" id="{{$summary.MarketName}}" role="tabpanel">
+        {{if eq $summary.Prices.Strategy "component"}}
+          {{template "_view_item_component.html" $summary}}
+        {{else if eq $summary.Prices.Strategy "ccp"}}
+          {{template "_view_item_ccp.html" $summary}}
+        {{else if eq $summary.Prices.Strategy "orders_universe"}}
+          {{template "_view_item_market_universe.html" $summary}}
+        {{else}}
+          {{template "_view_item_market.html" $summary}}
+        {{end}}
+      </div>
     {{end}}
   </div>
+  {{else}}
+  <div class="text-center">No market data found for this type.</div>
+  {{end}}
 </div>
 <script>
   $(function(){
