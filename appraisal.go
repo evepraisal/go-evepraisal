@@ -311,10 +311,10 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 		// log.Println("BPC item value:", marketPrices)
 		log.Println("BPC price (1 run):", marketPrices.Sub(manufacturedPrices))
 
-		bpcPrice := marketPrices.Sub(manufacturedPrices)
-		if bpcPrice.Sell.Min > 0 && bpcPrice.Buy.Max > 0 {
-			return bpcPrice, nil
-		}
+		// bpcPrice := marketPrices.Sub(manufacturedPrices)
+		// if bpcPrice.Sell.Min > 0 && bpcPrice.Buy.Max > 0 {
+		// 	return bpcPrice, nil
+		// }
 
 		return Prices{}, nil
 		// return prices, nil
