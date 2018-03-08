@@ -131,7 +131,7 @@
       <tbody>
       {{range $i, $item := .Page.Appraisal.Items}}
       {{ if (or $.Page.ShowFull (lt $i 100)) }}
-        <tr class="{{if eq $item.TypeID 0}}danger{{else if eq $item.Prices.All.Volume 0}}info{{else if $item.Extra.BPC}}info{{end}}">
+        <tr class="{{if eq $item.TypeID 0}}table-danger{{else if eq $item.Prices.All.Volume 0}}table-info{{else if $item.Extra.BPC}}table-info{{end}}">
           <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
           <td class="align-middle">
             {{if (and $item.TypeName (lt $i 30))}}
@@ -140,9 +140,10 @@
             </a>
             &nbsp;
             {{end}}
-            <a href="/item/{{$item.TypeID}}">
-              {{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}{{if $item.Extra.BPC}} (Copy)</a>
-              <span class="badge badge-default">Runs: {{$item.Extra.BPCRuns}}</span>{{end}}
+            <a href="/item/{{$item.TypeID}}" class="text-light">
+              <strong>{{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}{{if $item.Extra.BPC}} (Copy)</a>
+              <span class="badge badge-primary">Runs: {{$item.Extra.BPCRuns}}</span>{{else}}</a>{{end}}
+              </strong>
           </td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{humanizeVolume $item.TypeVolume }}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
