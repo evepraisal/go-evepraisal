@@ -160,7 +160,7 @@
       {{end}}
       </tbody>
       <tfoot>
-        {{if (not $.Page.Appraisal.ID)}}
+        {{if (and (not $.Page.Appraisal.ID) (ge (len .Page.Appraisal.Items) 100))}}
         <tr>
           <td class="text-center bg-dark text-white" colspan="6">There are too many results to on one page.</td>
         </tr>

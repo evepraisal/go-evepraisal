@@ -318,7 +318,7 @@ func (db *AppraisalDB) TotalAppraisals() (int64, error) {
 	return total, err
 }
 
-// IncrementTotalAppraisals will increment to total appraisal count, useful to track non-persistant appraisals
+// IncrementTotalAppraisals will increment to total appraisal count, useful to track non-persistent appraisals
 func (db *AppraisalDB) IncrementTotalAppraisals() error {
 	err := db.DB.Update(func(tx *bolt.Tx) error {
 		total := readTotalAppraisals(tx)
