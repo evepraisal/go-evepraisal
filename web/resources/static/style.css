@@ -17,10 +17,10 @@ pre {
 
 .results-table th {
   cursor: pointer;
-  padding: 0px;
+  padding: 0 2px;
 }
 .results-table td {
-  padding: 0px;
+  padding: 0 2px;
 }
 
 .numeric-cell td {
