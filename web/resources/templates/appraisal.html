@@ -79,7 +79,7 @@
         {{if not .Page.Appraisal.Live}}
           <a role="button" class="btn btn-secondary btn-sm" href="{{.Page.Appraisal | liveAppraisalLink}}"><span class="fas fa-dot-circle"></span> Live Prices</a>
         {{else}}
-          <a role="button" class="btn btn-secondary btn-sm" href="{{.Page.Appraisal | normalAppraisalLink}}"><span class="fas fa--history"></span> Frozen Prices</a></button>
+          <a role="button" class="btn btn-secondary btn-sm" href="{{.Page.Appraisal | normalAppraisalLink}}"><span class="fas fa-history"></span> Frozen Prices</a></button>
         {{end}}
         <span class="dropdown">
           <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="exportDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export</button>
@@ -133,7 +133,7 @@
       {{ if (or $.Page.ShowFull (lt $i 100)) }}
         <tr class="{{if eq $item.TypeID 0}}danger{{else if eq $item.Prices.All.Volume 0}}info{{else if $item.Extra.BPC}}info{{end}}">
           <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
-          <td>
+          <td class="align-middle">
             {{if (and $item.TypeName (lt $i 30))}}
             <a href="/item/{{$item.TypeID}}">
               <img class="float-left media-object" src="https://image.eveonline.com/Type/{{$item.TypeID}}_32.png" alt="{{$item.TypeName}}">
@@ -160,9 +160,14 @@
       {{end}}
       </tbody>
       <tfoot>
-        {{if (and (not $.Page.ShowFull) (ge (len .Page.Appraisal.Items) 100))}}
+        {{if (not $.Page.Appraisal.ID)}}
         <tr>
-          <td class="text-center bg-warning text-white" colspan="6">There are too many results to show. <a href="/a/{{.Page.Appraisal.ID}}?full=true">Click here to see all <strong>{{.Page.Appraisal.Items | len }}</strong> results.</a> Warning: The page might be slow.</td>
+          <td class="text-center bg-dark text-white" colspan="6">There are too many results to on one page.</td>
+        </tr>
+        {{end}}
+        {{if (and $.Page.Appraisal.ID (not $.Page.ShowFull) (ge (len .Page.Appraisal.Items) 100))}}
+        <tr>
+          <td class="text-center bg-dark text-white" colspan="6">There are too many results to show. <a href="/a/{{.Page.Appraisal.ID}}?full=true" class="alert-link">Click here to see all <strong>{{.Page.Appraisal.Items | len }}</strong> results.</a> Warning: The page might be slow.</td>
         </tr>
         {{end}}
         <tr>

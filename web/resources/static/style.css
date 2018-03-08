@@ -73,3 +73,9 @@ pre {
     cursor: inherit;
     display: block;
 }
+
+/* Bare bones style for the desired effect */
+.appraisal-debug-content {
+  margin: 0;
+  padding: 0;
+}

@@ -2,35 +2,25 @@
 
 {{define "content"}}
 
-<div class="row col-lg-12">
-  <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a class="nav-link active" data-toggle="tab" href="#tab-parsed-lines" role="tab">Parser Per Line</a>
-    </li>
-  </ul>
-
-  <div class="tab-content">
-    <div class="tab-pane active" id="tab-parsed-lines" role="tabpanel">
-      <table class="table table-condensed table-striped raw-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>parser</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-        {{range $line := .Page.Lines}}
-          <tr class="{{if not $line.Parsed}}danger{{end}}">
-            <td style="padding: 0px 5px; vertical-align: middle;">{{$line.Number}}</td>
-            <td style="padding: 0px 5px; vertical-align: middle;">{{$line.Parser}}</td>
-            <td style="padding: 0px 5px; vertical-align: middle;"><pre>{{$line.Text}}</pre></td>
-          </tr>
-        {{end}}
-        </tbody>
-      </table>
-    </div>
-  </div>
+<div class="tab-pane active" id="tab-parsed-lines" role="tabpanel">
+  <table class="table table-condensed table-sm table-striped raw-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>parser</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {{range $line := .Page.Lines}}
+      <tr class="{{if not $line.Parsed}}danger{{end}}">
+        <td>{{$line.Number}}</td>
+        <td>{{$line.Parser}}</td>
+        <td><pre class="appraisal-debug-content">{{$line.Text}}</pre></td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
 </div>
 
 {{end}}
