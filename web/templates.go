@@ -74,6 +74,7 @@ type PageRoot struct {
 		LoginEnabled         bool
 		RawTextAreaDefault   string
 		FlashMessages        []FlashMessage
+		Path                 string
 	}
 	Page interface{}
 }
@@ -92,6 +93,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(root.Page)
 	} else {
+		root.UI.Path = r.URL.Path
 		root.UI.SelectedMarket = ctx.getSessionValueWithDefault(r, "market", "jita")
 		root.UI.Markets = selectableMarkets
 		root.UI.SelectedVisibility = ctx.getSessionValueWithDefault(r, "visibility", "public")

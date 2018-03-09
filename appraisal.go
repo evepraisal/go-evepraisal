@@ -309,7 +309,7 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 		// log.Println("BPC Name: ", item.TypeName)
 		// log.Println("BPC materials:", manufacturedPrices)
 		// log.Println("BPC item value:", marketPrices)
-		log.Println("BPC price (1 run):", marketPrices.Sub(manufacturedPrices))
+		log.Printf("BPC price for %s: %v, Item price: %v", tName, marketPrices.Sub(manufacturedPrices), marketPrices)
 
 		// bpcPrice := marketPrices.Sub(manufacturedPrices)
 		// if bpcPrice.Sell.Min > 0 && bpcPrice.Buy.Max > 0 {

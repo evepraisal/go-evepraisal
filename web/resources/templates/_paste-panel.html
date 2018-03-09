@@ -1,4 +1,6 @@
 
+{{ $fullpage := eq .UI.Path "/new-appraisal" }}
+
 <form id="appraisalform" action="/appraisal" method="POST" enctype="multipart/form-data">
 
 <!-- Config Modal -->
@@ -48,25 +50,33 @@
 
 <div class="card card-default form-group">
   <div class="card-body">
-    <h5>Quick Estimate</h5></h5>
-    <div class="form-group">
-      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="6" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
-    </div>
-    <div class="clearfix form-inline float-right">
-      <div>
+    <h5>
+      {{if $fullpage}}
+        Create a Price Estimate
+      {{else}}
+        Quick Estimate
+      {{end}}
+      <div class="float-right align-top">
         <button class="btn btn-secondary btn-sm btn-file">
           <span class="fas fa-upload"></span>
           <input type="file" name="uploadappraisal" id="uploadappraisal">
         </button>
-        <a role="button" class="btn btn-secondary btn-sm" href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="fas fa-cog"></span> Options</a>
-        <select id="market" name="market" class="form-control form-control-sm">
-        {{range $market := .UI.Markets}}
-          <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
-        {{end}}
-        </select>
-        <button type="reset" class="btn btn-sm">Reset</button>
-        <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
+        <a role="button" class="btn btn-secondary btn-sm" href="#configure-appraisal-modal" data-toggle="modal" data-target="#configure-appraisal-modal"><span class="fas fa-cog"></span></a>
       </div>
+    </h5>
+    <div class="form-group">
+      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="{{if $fullpage}}16{{else}}8{{end}}" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
+    </div>
+    <div class="form-inline float-right">
+      <div>
+      <select id="market" name="market" class="form-control form-control-sm">
+      {{range $market := .UI.Markets}}
+        <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+      {{end}}
+      </select>
+      <button type="reset" class="btn btn-sm">Reset</button>
+      <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
+    </div>
     </div>
   </div>
 </div>

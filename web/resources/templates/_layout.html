@@ -58,7 +58,6 @@
                   <a class="dropdown-item" href="/user/history">History</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" href="/logout">Logout</a>
-                </ul>
               </li>
               {{else}}
                 <li class="nav-item">
@@ -71,6 +70,11 @@
             <input class="form-control mr-sm-2 typeahead" id="search" name="q" type="text" placeholder="Item Name...">
             <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
           </form>
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a href="/new-appraisal" class="btn btn-primary" role="button"><span class="fas fa-plus"></span></a>
+            </li>
+          </ul>
         </div>
       </nav>
 

@@ -26,6 +26,13 @@ func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}{TotalAppraisalCount: total})
 }
 
+// HandleNewAppraisal is the handler for /new-appraisal
+func (ctx *Context) HandleNewAppraisal(w http.ResponseWriter, r *http.Request) {
+	ctx.render(r, w, "new-appraisal.html", struct {
+		ShowLargePastePanel bool `json:"show_large_paste_panel"`
+	}{ShowLargePastePanel: true})
+}
+
 // HandleLegal is the handler for /legal
 func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
 	ctx.render(r, w, "legal.html", nil)
@@ -71,6 +78,8 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router := bone.New()
 	router.GetFunc("/", ctx.HandleIndex)
 	router.PostFunc("/", ctx.HandleIndex)
+	router.GetFunc("/new-appraisal", ctx.HandleNewAppraisal)
+	router.GetFunc("/new-appraisal", ctx.HandleNewAppraisal)
 	router.GetFunc("/appraisal", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/", http.StatusTemporaryRedirect) })
 
 	// Create Appraisal
