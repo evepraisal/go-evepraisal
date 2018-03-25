@@ -148,7 +148,7 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 }
 
 // GetAppraisal returns the given appraisal by ID
-func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, error) {
+func (db *AppraisalDB) GetAppraisal(appraisalID string, updateUsedTime bool) (*evepraisal.Appraisal, error) {
 	appraisal, err := db.getAppraisal(appraisalID)
 	if err != nil {
 		return nil, err
@@ -158,7 +158,9 @@ func (db *AppraisalDB) GetAppraisal(appraisalID string) (*evepraisal.Appraisal, 
 	if err != nil {
 		return nil, err
 	}
-	go db.setLastUsedTime(dbID)
+	if updateUsedTime {
+		go db.setLastUsedTime(dbID)
+	}
 
 	return appraisal, err
 }

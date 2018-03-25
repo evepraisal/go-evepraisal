@@ -70,3 +70,7 @@
 [[constraint]]
   version = "v0.2"
   name = "github.com/leekchan/accounting"
+
+[[constraint]]
+  name = "github.com/mssola/user_agent"
+  version = "0.4.1"

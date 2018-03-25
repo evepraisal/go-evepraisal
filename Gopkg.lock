@@ -188,6 +188,12 @@
   revision = "90eadee771aeab36e8bf796039b8c261bebebe4f"
 
 [[projects]]
+  name = "github.com/mssola/user_agent"
+  packages = ["."]
+  revision = "85b2f5798558a46fc23443c596e781712f4b7792"
+  version = "v0.4.1"
+
+[[projects]]
   name = "github.com/newrelic/go-agent"
   packages = [".","internal","internal/cat","internal/jsonx","internal/logger","internal/sysinfo","internal/utilization"]
   revision = "f5bce3387232559bcbe6a5f8227c4bf508dac1ba"
@@ -323,6 +329,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e0f79dd98e6734f2913e9ea00169dce3b34fb3b4ab617ed458c56cbd4017841f"
+  inputs-digest = "1aa422bcee7fadf51404c4357a70e1b140f7e348aff713ca5dc34ed5aa0a5ba0"
   solver-name = "gps-cdcl"
   solver-version = 1

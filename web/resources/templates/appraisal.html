@@ -132,7 +132,7 @@
       {{range $i, $item := .Page.Appraisal.Items}}
       {{ if (or $.Page.ShowFull (lt $i 100)) }}
         <tr class="{{if eq $item.TypeID 0}}table-danger{{else if eq $item.Prices.All.Volume 0}}table-info{{else if $item.Extra.BPC}}table-info{{end}}">
-          <td class="numeric-cell text-center" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
+          <td class="numeric-cell text-center align-middle" data-sort-value="-{{$item.Quantity}}">{{comma $item.Quantity}}</td>
           <td class="align-middle">
             {{if (and $item.TypeName (lt $i 30))}}
             <a href="/item/{{$item.TypeID}}">
@@ -145,7 +145,7 @@
               <span class="badge badge-primary">Runs: {{$item.Extra.BPCRuns}}</span>{{else}}</a>{{end}}
               </strong>
           </td>
-          <td class="numeric-cell text-right" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{humanizeVolume $item.TypeVolume }}</td>
+          <td class="numeric-cell text-right align-middle" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{humanizeVolume $item.TypeVolume }}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
             {{commaf $item.Prices.Sell.Min}}<br />
             {{commaf $item.Prices.Buy.Max}}</td>

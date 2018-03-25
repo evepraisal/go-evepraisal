@@ -213,10 +213,8 @@ pre {
     }
 }</code></pre>
 
-  <h4>CURL Example with multipart form-data</h4>
-  <pre><code>echo "Avatar
-Erebus" > example-appraisal.txt
-curl "https://evepraisal.com/appraisal.json?market=jita" -F "uploadappraisal=@example-appraisal.txt"</code></pre>
+  <h4>CURL Example using POST data</h4>
+  <pre><code>curl -v "https://evepraisal.com/appraisal.json?market=jita" --data "avatar"</code></pre>
 
   <pre><code>{
     "appraisal": {

@@ -28,11 +28,11 @@ type ListingItem struct {
 	Quantity int64
 }
 
-var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?(?:x|X)? ([\S ]+)$`)
-var reListing2 = regexp.MustCompile(`^([\S ]+?) (?:x|X)? ?([\d,'\.]+)$`)
-var reListing3 = regexp.MustCompile(`^([\S ]+)$`)
-var reListing4 = regexp.MustCompile(`^\s*([\d,'\.]+)\t([\S ]+?)$`)
-var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ?([a-zA-Z][\S ]+)$`)
+var reListing = regexp.MustCompile(`^([\d,'\.]+?) ?(?:x|X)? ([\S ]+)[\s]*$`)
+var reListing2 = regexp.MustCompile(`^([\S ]+?) (?:x|X)? ?([\d,'\.]+)[\s]*$`)
+var reListing3 = regexp.MustCompile(`^([\S ]+)[\s]*$`)
+var reListing4 = regexp.MustCompile(`^\s*([\d,'\.]+)\t([\S ]+?)[\s]*$`)
+var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ?([a-zA-Z][\S ]+)[\s]*$`)
 
 // ParseListing parses a list of eve items
 func ParseListing(input Input) (ParserResult, Input) {

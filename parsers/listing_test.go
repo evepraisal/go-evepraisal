@@ -109,5 +109,16 @@ Tritanium X 1`,
 		},
 		Input{},
 		false,
+	}, {
+		"with ending whitespace",
+		`Compressed Iridescent Gneiss x 109 `,
+		&Listing{
+			Items: []ListingItem{
+				{Name: "Compressed Iridescent Gneiss", Quantity: 109},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 }
