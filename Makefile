@@ -24,7 +24,7 @@ setup:
 	go get -u github.com/jstemmer/go-junit-report
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
-	dep ensure
+	dep ensure -dry-run -v
 
 build: generate
 	go build ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
