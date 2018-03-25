@@ -16,6 +16,7 @@ checkout:
 
 dependencies:
   pre:
+    - mkdir -p ${GOBIN}
     - make setup
   override:
     - make dist
