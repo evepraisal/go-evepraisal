@@ -135,7 +135,7 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 		body string
 	)
 
-	if isMultiPart(r) {
+	if isMultiPart(r) || isURLEncodedFormData(r) {
 		r.ParseMultipartForm(appraisalBodySizeLimit)
 		f, _, err = r.FormFile("uploadappraisal")
 		if err != nil && err != http.ErrNotMultipart && err != http.ErrMissingFile {
