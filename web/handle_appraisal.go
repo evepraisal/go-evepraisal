@@ -112,8 +112,12 @@ func isMultiPart(r *http.Request) bool {
 	return strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data")
 }
 
+func isURLEncodedFormData(r *http.Request) bool {
+	return r.Header.Get("Content-Type") == "application/x-www-form-urlencoded"
+}
+
 func getRequestParam(r *http.Request, name string) string {
-	if isMultiPart(r) {
+	if isMultiPart(r) || isURLEncodedFormData(r) {
 		v := r.FormValue(name)
 		if v != "" {
 			return v
@@ -167,6 +171,12 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 // HandleAppraisal is the handler for POST /appraisal
 func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
+	body, err := parseAppraisalBody(r)
+	if err != nil {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
+		return
+	}
+
 	persist := getRequestParam(r, "persist") != "no"
 	pricePercentageStr := "100"
 	if getRequestParam(r, "price_percentage") != "" {
@@ -175,12 +185,6 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	pricePercentage, err := strconv.ParseFloat(pricePercentageStr, 64)
 	if err != nil || pricePercentage <= 0 || pricePercentage > 1000 {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid price_percentage value", err.Error())
-		return
-	}
-
-	body, err := parseAppraisalBody(r)
-	if err != nil {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
 
