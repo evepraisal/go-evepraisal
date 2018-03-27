@@ -37,17 +37,19 @@ type AssetItem struct {
 	PriceEstimate float64
 }
 
+// Evaporite Deposits	1 452	Moon Materials			72,60 м^3	7 533 164,76 ISK
+
 var reAssetList = regexp.MustCompile(strings.Join([]string{
-	`^([\S\ ]*)`,                            // Name
-	`\t([` + bigNumberRegex + `*)`,          // Quantity
-	`(?:\t([\S ]*))?`,                       // Group
-	`(?:\t([\S ]*))?`,                       // Category
-	`(?:\t(XLarge|Large|Medium|Small|))?`,   // Size
-	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`,  // Slot
-	`(?:\t(` + bigNumberRegex + `*) m3)?`,   // Volume
-	`(?:\t([\d]+|))?`,                       // meta level
-	`(?:\t([\d]+|))?`,                       // tech level
-	`(?:\t(` + bigNumberRegex + `+) ISK)?$`, // price estimate
+	`^([\S\ ]*)`,                                 // Name
+	`\t([` + bigNumberRegex + `*)`,               // Quantity
+	`(?:\t([\S ]*))?`,                            // Group
+	`(?:\t([\S ]*))?`,                            // Category
+	`(?:\t(XLarge|Large|Medium|Small|))?`,        // Size
+	`(?:\t(High|Medium|Low|Rigs|[\d ]*))?`,       // Slot
+	`(?:\t(` + bigNumberRegex + `*) (m3|м\^3))?`, // Volume
+	`(?:\t([\d]+|))?`,                            // meta level
+	`(?:\t([\d]+|))?`,                            // tech level
+	`(?:\t(` + bigNumberRegex + `+) ISK)?$`,      // price estimate
 }, ""))
 
 // ParseAssets will parse an asset listing
@@ -70,9 +72,9 @@ func ParseAssets(input Input) (ParserResult, Input) {
 				Size:          match[5],
 				Slot:          match[6],
 				Volume:        ToFloat64(match[7]),
-				MetaLevel:     match[8],
-				TechLevel:     match[9],
-				PriceEstimate: ToFloat64(match[10]),
+				MetaLevel:     match[9],
+				TechLevel:     match[10],
+				PriceEstimate: ToFloat64(match[11]),
 			})
 	}
 	sort.Slice(assetList.Items, func(i, j int) bool {

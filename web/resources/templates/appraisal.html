@@ -68,7 +68,7 @@
 
     {{if eq .Page.Appraisal.Kind "heuristic"}}
     <div class="alert alert-danger" role="alert">
-    <strong>The heuristic parser was used to parse this result.</strong> This means that the format of the data you entered is unknown to Evepraisal and some guess-work was used to bring you the results below. Review closely for accuracy. If you think this is a format worth adding, <a href="https://github.com/evepraisal/go-evepraisal/issues/new?title=Unknown+Format&body=Appraisal+with+the+format:+{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}%0A%0A[Describe+the+format]" target="_blank">submit an issue on github</a>.
+    <strong>The heuristic parser was used to parse this result.</strong> This means that the format of the data you entered is unknown to Evepraisal and some guess-work was used to bring you the results below. Review closely for accuracy. If you think this is a format worth adding, <a href="https://github.com/evepraisal/go-evepraisal/issues/new?title=Unknown+Format&body=Appraisal+with+the+format:+{{.UI.BaseURLWithoutScheme}}/a/{{.Page.Appraisal.ID}}%0A%0ADescribe+the+format+(where+you+got+it,+etc)" target="_blank">submit an issue on github</a>.
     </div>
     {{end}}
 

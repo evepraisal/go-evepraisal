@@ -118,6 +118,17 @@ Sleeper Data Library	1.080`,
 		},
 		Input{},
 		false,
+	}, {
+		"m^3",
+		"Evaporite Deposits	1 452	Moon Materials			72,60 м^3	7 533 164,76 ISK",
+		&AssetList{
+			Items: []AssetItem{
+				{Name: "Evaporite Deposits", Quantity: 1452, Group: "Moon Materials", Volume: 72.60, PriceEstimate: 7533164.76},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 	//
 }
