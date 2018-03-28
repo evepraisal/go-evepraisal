@@ -138,6 +138,7 @@ func appMain() {
 				parsers.ParseIndustry,
 				parsers.ParseCargoScan,
 				parsers.ParseDScan,
+				parsers.ParseCompare,
 				parsers.NewHeuristicParser(typeDB),
 			})
 

@@ -26,5 +26,6 @@ var AllParsers = []Parser{
 	ParseIndustry,
 	ParseCargoScan,
 	ParseDScan,
+	ParseCompare,
 	ParseListing,
 }

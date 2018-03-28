@@ -37,8 +37,6 @@ type AssetItem struct {
 	PriceEstimate float64
 }
 
-// Evaporite Deposits	1 452	Moon Materials			72,60 м^3	7 533 164,76 ISK
-
 var reAssetList = regexp.MustCompile(strings.Join([]string{
 	`^([\S\ ]*)`,                                 // Name
 	`\t([` + bigNumberRegex + `*)`,               // Quantity

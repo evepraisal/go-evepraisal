@@ -546,6 +546,10 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		for _, item := range r.Items {
 			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
 		}
+	case *parsers.Compare:
+		for _, item := range r.Items {
+			items = append(items, AppraisalItem{Name: item.Name, Quantity: 1})
+		}
 	}
 
 	mappedItems := make(map[AppraisalItem]int64)

@@ -36,6 +36,7 @@ var ParserTests = []CaseGroup{
 	{"wallet", ParseWallet, walletTestCases},
 	{"killmail", ParseKillmail, killmailTestCases},
 	{"mining_ledger", ParseMiningLedger, miningLedgerTestCases},
+	{"compare", ParseCompare, compareTestCases},
 }
 
 func TestParsers(rt *testing.T) {
