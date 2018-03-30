@@ -2,11 +2,18 @@ package parsers
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 )
 
-var miningLedgerHeader = "Timestamp	Ore Type	Quantity	Volume	Est. Price	Solar System	Ore TypeID	SolarSystemID"
+// 2018.03.01	 Bright Spodumain	24,993	399,888 m³	33,796,534 ISK	Q-02UL
+var reMiningLedgerList = regexp.MustCompile(strings.Join([]string{
+	`^(\d\d\d\d\.\d\d\.\d\d)`,      // Date
+	`\t([\S\ ]*)`,                  // Name
+	`\t([` + bigNumberRegex + `*)`, // Quantity
+	`[\S\ \t]*`,                    // Ignore Rest
+}, ""))
 
 // MiningLedger is the result from the mining ledger parser
 type MiningLedger struct {
@@ -30,39 +37,23 @@ type MiningLedgerItem struct {
 	Quantity int64
 }
 
-// ParseMiningLedger parses a mining ledger
+// ParseMiningLedger will parse a mining ledger
 func ParseMiningLedger(input Input) (ParserResult, Input) {
-	ledger := &MiningLedger{}
-
-	if len(input) == 0 {
-		return nil, input
-	}
-
-	if input[0] != miningLedgerHeader {
-		return nil, input
-	}
-	ledger.lines = []int{0}
-	rest := make(Input)
-	inputLines := input.Strings()
+	miningLedger := &MiningLedger{}
+	matches, rest := regexParseLines(reMiningLedgerList, input)
+	miningLedger.lines = regexMatchedLines(matches)
 	matchgroup := make(map[MiningLedgerItem]int64)
-	for i, line := range inputLines[1:] {
-		parts := strings.Split(line, "\t")
-		if len(parts) != 8 {
-			rest[i+1] = line
-			continue
-		}
-		matchgroup[MiningLedgerItem{Name: CleanTypeName(parts[1])}] += ToInt(parts[2])
-		ledger.lines = append(ledger.lines, i+1)
+	for _, match := range matches {
+		matchgroup[MiningLedgerItem{Name: CleanTypeName(match[2])}] += ToInt(match[3])
 	}
 
 	for item, quantity := range matchgroup {
 		item.Quantity = quantity
-		ledger.Items = append(ledger.Items, item)
+		miningLedger.Items = append(miningLedger.Items, item)
 	}
 
-	sort.Slice(ledger.Items, func(i, j int) bool {
-		return fmt.Sprintf("%v", ledger.Items[i]) < fmt.Sprintf("%v", ledger.Items[j])
+	sort.Slice(miningLedger.Items, func(i, j int) bool {
+		return fmt.Sprintf("%v", miningLedger.Items[i]) < fmt.Sprintf("%v", miningLedger.Items[j])
 	})
-	sort.Ints(ledger.lines)
-	return ledger, rest
+	return miningLedger, rest
 }

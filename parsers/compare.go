@@ -31,7 +31,7 @@ type CompareItem struct {
 var reCompare = regexp.MustCompile(strings.Join([]string{
 	`^([\S\ ]*)`, // Name
 	`\t(Tech I|Tech II|Tech III|Faction|Deadspace|Storyline)`, // Size
-	`[\S\ \t]*`,
+	`[\S\ \t]*`, // Ignore rest
 }, ""))
 
 // ParseCompare will parse an compare window
