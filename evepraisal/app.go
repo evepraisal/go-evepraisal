@@ -106,6 +106,7 @@ func appMain() {
 
 	if viper.GetString("newrelic_license-key") != "" {
 		newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
+		newRelicConfig.ErrorCollector.IgnoreStatusCodes = []int{400, 401, 404}
 		var newRelicApplication newrelic.Application
 		newRelicApplication, err = newrelic.NewApplication(newRelicConfig)
 		if err != nil {
@@ -129,7 +130,6 @@ func appMain() {
 				parsers.ParseLootHistory,
 				parsers.ParsePI,
 				parsers.ParseViewContents,
-				parsers.ParseMiningLedger,
 				parsers.ParseWallet,
 				parsers.ParseSurveyScan,
 				parsers.ParseContract,
@@ -139,6 +139,7 @@ func appMain() {
 				parsers.ParseCargoScan,
 				parsers.ParseDScan,
 				parsers.ParseCompare,
+				parsers.ParseMiningLedger,
 				parsers.NewHeuristicParser(typeDB),
 			})
 
