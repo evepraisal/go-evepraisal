@@ -96,6 +96,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 
 	// View Item
 	router.GetFunc("/item/#typeID^[0-9]$", ctx.HandleViewItem)
+	router.GetFunc("/item/#typeName^.$", ctx.HandleViewItem)
 
 	// Search
 	router.GetFunc("/search", ctx.HandleSearch)
