@@ -292,7 +292,7 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 			marketPrices = marketPrices.Add(p.Set(p.Sell.Min).Mul(float64(product.Quantity)))
 		}
 
-		manufacturedPrices := Prices{Strategy: "pbc"}
+		manufacturedPrices := Prices{Strategy: "bpc"}
 		for _, component := range bpType.Components {
 			p, ok := app.PriceDB.GetPrice(market, component.TypeID)
 			if !ok {

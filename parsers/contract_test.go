@@ -54,7 +54,8 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 		true,
 	}, {
 		"BPC",
-		`Armageddon Blueprint	1	Battleship Blueprint	Blueprint	BLUEPRINT COPY - Runs: 9 - Material Level: 29 - Productivity Level: 0`,
+		`Armageddon Blueprint	1	Battleship Blueprint	Blueprint	BLUEPRINT COPY - Runs: 9 - Material Level: 29 - Productivity Level: 0
+Typhoon Blueprint	1	Battleship Blueprint	Blueprint	BLUEPRINT COPY`,
 		&Contract{
 			Items: []ContractItem{{
 				Name:     "Armageddon Blueprint",
@@ -64,8 +65,16 @@ Scorch M	3	Advanced Pulse Laser Crystal	Charge	Fitted 72% damaged`,
 				Details:  "BLUEPRINT COPY - Runs: 9 - Material Level: 29 - Productivity Level: 0",
 				BPC:      true,
 				BPCRuns:  9,
+			}, {
+				Name:     "Typhoon Blueprint",
+				Quantity: 1,
+				Type:     "Battleship Blueprint",
+				Category: "Blueprint",
+				Details:  "BLUEPRINT COPY",
+				BPC:      true,
+				BPCRuns:  1,
 			}},
-			lines: []int{0},
+			lines: []int{0, 1},
 		},
 		Input{},
 		true,

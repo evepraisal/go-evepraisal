@@ -49,7 +49,7 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 	`([\S ]*)$`,                   // type
 }, ""))
 
-var reBPCDetails = regexp.MustCompile(`BLUEPRINT COPY - Runs: ([\d]+) - .*`)
+var reBPCDetails = regexp.MustCompile(`BLUEPRINT COPY(?: - Runs: ([\d]+) - )?.*`)
 
 // ParseContract parses a contract
 func ParseContract(input Input) (ParserResult, Input) {
@@ -66,7 +66,11 @@ func ParseContract(input Input) (ParserResult, Input) {
 		var bpcRuns int64
 		if len(bpc) > 0 {
 			isBPC = true
-			bpcRuns = ToInt(bpc[1])
+			if bpc[1] == "" {
+				bpcRuns = 1
+			} else {
+				bpcRuns = ToInt(bpc[1])
+			}
 		}
 		item := ContractItem{
 			Name:     CleanTypeName(match[1]),
