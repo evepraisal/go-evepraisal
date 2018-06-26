@@ -41,5 +41,24 @@ var lootHistoryTestCases = []Case{
 		},
 		Input{},
 		true,
+	}, {
+		"issue 75",
+		`Time	Character	Item Type	Quantity	Item Group
+2018.06.23 00:19	Kado Vargadana	5MN Quad LiF Restrained Microwarpdrive	1	Propulsion Module	
+2018.06.23 00:19	Kado Vargadana	Faint Epsilon Scoped Warp Scrambler	1	Warp Scrambler	
+2018.06.23 00:19	Kado Vargadana	X5 Enduring Stasis Webifier	1	Stasis Web	
+2018.06.23 00:19	Kado Vargadana	'Refuge' Adaptive Nano Plating I	1	Armor Coating	
+2018.06.23 00:19	Kado Vargadana	Anode Light Electron Particle Cannon I	1	Hybrid Weapon	`,
+		&LootHistory{
+			Items: []LootItem{
+				{Time: "2018.06.23 00:19", Name: "'Refuge' Adaptive Nano Plating I", PlayerName: "Kado Vargadana", Quantity: 1},
+				{Time: "2018.06.23 00:19", Name: "5MN Quad LiF Restrained Microwarpdrive", PlayerName: "Kado Vargadana", Quantity: 1},
+				{Time: "2018.06.23 00:19", Name: "Anode Light Electron Particle Cannon I", PlayerName: "Kado Vargadana", Quantity: 1},
+				{Time: "2018.06.23 00:19", Name: "Faint Epsilon Scoped Warp Scrambler", PlayerName: "Kado Vargadana", Quantity: 1},
+				{Time: "2018.06.23 00:19", Name: "X5 Enduring Stasis Webifier", PlayerName: "Kado Vargadana", Quantity: 1}},
+			lines: []int{1, 2, 3, 4, 5},
+		},
+		Input{},
+		true,
 	},
 }
