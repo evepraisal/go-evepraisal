@@ -1,0 +1,30 @@
+version: 2
+
+jobs:
+  build:
+    working_directory: /go/src/github.com/CircleCI-Public/circleci-demo-go
+
+    docker:
+      - image: circleci/golang:1.10
+
+    environment:
+      TEST_REPORT_PATH: /tmp/test-results
+
+    steps:
+      - checkout
+      - run: mkdir -p $TEST_REPORT_PATH
+      - run: make setup
+      - run: make dist
+      - run:
+          name: Run linter
+          command: make lint
+      - run:
+          name: Run unit tests
+          command: make test
+
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: raw-test-output
+
+      - store_test_results:
+          path: /tmp/test-results
