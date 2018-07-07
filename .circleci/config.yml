@@ -2,7 +2,7 @@ version: 2
 
 jobs:
   build:
-    working_directory: /go/src/github.com/CircleCI-Public/circleci-demo-go
+    working_directory: /go/src/github.com/evepraisal/go-evepraisal
 
     docker:
       - image: circleci/golang:1.10
