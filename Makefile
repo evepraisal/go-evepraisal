@@ -42,8 +42,8 @@ clean:
 test:
 	go vet ${PKG_DIRS}
 	mkdir -p ${TEST_REPORT_PATH}
-	go test ${PKG_DIRS} -v 2>&1 | tee ${TEST_REPORT_PATH}/test-output.txt
-	cat ${TEST_REPORT_PATH}/test-output.txt | go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/test-report.xml
+	go test ${PKG_DIRS} -v 2>&1 | tee ${TEST_REPORT_PATH}/go-test.out
+	cat ${TEST_REPORT_PATH}/go-test.out | go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/go-test-report.xml
 
 test-reload:
 	reflex -c reflex.test.conf
