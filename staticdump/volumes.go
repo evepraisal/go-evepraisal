@@ -128,4 +128,5 @@ var volumeItemOverrides = map[int64]float64{
 	40717: 2000,
 	40718: 2000,
 	40714: 2000,
+	45534: 10000,
 }
