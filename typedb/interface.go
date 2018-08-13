@@ -5,6 +5,7 @@ type TypeDB interface {
 	GetType(typeName string) (EveType, bool)
 	HasType(typeName string) bool
 	GetTypeByID(typeID int64) (EveType, bool)
+	ListTypes(startingTypeID int64, limit int64) ([]EveType, error)
 	PutType(EveType) error
 	Search(s string) []EveType
 	Delete() error

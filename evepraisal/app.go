@@ -246,12 +246,13 @@ func mustStartServers(handler http.Handler) []*http.Server {
 		}
 
 		server := &http.Server{
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 5 * time.Second,
-			IdleTimeout:  120 * time.Second,
-			Addr:         viper.GetString("https_addr"),
-			Handler:      handler,
-			TLSConfig:    &tls.Config{GetCertificate: autocertManager.GetCertificate},
+			ReadHeaderTimeout: 20 * time.Second,
+			ReadTimeout:       120 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       120 * time.Second,
+			Addr:              viper.GetString("https_addr"),
+			Handler:           handler,
+			TLSConfig:         &tls.Config{GetCertificate: autocertManager.GetCertificate},
 		}
 		servers = append(servers, server)
 
@@ -272,11 +273,12 @@ func mustStartServers(handler http.Handler) []*http.Server {
 		log.Printf("Starting HTTP server (%s)", viper.GetString("http_addr"))
 
 		server := &http.Server{
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 5 * time.Second,
-			IdleTimeout:  120 * time.Second,
-			Addr:         viper.GetString("http_addr"),
-			Handler:      handler,
+			ReadHeaderTimeout: 20 * time.Second,
+			ReadTimeout:       120 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       120 * time.Second,
+			Addr:              viper.GetString("http_addr"),
+			Handler:           handler,
 		}
 		servers = append(servers, server)
 

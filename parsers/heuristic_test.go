@@ -79,6 +79,7 @@ func (db *StaticTypeDB) GetType(typeName string) (typedb.EveType, bool) {
 	t, ok := db.typeNameMap[strings.ToLower(typeName)]
 	return t, ok
 }
+
 func (db *StaticTypeDB) HasType(typeName string) bool {
 	_, ok := db.GetType(strings.ToLower(typeName))
 	return ok
@@ -87,6 +88,10 @@ func (db *StaticTypeDB) HasType(typeName string) bool {
 func (db *StaticTypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
 	t, ok := db.typeIDMap[typeID]
 	return t, ok
+}
+
+func (db *StaticTypeDB) ListTypes(startingTypeID int64, limit int64) ([]typedb.EveType, error) {
+	return []typedb.EveType{}, nil
 }
 
 func (db *StaticTypeDB) Search(s string) []typedb.EveType {

@@ -1,0 +1,16 @@
+{{define "title"}}Evepraisal - View Items{{end}}
+{{define "content"}}
+<div class="row col-lg-12">
+  {{if .Page.Items}}
+  <div class="list-group">
+  {{range $i, $result := .Page.Items}}
+    <a href="/item/{{$result.Type.ID}}" class="list-group-item"><img class="float-left media-object" src="https://image.eveonline.com/Type/{{$result.Type.ID}}_32.png" alt="{{$result.Type.Name}}"> &nbsp; {{$result.Type.Name}}</a>
+  {{end}}
+  </div>
+  {{else}}
+    <p class="text-center">No results</p>
+  {{end}}
+</div>
+{{end}}
+
+{{template "_layout.html" .}}

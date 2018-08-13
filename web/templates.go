@@ -1,7 +1,6 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -13,6 +12,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/dustin/go-humanize"
 	"github.com/evepraisal/go-evepraisal"
+	"github.com/pquerna/ffjson/ffjson"
 )
 
 var spewConfig = spew.ConfigState{Indent: "    ", SortKeys: true}
@@ -91,7 +91,11 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 
 	if r.Header.Get("format") == formatJSON {
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(root.Page)
+		w.WriteHeader(http.StatusOK)
+		err := ffjson.NewEncoder(w).Encode(root.Page)
+		if err != nil {
+			log.Println("Error when encoding JSON: ", err)
+		}
 	} else {
 		root.UI.Path = r.URL.Path
 		root.UI.SelectedMarket = ctx.getSessionValueWithDefault(r, "market", "jita")

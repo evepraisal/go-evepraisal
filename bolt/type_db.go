@@ -186,6 +186,43 @@ func (db *TypeDB) GetTypeByID(typeID int64) (typedb.EveType, bool) {
 	return evetype, true
 }
 
+// ListTypes returns all the types
+func (db *TypeDB) ListTypes(startingTypeID int64, limit int64) ([]typedb.EveType, error) {
+	encodedStartingTypeID := make([]byte, 8)
+	binary.BigEndian.PutUint64(encodedStartingTypeID, uint64(startingTypeID))
+
+	items := make([]typedb.EveType, 0)
+	err := db.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("types_by_id"))
+		c := b.Cursor()
+		c.Seek(encodedStartingTypeID)
+		var (
+			buf []byte
+			err error
+		)
+		for key, val := c.Next(); key != nil; key, val = c.Next() {
+			evetype := typedb.EveType{}
+			buf, err = snappy.Decode(nil, val)
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(buf, &evetype)
+			if err != nil {
+				return err
+			}
+			items = append(items, evetype)
+
+			if int64(len(items)) >= limit {
+				return nil
+			}
+		}
+		return nil
+	})
+
+	return items, err
+}
+
 // PutType will insert/update the given EveType
 func (db *TypeDB) PutType(eveType typedb.EveType) error {
 	typeBytes, err := json.Marshal(eveType)
