@@ -72,12 +72,22 @@ func (ctx *Context) authWrapper(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func cors(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("format") == "json" || r.Header.Get("format") == "raw" {
+			w.Header().Add("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Methods", "GET")
+		}
+		handler(w, r)
+	}
+}
+
 // HTTPHandler returns all HTTP handlers for the app
 func (ctx *Context) HTTPHandler() http.Handler {
 
 	router := bone.New()
-	router.GetFunc("/", ctx.HandleIndex)
-	router.PostFunc("/", ctx.HandleIndex)
+	router.GetFunc("/", cors(ctx.HandleIndex))
+	router.PostFunc("/", cors(ctx.HandleIndex))
 	router.GetFunc("/new-appraisal", ctx.HandleNewAppraisal)
 	router.GetFunc("/new-appraisal", ctx.HandleNewAppraisal)
 	router.GetFunc("/appraisal", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/", http.StatusTemporaryRedirect) })
@@ -87,30 +97,30 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.PostFunc("/estimate", ctx.HandleAppraisal)
 
 	// Lates Appraisals
-	router.GetFunc("/latest", ctx.HandleLatestAppraisals)
+	router.GetFunc("/latest", cors(ctx.HandleLatestAppraisals))
 
 	// View Appraisal
-	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$", ctx.HandleViewAppraisal)
-	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$/#privateToken^[a-zA-Z0-9]+$", ctx.HandleViewAppraisal)
-	router.GetFunc("/e/#legacyAppraisalID^[0-9]+$", ctx.HandleViewAppraisal)
+	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$", cors(ctx.HandleViewAppraisal))
+	router.GetFunc("/a/#appraisalID^[a-zA-Z0-9]+$/#privateToken^[a-zA-Z0-9]+$", cors(ctx.HandleViewAppraisal))
+	router.GetFunc("/e/#legacyAppraisalID^[0-9]+$", cors(ctx.HandleViewAppraisal))
 
 	// View Item
-	router.GetFunc("/item/#typeID^[0-9]$", ctx.HandleViewItem)
-	router.GetFunc("/item/#typeName^.$", ctx.HandleViewItem)
+	router.GetFunc("/item/#typeID^[0-9]$", cors(ctx.HandleViewItem))
+	router.GetFunc("/item/#typeName^.$", cors(ctx.HandleViewItem))
 
 	// List items
-	router.GetFunc("/items", ctx.HandleViewItems)
+	router.GetFunc("/items", cors(ctx.HandleViewItems))
 
 	// Search
-	router.GetFunc("/search", ctx.HandleSearch)
+	router.GetFunc("/search", cors(ctx.HandleSearch))
 
 	// Misc
-	router.GetFunc("/legal", ctx.HandleLegal)
-	router.GetFunc("/about", ctx.HandleAbout)
-	router.GetFunc("/api-docs", ctx.HandleAPIDocs)
-	router.GetFunc("/about/api", ctx.HandleAPIDocs)
-	router.GetFunc("/robots.txt", ctx.HandleRobots)
-	router.GetFunc("/favicon.ico", ctx.HandleFavicon)
+	router.GetFunc("/legal", cors(ctx.HandleLegal))
+	router.GetFunc("/about", cors(ctx.HandleAbout))
+	router.GetFunc("/api-docs", cors(ctx.HandleAPIDocs))
+	router.GetFunc("/about/api", cors(ctx.HandleAPIDocs))
+	router.GetFunc("/robots.txt", cors(ctx.HandleRobots))
+	router.GetFunc("/favicon.ico", cors(ctx.HandleFavicon))
 
 	// Authenticated pages
 	router.GetFunc("/login", ctx.HandleLogin)
