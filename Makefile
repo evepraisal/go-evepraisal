@@ -57,7 +57,6 @@ lint:
 		--cyclo-over=50 \
 		--exclude="^web/bindata\.go:" \
 		--enable=gocyclo \
-		--enable=gas \
 		--enable=goconst \
 		--enable=gofmt \
 		--enable=goimports \
