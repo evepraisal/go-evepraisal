@@ -6,7 +6,7 @@ import (
 
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/typedb"
-	"github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent"
 )
 
 // App holds references to all of the app state that's needed. This is typically created in the 'evepraisal' package.
