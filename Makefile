@@ -44,7 +44,7 @@ clean:
 	rm -rf target
 
 test:
-	go tool vet ${PKG_DIRS}
+	go vet ${PKG_DIRS}
 	mkdir -p ${TEST_REPORT_PATH}
 	go test ${PKG_DIRS} -v 2>&1 | tee ${TEST_REPORT_PATH}/go-test.out
 	cat ${TEST_REPORT_PATH}/go-test.out | go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/go-test-report.xml
@@ -54,7 +54,7 @@ test-reload:
 
 lint:
 	@echo "govet"
-	go tool vet ${PKG_DIRS}
+	go vet ${PKG_DIRS}
 	@echo "gocyclo"
 	@gocyclo -over 50 ${PKG_FILES}
 	@echo "goconst"
