@@ -73,7 +73,10 @@ func (ctx *Context) HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.StatusCode != 200 {
-		ctx.renderErrorPage(r, w, http.StatusInternalServerError, "Something bad happened", fmt.Sprintf("Invalid response when verifying identity (%d)", resp.StatusCode))
+		ctx.renderErrorPage(
+			r, w, http.StatusInternalServerError,
+			"Something bad happened",
+			fmt.Sprintf("Invalid response when verifying identity (%d)", resp.StatusCode))
 		return
 	}
 

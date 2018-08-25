@@ -64,7 +64,7 @@ lint:
 	@goimports -l ${PKG_FILES}
 	@echo "ineffassign"
 	@ineffassign .
-	@echo "Line length linter"
+	@echo "line length linter"
 	@lll --maxlength 150 ${PKG_FILES}
 	@echo "misspell"
 	@misspell ${PKG_FILES}
