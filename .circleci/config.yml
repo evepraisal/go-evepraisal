@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.11rc2
 
     environment:
       TEST_REPORT_PATH: /tmp/test-results
