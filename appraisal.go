@@ -468,7 +468,12 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		}
 	case *parsers.Industry:
 		for _, item := range r.Items {
-			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
+			newItem := AppraisalItem{Name: item.Name, Quantity: item.Quantity}
+			newItem.Extra.BPC = item.BPC
+			if item.BPC {
+				newItem.Extra.BPCRuns = item.BPCRuns
+			}
+			items = append(items, newItem)
 		}
 	case *parsers.Killmail:
 		for _, item := range r.Dropped {
