@@ -105,8 +105,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.GetFunc("/e/#legacyAppraisalID^[0-9]+$", cors(ctx.HandleViewAppraisal))
 
 	// View Item
-	router.GetFunc("/item/#typeID^[0-9]$", cors(ctx.HandleViewItem))
-	router.GetFunc("/item/#typeName^.$", cors(ctx.HandleViewItem))
+	router.GetFunc(`/item/#typeID^[\S ]+$`, cors(ctx.HandleViewItem))
 
 	// List items
 	router.GetFunc("/items", cors(ctx.HandleViewItems))

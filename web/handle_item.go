@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/evepraisal/go-evepraisal"
+	evepraisal "github.com/evepraisal/go-evepraisal"
 	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/go-zoo/bone"
 )
@@ -90,32 +90,33 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 	var item typedb.EveType
 	var ok bool
 
-	typeNameStr := bone.GetValue(r, "typeName")
-	if typeNameStr != "" {
-		typeName, err := url.PathUnescape(typeNameStr)
-		if err != nil {
-			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
-			return
-		}
+	typeIDStr := bone.GetValue(r, "typeID")
+	if typeIDStr != "" {
+		typeID, err := strconv.ParseInt(typeIDStr, 10, 64)
+		if err == nil {
+			// This looks like a type ID
+			item, ok = ctx.App.TypeDB.GetTypeByID(typeID)
+			if !ok {
+				ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+				return
+			}
+		} else {
+			// This looks like a type name
+			typeName, err := url.PathUnescape(typeIDStr)
+			if err != nil {
+				ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
+				return
+			}
 
-		item, ok = ctx.App.TypeDB.GetType(typeName)
-		if !ok {
-			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-			return
+			item, ok = ctx.App.TypeDB.GetType(typeName)
+			if !ok {
+				ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+				return
+			}
 		}
 	} else {
-		typeIDStr := bone.GetValue(r, "typeID")
-		typeID, err := strconv.ParseInt(typeIDStr, 10, 64)
-		if err != nil {
-			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-			return
-		}
-
-		item, ok = ctx.App.TypeDB.GetTypeByID(typeID)
-		if !ok {
-			ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
-			return
-		}
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")
+		return
 	}
 
 	var summaries []viewItemMarketSummary
