@@ -5,9 +5,6 @@ jobs:
     docker:
       - image: circleci/golang:1.11rc2
 
-    environment:
-      TEST_REPORT_PATH: /tmp/test-results
-
     steps:
       - checkout
       - run: make setup
