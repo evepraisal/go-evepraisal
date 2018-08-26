@@ -40,12 +40,12 @@ func (d componentDetails) Totals() evepraisal.Totals {
 func (ctx *Context) HandleViewItems(w http.ResponseWriter, r *http.Request) {
 	offset, err := strconv.ParseInt(r.FormValue("offset"), 10, 64)
 	if err != nil {
-		offset = 20
+		offset = 0
 	}
 
 	limit, err := strconv.ParseInt(r.FormValue("limit"), 10, 64)
 	if err != nil {
-		limit = 20
+		limit = 100
 	}
 	if limit > 1000 {
 		limit = 1000
