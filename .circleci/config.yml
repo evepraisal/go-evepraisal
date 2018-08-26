@@ -10,16 +10,12 @@ jobs:
 
     steps:
       - checkout
-      - run: mkdir -p $TEST_REPORT_PATH
       - run: make setup
       - run: make dist
       - run: make lint
       - run: make test
       - store_artifacts:
-          path: /tmp/test-results
-          destination: raw-test-output
+          path: target
+          destination: target
       - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: target/evepraisal-linux-amd64
-          destination: binary
+          path: target/test-results
