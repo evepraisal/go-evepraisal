@@ -13,13 +13,8 @@ jobs:
       - run: mkdir -p $TEST_REPORT_PATH
       - run: make setup
       - run: make dist
-      - run:
-          name: Run linter
-          command: make lint
-      - run:
-          name: Run unit tests
-          command: make test
-
+      - run: make lint
+      - run: make test
       - store_artifacts:
           path: /tmp/test-results
           destination: raw-test-output
