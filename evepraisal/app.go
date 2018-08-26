@@ -60,10 +60,11 @@ func appMain() {
 
 	httpClient := pester.New()
 	httpClient.Transport = httpcache.NewTransport(httpCache)
-	httpClient.Concurrency = 5
+	httpClient.Concurrency = 4
 	httpClient.Timeout = 30 * time.Second
 	httpClient.Backoff = pester.ExponentialJitterBackoff
 	httpClient.MaxRetries = 10
+	httpClient.LogHook = func(e pester.ErrEntry) { log.Println(httpClient.FormatError(e)) }
 
 	fetcherCtx, fetcherCancel := context.WithCancel(context.Background())
 	priceFetcher, err := esi.NewPriceFetcher(fetcherCtx, priceDB, viper.GetString("esi_baseurl"), httpClient)
