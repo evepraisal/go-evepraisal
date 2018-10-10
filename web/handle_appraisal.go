@@ -283,6 +283,83 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+// HandleAppraisalStructured is the handler for POST /appraisal/structured.json
+func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("format") != formatJSON {
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not found", "/appraisal/structured is only availble for the JSON format.")
+		return
+	}
+
+	// TODO: PARSE JSON INTO A STRIPPED DOWN EvepraisalItem
+	errorRoot := PageRoot{}
+
+	decoder := json.NewDecoder(r.Body)
+	var spec = struct {
+		MarketName string `json:"market_name"`
+		Items      []struct {
+			TypeID   int64  `json:"type_id"`
+			Name     string `json:"name"`
+			Quantity int64  `json:"quantity"`
+		} `json:"items"`
+	}{}
+	err := decoder.Decode(&spec)
+	if err != nil {
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
+		return
+	}
+
+	// Invalid market given
+	foundMarket := false
+	for _, m := range selectableMarkets {
+		if m.Name == spec.MarketName {
+			foundMarket = true
+			break
+		}
+	}
+	if !foundMarket {
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
+		return
+	}
+
+	appraisal := &evepraisal.Appraisal{
+		Created:    time.Now().Unix(),
+		Kind:       "structured",
+		Items:      make([]evepraisal.AppraisalItem, len(spec.Items)),
+		MarketName: spec.MarketName,
+	}
+
+	for i, item := range spec.Items {
+		if item.Name == "" && item.TypeID == 0 {
+			ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", fmt.Sprintf("Item at index %d does not have a 'name' or 'type_id'", i), errorRoot)
+			return
+		}
+
+		if item.Quantity == 0 {
+			item.Quantity = 1
+		}
+		appraisal.Items[i].Name = item.Name
+		appraisal.Items[i].TypeID = item.TypeID
+		appraisal.Items[i].Quantity = item.Quantity
+	}
+
+	ctx.App.PopulateItems(appraisal)
+
+	go ctx.App.AppraisalDB.IncrementTotalAppraisals()
+
+	// Log for later analyics
+	log.Println(appraisal.Summary())
+
+	sort.Slice(appraisal.Items, func(i, j int) bool {
+		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
+	})
+
+	ctx.render(r, w, "appraisal.html",
+		AppraisalPage{
+			Appraisal: cleanAppraisal(appraisal),
+		},
+	)
+}
+
 // HandleViewAppraisal is the handler for /a/[id]
 func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) {
 	// Legacy Logic

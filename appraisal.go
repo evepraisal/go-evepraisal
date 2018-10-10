@@ -331,10 +331,22 @@ func (app *App) PopulateItems(appraisal *Appraisal) {
 	appraisal.Totals.Volume = 0
 
 	for i := 0; i < len(appraisal.Items); i++ {
-		t, ok := app.TypeDB.GetType(appraisal.Items[i].Name)
-		if !ok {
-			log.Printf("WARN: parsed out name that isn't a type: %q", appraisal.Items[i].Name)
-			continue
+		var (
+			t  typedb.EveType
+			ok bool
+		)
+		if appraisal.Items[i].TypeID != 0 {
+			t, ok = app.TypeDB.GetTypeByID(appraisal.Items[i].TypeID)
+			if !ok {
+				log.Printf("WARN: item type ID not found in database: %q", appraisal.Items[i].TypeID)
+				continue
+			}
+		} else {
+			t, ok = app.TypeDB.GetType(appraisal.Items[i].Name)
+			if !ok {
+				log.Printf("WARN: parsed out name that isn't a type: %q", appraisal.Items[i].Name)
+				continue
+			}
 		}
 		appraisal.Items[i].TypeID = t.ID
 		appraisal.Items[i].TypeName = t.Name
@@ -365,6 +377,7 @@ func (app *App) StringToAppraisal(market string, s string, pricePercentage float
 		Created:         time.Now().Unix(),
 		Raw:             s,
 		PricePercentage: pricePercentage,
+		MarketName:      market,
 	}
 
 	result, unparsed := app.Parser(parsers.StringToInput(s))
@@ -376,7 +389,6 @@ func (app *App) StringToAppraisal(market string, s string, pricePercentage float
 		return appraisal, err
 	}
 	appraisal.Kind = kind
-	appraisal.MarketName = market
 	appraisal.ParserLines = parserResultToParserLines(result)
 	appraisal.Items = parserResultToAppraisalItems(result)
 	app.PopulateItems(appraisal)

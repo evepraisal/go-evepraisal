@@ -95,6 +95,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	// Create Appraisal
 	router.PostFunc("/appraisal", ctx.HandleAppraisal)
 	router.PostFunc("/estimate", ctx.HandleAppraisal)
+	router.PostFunc("/appraisal/structured", ctx.HandleAppraisalStructured)
 
 	// Lates Appraisals
 	router.GetFunc("/latest", cors(ctx.HandleLatestAppraisals))
