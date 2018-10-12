@@ -286,7 +286,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 // HandleAppraisalStructured is the handler for POST /appraisal/structured.json
 func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("format") != formatJSON {
-		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not found", "/appraisal/structured is only availble for the JSON format.")
+		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not found", "/appraisal/structured is only available for the JSON format.")
 		return
 	}
 
