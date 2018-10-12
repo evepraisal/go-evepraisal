@@ -305,6 +305,11 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	if len(spec.Items) == 0 {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "No 'items' given.")
+		return
+	}
+
 	// Invalid market given
 	foundMarket := false
 	for _, m := range selectableMarkets {
