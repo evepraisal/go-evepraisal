@@ -290,9 +290,6 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// TODO: PARSE JSON INTO A STRIPPED DOWN EvepraisalItem
-	errorRoot := PageRoot{}
-
 	decoder := json.NewDecoder(r.Body)
 	var spec = struct {
 		MarketName string `json:"market_name"`
@@ -304,7 +301,7 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 	}{}
 	err := decoder.Decode(&spec)
 	if err != nil {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", err.Error())
 		return
 	}
 
@@ -317,7 +314,7 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 		}
 	}
 	if !foundMarket {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
 		return
 	}
 
@@ -330,7 +327,7 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 
 	for i, item := range spec.Items {
 		if item.Name == "" && item.TypeID == 0 {
-			ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", fmt.Sprintf("Item at index %d does not have a 'name' or 'type_id'", i), errorRoot)
+			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", fmt.Sprintf("Item at index %d does not have a 'name' or 'type_id'", i), errorRoot)
 			return
 		}
 
