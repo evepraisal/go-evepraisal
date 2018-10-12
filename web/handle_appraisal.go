@@ -314,7 +314,7 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 		}
 	}
 	if !foundMarket {
-		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.")
 		return
 	}
 
@@ -327,7 +327,7 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 
 	for i, item := range spec.Items {
 		if item.Name == "" && item.TypeID == 0 {
-			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", fmt.Sprintf("Item at index %d does not have a 'name' or 'type_id'", i), errorRoot)
+			ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid input", fmt.Sprintf("Item at index %d does not have a 'name' or 'type_id'", i))
 			return
 		}
 
