@@ -127,5 +127,16 @@ Typhoon Blueprint	1	Battleship Blueprint	Blueprint	BLUEPRINT COPY`,
 		},
 		Input{},
 		true,
+	}, {
+		"Item exchange",
+		`Zircon x 21163 (Item Exchange) `,
+		&Contract{
+			Items: []ContractItem{
+				{Name: "Zircon", Quantity: 21163},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		true,
 	},
 }

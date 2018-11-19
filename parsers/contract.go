@@ -49,6 +49,12 @@ var reContractShort = regexp.MustCompile(strings.Join([]string{
 	`([\S ]*)$`,                   // type
 }, ""))
 
+var reContractName = regexp.MustCompile(strings.Join([]string{
+	`^([\S ]*) (?:x|X) `,         // Name
+	"(" + bigNumberRegex + "+) ", // Quantity
+	`\(Item Exchange\)[\s]*`,
+}, ""))
+
 var reBPCDetails = regexp.MustCompile(`BLUEPRINT COPY(?: - Runs: ([\d]+) - )?.*`)
 
 // ParseContract parses a contract
@@ -56,7 +62,9 @@ func ParseContract(input Input) (ParserResult, Input) {
 	contract := &Contract{}
 	matches, rest := regexParseLines(reContract, input)
 	matches2, rest := regexParseLines(reContractShort, rest)
+	matches3, rest := regexParseLines(reContractName, rest)
 	contract.lines = append(regexMatchedLines(matches), regexMatchedLines(matches2)...)
+	contract.lines = append(contract.lines, regexMatchedLines(matches3)...)
 
 	// collect items
 	matchgroup := make(map[ContractItem]int64)
@@ -89,6 +97,13 @@ func ParseContract(input Input) (ParserResult, Input) {
 		item := ContractItem{
 			Name: match[1],
 			Type: match[3],
+		}
+		matchgroup[item] += ToInt(match[2])
+	}
+
+	for _, match := range matches3 {
+		item := ContractItem{
+			Name: match[1],
 		}
 		matchgroup[item] += ToInt(match[2])
 	}
