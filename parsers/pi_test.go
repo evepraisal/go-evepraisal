@@ -36,6 +36,17 @@ var piTestCases = []Case{
 		},
 		Input{},
 		true,
+	}, {
+		"PI New",
+		`	Reactive Metals	27080.0	10290.4 m3`,
+		&PI{
+			Items: []PIItem{
+				{Name: "Reactive Metals", Quantity: 27080.0, Volume: 10290.4},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		true,
 	},
 }
 

@@ -38,10 +38,10 @@ var rePI1 = regexp.MustCompile(strings.Join([]string{
 }, ""))
 
 var rePI2 = regexp.MustCompile(strings.Join([]string{
-	`^\t`,           // icon (ignore)
-	`([\S ]+)\t`,    // name
-	`([\d,'\.]+)\t`, // quantity
-	`([\d,'\.]+)$`,  // volume
+	`^\t`,                  // icon (ignore)
+	`([\S ]+)\t`,           // name
+	`([\d,'\.]+)\t`,        // quantity
+	`([\d,'\.]+)(?: m3)?$`, // volume
 }, ""))
 
 var rePI3 = regexp.MustCompile(strings.Join([]string{
