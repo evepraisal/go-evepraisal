@@ -65,18 +65,18 @@
       </div>
     </h5>
     <div class="form-group">
-      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="{{if $fullpage}}16{{else}}8{{end}}" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
+      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="{{if $fullpage}}16{{else}}8{{end}}" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v" onclick="this.select()">{{.UI.RawTextAreaDefault}}</textarea>
     </div>
     <div class="form-inline float-right">
       <div>
-      <select id="market" name="market" class="form-control form-control-sm">
-      {{range $market := .UI.Markets}}
-        <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
-      {{end}}
-      </select>
-      <button type="reset" class="btn btn-sm">Reset</button>
-      <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
-    </div>
+        <select id="market" name="market" class="form-control form-control-sm">
+        {{range $market := .UI.Markets}}
+          <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+        {{end}}
+        </select>
+        <button type="reset" onclick="$('#raw_textarea').text('');" class="btn btn-sm">Reset</button>
+        <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
+      </div>
     </div>
   </div>
 </div>

@@ -188,8 +188,8 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errorRoot := PageRoot{}
-	errorRoot.UI.RawTextAreaDefault = body
+	root := PageRoot{}
+	root.UI.RawTextAreaDefault = body
 
 	// Parse Market
 	market := getRequestParam(r, "market")
@@ -207,7 +207,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// No market given
 	if market == "" {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "A market is required.", errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "A market is required.", root)
 		return
 	}
 
@@ -220,7 +220,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !foundMarket {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", root)
 		return
 	}
 
@@ -236,10 +236,10 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	appraisal, err := ctx.App.StringToAppraisal(market, body, pricePercentage)
 	if err == evepraisal.ErrNoValidLinesFound {
 		log.Println("No valid lines found:", spew.Sdump(body))
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), root)
 		return
 	} else if err != nil {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), root)
 		return
 	}
 
@@ -253,7 +253,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	if persist {
 		err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 		if err != nil {
-			ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
+			ctx.renderServerErrorWithRoot(r, w, err, root)
 			return
 		}
 	} else {
@@ -275,12 +275,11 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
 	w.Header().Add("X-Appraisal-ID", appraisal.ID)
-	ctx.render(r, w, "appraisal.html",
-		AppraisalPage{
-			IsOwner:   IsAppraisalOwner(user, appraisal),
-			Appraisal: cleanAppraisal(appraisal),
-		},
-	)
+	root.Page = AppraisalPage{
+		IsOwner:   IsAppraisalOwner(user, appraisal),
+		Appraisal: cleanAppraisal(appraisal),
+	}
+	ctx.renderWithRoot(r, w, "appraisal.html", root)
 }
 
 // HandleAppraisalStructured is the handler for POST /appraisal/structured.json
