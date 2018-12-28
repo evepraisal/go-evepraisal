@@ -273,13 +273,24 @@ func mustStartServers(handler http.Handler) []*http.Server {
 	if viper.GetString("http_addr") != "" {
 		log.Printf("Starting HTTP server (%s)", viper.GetString("http_addr"))
 
+		var httpHandler = handler
+		if viper.GetBool("http_redirect") {
+			httpHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				target := "https://" + req.Host + req.URL.Path
+				if len(req.URL.RawQuery) > 0 {
+					target += "?" + req.URL.RawQuery
+				}
+				http.Redirect(w, req, target, http.StatusTemporaryRedirect)
+			})
+		}
+
 		server := &http.Server{
 			ReadHeaderTimeout: 20 * time.Second,
 			ReadTimeout:       120 * time.Second,
 			WriteTimeout:      60 * time.Second,
 			IdleTimeout:       120 * time.Second,
 			Addr:              viper.GetString("http_addr"),
-			Handler:           handler,
+			Handler:           httpHandler,
 		}
 		servers = append(servers, server)
 

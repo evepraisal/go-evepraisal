@@ -14,6 +14,7 @@ endif
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
 GOPATH?=$(shell go env GOPATH)
+SHELL := $(shell which bash)
 export PATH := $(PATH):$(GOPATH)/bin
 
 default: build
@@ -43,12 +44,12 @@ clean:
 	go clean ./...
 	rm -rf target
 
-test:
+test: generate
 	mkdir -p ${TEST_REPORT_PATH}
 	go test ${PKG_DIRS} -v 2>&1 | tee ${TEST_REPORT_PATH}/go-test.out
 	cat ${TEST_REPORT_PATH}/go-test.out | go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/go-test-report.xml
 
-test-reload:
+test-reload: generate
 	reflex -c reflex.test.conf
 
 lint:
