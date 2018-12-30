@@ -189,6 +189,9 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	expireAfterStr := getRequestParam(r, "expire_after")
+	if expireAfterStr == "" {
+		expireAfterStr = "360h"
+	}
 	expireAfter, err := time.ParseDuration(expireAfterStr)
 	if err != nil {
 		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid expire_after value", err.Error())
