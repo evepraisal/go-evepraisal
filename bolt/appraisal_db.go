@@ -16,7 +16,7 @@ import (
 	"github.com/golang/snappy"
 )
 
-var expireCheckDuration = time.Hour * 24 * 60
+var expireCheckDuration = time.Hour * 24 * 80
 var maxExpireTime = time.Hour * 24 * 90
 
 // AppraisalDB holds all appraisals
