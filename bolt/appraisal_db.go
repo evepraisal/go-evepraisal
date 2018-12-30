@@ -16,7 +16,8 @@ import (
 	"github.com/golang/snappy"
 )
 
-var expireCheckDuration = time.Hour * 24 * 10
+var expireCheckDuration = time.Hour * 24 * 80
+var maxExpireTime = time.Hour * 24 * 90
 
 // AppraisalDB holds all appraisals
 type AppraisalDB struct {
@@ -393,9 +394,13 @@ func (db *AppraisalDB) startReaper() {
 	defer db.wg.Done()
 	for {
 		log.Println("Start reaping deletable appraisals")
-		deletable := make([]string, 0)
-		appraisalCount := 0
-		now := time.Now()
+		var (
+			deletable      = make([]string, 0)
+			appraisalCount = 0
+			now            = time.Now()
+			appraisal      *evepraisal.Appraisal
+			sleepTime      = time.Hour
+		)
 		err := db.DB.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("appraisals-last-used"))
 			c := b.Cursor()
@@ -424,7 +429,12 @@ func (db *AppraisalDB) startReaper() {
 						continue
 					}
 
-					appraisal, err := db.getAppraisal(appraisalID)
+					if now.Sub(usedTimestamp) > maxExpireTime {
+						deletable = append(deletable, appraisalID)
+						continue
+					}
+
+					appraisal, err = db.getAppraisal(appraisalID)
 					if err != nil {
 						log.Printf("Unable to parse appraisal (%s) %s", appraisalID, err)
 						continue
@@ -432,6 +442,12 @@ func (db *AppraisalDB) startReaper() {
 
 					if appraisal.IsExpired(now, usedTimestamp) {
 						deletable = append(deletable, appraisalID)
+					}
+
+					if len(deletable) > 1000 {
+						log.Println("Too many to delete in one go. Breaking early and re-trigger another reaper")
+						sleepTime = 5 * time.Second
+						break
 					}
 				}
 			}
@@ -459,12 +475,11 @@ func (db *AppraisalDB) startReaper() {
 			}
 		}
 
-		log.Printf("Done reaping deletable appraisals, removed %d (out of %d) appraisals", len(deletable), appraisalCount)
-
+		log.Printf("Done reaping deletable appraisals, removed %d (out of %d) appraisals. Sleeping for %s", len(deletable), appraisalCount, sleepTime)
 		select {
 		case <-db.stop:
 			return
-		case <-time.After(time.Hour):
+		case <-time.After(sleepTime):
 		}
 	}
 }
