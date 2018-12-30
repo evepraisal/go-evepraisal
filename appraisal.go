@@ -41,8 +41,8 @@ type Appraisal struct {
 	PrivateToken    string           `json:"private_token,omitempty"`
 	PricePercentage float64          `json:"price_percentage,omitempty"`
 	Live            bool             `json:"live"`
-	ExpireTime      *time.Time       `json:"ExpireTime,omitempty"`
-	ExpireMinutes   int64            `json:"ExpireMinutes,omitempty"`
+	ExpireTime      *time.Time       `json:"expire_time,omitempty"`
+	ExpireMinutes   int64            `json:"expire_minutes,omitempty"`
 }
 
 // IsExpired returns true if an appraisal is expired and should be deleted. Can be caused by ExpireTime or ExpireMinutes
