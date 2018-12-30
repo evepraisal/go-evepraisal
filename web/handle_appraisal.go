@@ -188,6 +188,18 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	expireAfterStr := getRequestParam(r, "expire_after")
+	expireAfter, err := time.ParseDuration(expireAfterStr)
+	if err != nil {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid expire_after value", err.Error())
+		return
+	}
+
+	if expireAfter < time.Minute || expireAfter > 90*24*time.Hour {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid expire_after value.", "It needs to be between 1m and 2160h")
+		return
+	}
+
 	root := PageRoot{}
 	root.UI.RawTextAreaDefault = body
 
@@ -248,6 +260,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	if private {
 		appraisal.PrivateToken = NewPrivateAppraisalToken()
 	}
+	appraisal.ExpireMinutes = int64(expireAfter.Minutes())
 
 	// Persist Appraisal to the database
 	if persist {
@@ -268,6 +281,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	ctx.setSessionValue(r, w, "visibility", visibility)
 	ctx.setSessionValue(r, w, "persist", persist)
 	ctx.setSessionValue(r, w, "price_percentage", pricePercentage)
+	ctx.setSessionValue(r, w, "expire_after", expireAfterStr)
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()

@@ -37,7 +37,13 @@
           <label for="price_percentage">Price Percentage</label>
           <div class="input-group">
             <input type="text" class="form-control number-only" value="{{$.UI.PricePercentage}}" placeholder="100" name="price_percentage" id="price_percentage">
-            <div class="input-group-addon">%</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="expire_after">Expire appraisals after a duration of time without views in seconds, minutes or hours. (E.G. 60s, 20m, 24h) (max of 720 hours; default is 360 hours, 15 days)</label>
+          <div class="input-group">
+            <input type="text" class="form-control" value="{{$.UI.ExpireAfter}}" placeholder="360h" name="expire_after" id="expire_after">
           </div>
         </div>
       </div>
@@ -88,6 +94,7 @@ $(".number-only").bind("keypress", function(e){
     return false;
   }
 });
+
 $(".number-only").bind("paste", function(e){
   if(isNaN(e.originalEvent.clipboardData.getData('text'))) {
     e.preventDefault();

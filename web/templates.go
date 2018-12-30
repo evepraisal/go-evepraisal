@@ -68,6 +68,7 @@ type PageRoot struct {
 		Visibilities         []namedThing
 		SelectedPersist      bool
 		PricePercentage      float64
+		ExpireAfter          string
 		BaseURL              string
 		BaseURLWithoutScheme string
 		User                 *evepraisal.User
@@ -104,6 +105,7 @@ func (ctx *Context) renderWithRoot(r *http.Request, w http.ResponseWriter, templ
 		root.UI.Visibilities = selectableVisibilities
 		root.UI.SelectedPersist = ctx.getSessionBooleanWithDefault(r, "persist", true)
 		root.UI.PricePercentage = ctx.getSessionFloat64WithDefault(r, "price_percentage", 100)
+		root.UI.ExpireAfter = ctx.getSessionValueWithDefault(r, "expire_after", "360h")
 		root.UI.BaseURLWithoutScheme = strings.TrimPrefix(strings.TrimPrefix(ctx.BaseURL, "https://"), "http://")
 		root.UI.BaseURL = ctx.BaseURL
 		root.UI.FlashMessages = ctx.getFlashMessages(r, w)

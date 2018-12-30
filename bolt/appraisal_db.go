@@ -16,7 +16,7 @@ import (
 	"github.com/golang/snappy"
 )
 
-var expireTime = time.Hour * 24 * 90
+var expireCheckDuration = time.Hour * 24 * 10
 
 // AppraisalDB holds all appraisals
 type AppraisalDB struct {
@@ -392,9 +392,10 @@ func (db *AppraisalDB) setLastUsedTime(dbID []byte) {
 func (db *AppraisalDB) startReaper() {
 	defer db.wg.Done()
 	for {
-		log.Println("Start reaping unused appraisals")
-		unused := make([]string, 0)
+		log.Println("Start reaping deletable appraisals")
+		deletable := make([]string, 0)
 		appraisalCount := 0
+		now := time.Now()
 		err := db.DB.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("appraisals-last-used"))
 			c := b.Cursor()
@@ -408,32 +409,42 @@ func (db *AppraisalDB) startReaper() {
 					}
 				}
 
-				var timestamp time.Time
+				var usedTimestamp time.Time
 				if val != nil {
-					timestamp = time.Unix(int64(binary.BigEndian.Uint64(val)), 0)
+					usedTimestamp = time.Unix(int64(binary.BigEndian.Uint64(val)), 0)
 				} else {
-					timestamp = time.Unix(0, 0)
+					usedTimestamp = time.Unix(0, 0)
 				}
 
-				if time.Since(timestamp) > expireTime {
+				// Only look closely at appraisals that haven't been used in expireCheckDuration
+				if now.Sub(usedTimestamp) > expireCheckDuration {
 					appraisalID, err := DecodeDBID(key)
 					if err != nil {
 						log.Printf("Unable to parse appraisal ID (%s) %s", appraisalID, err)
 						continue
 					}
-					unused = append(unused, appraisalID)
+
+					appraisal, err := db.getAppraisal(appraisalID)
+					if err != nil {
+						log.Printf("Unable to parse appraisal (%s) %s", appraisalID, err)
+						continue
+					}
+
+					if appraisal.IsExpired(now, usedTimestamp) {
+						deletable = append(deletable, appraisalID)
+					}
 				}
 			}
 			return nil
 		})
 
 		if err != nil {
-			log.Printf("ERROR: Problem querying for unused appraisals: %s", err)
+			log.Printf("ERROR: Problem querying for deletable appraisals: %s", err)
 		}
 
-		log.Printf("Reaper starting to delete %d appraisals", len(unused))
+		log.Printf("Reaper starting to delete %d appraisals", len(deletable))
 
-		for i, appraisalID := range unused {
+		for i, appraisalID := range deletable {
 			if i%100 == 0 {
 				select {
 				case <-db.stop:
@@ -444,11 +455,11 @@ func (db *AppraisalDB) startReaper() {
 
 			err = db.DeleteAppraisal(appraisalID)
 			if err != nil {
-				log.Printf("ERROR: Problem removing unused appraisals: %s", err)
+				log.Printf("ERROR: Problem removing deletable appraisals: %s", err)
 			}
 		}
 
-		log.Printf("Done reaping unused appraisals, removed %d (out of %d) appraisals", len(unused), appraisalCount)
+		log.Printf("Done reaping deletable appraisals, removed %d (out of %d) appraisals", len(deletable), appraisalCount)
 
 		select {
 		case <-db.stop:

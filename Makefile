@@ -49,7 +49,7 @@ test: generate
 	go test ${PKG_DIRS} -v 2>&1 | tee ${TEST_REPORT_PATH}/go-test.out
 	cat ${TEST_REPORT_PATH}/go-test.out | go-junit-report -set-exit-code > ${TEST_REPORT_PATH}/go-test-report.xml
 
-test-reload: generate
+test-reload:
 	reflex -c reflex.test.conf
 
 lint:
