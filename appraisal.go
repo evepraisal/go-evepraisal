@@ -13,7 +13,8 @@ import (
 
 var (
 	// ErrNoValidLinesFound is returned when the appraisal text finds no items
-	ErrNoValidLinesFound = fmt.Errorf("No valid lines found")
+	ErrNoValidLinesFound  = fmt.Errorf("No valid lines found")
+	defaultExpireDuration = time.Hour * 24 * 90
 )
 
 // Totals represents sums of all prices/volumes for all items in the appraisal
@@ -40,6 +41,29 @@ type Appraisal struct {
 	PrivateToken    string           `json:"private_token,omitempty"`
 	PricePercentage float64          `json:"price_percentage,omitempty"`
 	Live            bool             `json:"live"`
+	ExpireTime      *time.Time       `json:"expire_time,omitempty"`
+	ExpireMinutes   int64            `json:"expire_minutes,omitempty"`
+}
+
+// IsExpired returns true if an appraisal is expired and should be deleted. Can be caused by ExpireTime or ExpireMinutes
+func (appraisal *Appraisal) IsExpired(now time.Time, lastUsed time.Time) bool {
+	if appraisal.ExpireTime != nil {
+		if now.After(*appraisal.ExpireTime) {
+			return true
+		}
+	}
+
+	var expireDuration time.Duration
+	if appraisal.ExpireMinutes == 0 {
+		expireDuration = defaultExpireDuration
+	} else {
+		expireDuration = time.Minute * time.Duration(appraisal.ExpireMinutes)
+	}
+	if now.Sub(lastUsed) > expireDuration {
+		return true
+	}
+
+	return false
 }
 
 // UsingPercentage returns if a custom percentage is specified for the appraisal

@@ -188,8 +188,23 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errorRoot := PageRoot{}
-	errorRoot.UI.RawTextAreaDefault = body
+	expireAfterStr := getRequestParam(r, "expire_after")
+	if expireAfterStr == "" {
+		expireAfterStr = "360h"
+	}
+	expireAfter, err := time.ParseDuration(expireAfterStr)
+	if err != nil {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid expire_after value", err.Error())
+		return
+	}
+
+	if expireAfter < time.Minute || expireAfter > 90*24*time.Hour {
+		ctx.renderErrorPage(r, w, http.StatusBadRequest, "Invalid expire_after value.", "It needs to be between 1m and 2160h")
+		return
+	}
+
+	root := PageRoot{}
+	root.UI.RawTextAreaDefault = body
 
 	// Parse Market
 	market := getRequestParam(r, "market")
@@ -207,7 +222,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// No market given
 	if market == "" {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "A market is required.", errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "A market is required.", root)
 		return
 	}
 
@@ -220,7 +235,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !foundMarket {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", "Given market is not valid.", root)
 		return
 	}
 
@@ -236,10 +251,10 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	appraisal, err := ctx.App.StringToAppraisal(market, body, pricePercentage)
 	if err == evepraisal.ErrNoValidLinesFound {
 		log.Println("No valid lines found:", spew.Sdump(body))
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), root)
 		return
 	} else if err != nil {
-		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), errorRoot)
+		ctx.renderErrorPageWithRoot(r, w, http.StatusBadRequest, "Invalid input", err.Error(), root)
 		return
 	}
 
@@ -248,12 +263,13 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	if private {
 		appraisal.PrivateToken = NewPrivateAppraisalToken()
 	}
+	appraisal.ExpireMinutes = int64(expireAfter.Minutes())
 
 	// Persist Appraisal to the database
 	if persist {
 		err = ctx.App.AppraisalDB.PutNewAppraisal(appraisal)
 		if err != nil {
-			ctx.renderServerErrorWithRoot(r, w, err, errorRoot)
+			ctx.renderServerErrorWithRoot(r, w, err, root)
 			return
 		}
 	} else {
@@ -268,6 +284,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 	ctx.setSessionValue(r, w, "visibility", visibility)
 	ctx.setSessionValue(r, w, "persist", persist)
 	ctx.setSessionValue(r, w, "price_percentage", pricePercentage)
+	ctx.setSessionValue(r, w, "expire_after", expireAfterStr)
 
 	sort.Slice(appraisal.Items, func(i, j int) bool {
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
@@ -275,12 +292,11 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 
 	// Render the new appraisal to the screen (there is no redirect here, we set the URL using javascript later)
 	w.Header().Add("X-Appraisal-ID", appraisal.ID)
-	ctx.render(r, w, "appraisal.html",
-		AppraisalPage{
-			IsOwner:   IsAppraisalOwner(user, appraisal),
-			Appraisal: cleanAppraisal(appraisal),
-		},
-	)
+	root.Page = AppraisalPage{
+		IsOwner:   IsAppraisalOwner(user, appraisal),
+		Appraisal: cleanAppraisal(appraisal),
+	}
+	ctx.renderWithRoot(r, w, "appraisal.html", root)
 }
 
 // HandleAppraisalStructured is the handler for POST /appraisal/structured.json

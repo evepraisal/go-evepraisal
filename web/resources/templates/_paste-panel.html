@@ -37,7 +37,13 @@
           <label for="price_percentage">Price Percentage</label>
           <div class="input-group">
             <input type="text" class="form-control number-only" value="{{$.UI.PricePercentage}}" placeholder="100" name="price_percentage" id="price_percentage">
-            <div class="input-group-addon">%</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="expire_after">Expire appraisals after a duration of time without views in seconds, minutes or hours. (E.G. 60s, 20m, 24h) (max of 720 hours; default is 360 hours, 15 days)</label>
+          <div class="input-group">
+            <input type="text" class="form-control" value="{{$.UI.ExpireAfter}}" placeholder="360h" name="expire_after" id="expire_after">
           </div>
         </div>
       </div>
@@ -65,18 +71,18 @@
       </div>
     </h5>
     <div class="form-group">
-      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="{{if $fullpage}}16{{else}}8{{end}}" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v">{{.UI.RawTextAreaDefault}}</textarea>
+      <textarea class="form-control" id="raw_textarea" name="raw_textarea" rows="{{if $fullpage}}16{{else}}8{{end}}" placeholder="put stuff to appraise here. protip: ctrl+a, ctrl+c, ctrl+v" onclick="this.select()">{{.UI.RawTextAreaDefault}}</textarea>
     </div>
     <div class="form-inline float-right">
       <div>
-      <select id="market" name="market" class="form-control form-control-sm">
-      {{range $market := .UI.Markets}}
-        <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
-      {{end}}
-      </select>
-      <button type="reset" class="btn btn-sm">Reset</button>
-      <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
-    </div>
+        <select id="market" name="market" class="form-control form-control-sm">
+        {{range $market := .UI.Markets}}
+          <option value="{{$market.Name}}" {{if eq $.UI.SelectedMarket $market.Name }}selected{{end}}>{{$market.DisplayName}}</option>
+        {{end}}
+        </select>
+        <button type="reset" onclick="$('#raw_textarea').text('');" class="btn btn-sm">Reset</button>
+        <input type="submit" class="btn btn-primary btn-sm" href="submit" role="button" value="Submit &raquo;" />
+      </div>
     </div>
   </div>
 </div>
@@ -88,6 +94,7 @@ $(".number-only").bind("keypress", function(e){
     return false;
   }
 });
+
 $(".number-only").bind("paste", function(e){
   if(isNaN(e.originalEvent.clipboardData.getData('text'))) {
     e.preventDefault();
