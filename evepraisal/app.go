@@ -101,9 +101,14 @@ func appMain() {
 	log.Println("Starting type fetcher")
 	staticdumpHTTPClient := pester.New()
 	staticdumpHTTPClient.Concurrency = 1
-	staticdumpHTTPClient.Timeout = 5 * time.Minute
+	// TODO: Remove this once CCP figures out the certificate situation with cdn1.eveonline.com
+	staticdumpHTTPClient.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	staticdumpHTTPClient.Timeout = 60 * time.Second
 	staticdumpHTTPClient.Backoff = pester.ExponentialJitterBackoff
-	staticdumpHTTPClient.MaxRetries = 10
+	staticdumpHTTPClient.MaxRetries = 2
+	staticdumpHTTPClient.LogHook = func(e pester.ErrEntry) { log.Println(httpClient.FormatError(e)) }
 
 	if viper.GetString("newrelic_license-key") != "" {
 		newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
@@ -116,7 +121,7 @@ func appMain() {
 
 		app.NewRelicApplication = newRelicApplication
 		httpClient.Transport = NewRoundTripper(newRelicApplication, httpClient.Transport)
-		staticdumpHTTPClient.Transport = NewRoundTripper(newRelicApplication, nil)
+		staticdumpHTTPClient.Transport = NewRoundTripper(newRelicApplication, staticdumpHTTPClient.Transport)
 	}
 
 	staticFetcher, err := staticdump.NewStaticFetcher(staticdumpHTTPClient, viper.GetString("db_path"), func(typeDB typedb.TypeDB) {

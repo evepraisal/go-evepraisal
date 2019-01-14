@@ -68,7 +68,9 @@ func (f *StaticFetcher) RunOnce() error {
 	if err != nil {
 		return err
 	}
-	//
+
+	log.Println("Latest Static Dump URL", staticDumpURL)
+
 	staticDumpURLBase := filepath.Base(staticDumpURL)
 	typedbPath := filepath.Join(f.dbPath, "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
 	if _, err = os.Stat(typedbPath); os.IsNotExist(err) {
