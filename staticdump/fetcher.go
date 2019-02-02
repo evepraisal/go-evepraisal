@@ -66,6 +66,7 @@ func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB
 func (f *StaticFetcher) RunOnce() error {
 	staticDumpURL, err := FindLastStaticDumpURL(f.client)
 	if err != nil {
+		// TODO: fallback to previously downloaded static data
 		return err
 	}
 

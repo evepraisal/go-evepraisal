@@ -145,6 +145,7 @@ func appMain() {
 				parsers.ParseCargoScan,
 				parsers.ParseDScan,
 				parsers.ParseCompare,
+				parsers.ParseMoonLedger,
 				parsers.ParseMiningLedger,
 				parsers.NewHeuristicParser(typeDB),
 			})
@@ -280,6 +281,7 @@ func mustStartServers(handler http.Handler) []*http.Server {
 
 		var httpHandler = handler
 		if viper.GetBool("http_redirect") {
+			log.Println("Redirecting http traffic to https")
 			httpHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				target := "https://" + req.Host + req.URL.Path
 				if len(req.URL.RawQuery) > 0 {

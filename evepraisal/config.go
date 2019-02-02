@@ -5,7 +5,7 @@ import "github.com/spf13/viper"
 func init() {
 	viper.SetDefault("base-url", "http://127.0.0.1:8080")
 	viper.SetDefault("http_addr", ":8080")
-	viper.SetDefault("http_redirect", "false")
+	viper.SetDefault("http_redirect", false)
 	viper.SetDefault("https_addr", "")
 	viper.SetDefault("https_domain-whitelist", []string{"evepraisal.com"})
 	viper.SetDefault("letsencrypt_email", "")

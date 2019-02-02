@@ -9,10 +9,12 @@ import (
 
 // 2018.03.01	 Bright Spodumain	24,993	399,888 m³	33,796,534 ISK	Q-02UL
 var reMiningLedgerList = regexp.MustCompile(strings.Join([]string{
-	`^(\d\d\d\d\.\d\d\.\d\d)`,      // Date
-	`\t([\S\ ]*)`,                  // Name
-	`\t([` + bigNumberRegex + `*)`, // Quantity
-	`[\S\ \t]*`,                    // Ignore Rest
+	`^(\d\d\d\d\.\d\d\.\d\d)`,        // Date
+	`\t([\S\ ]*)`,                    // Name
+	`\t([` + bigNumberRegex + `*)`,   // Quantity
+	`\t[\S\ ]*`,                      // Volume
+	`\t[` + bigNumberRegex + `* ISK`, // CCP Price Estimate
+	`\t[\S\ ]*$`,                     // System
 }, ""))
 
 // MiningLedger is the result from the mining ledger parser

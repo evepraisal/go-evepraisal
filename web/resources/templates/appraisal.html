@@ -143,6 +143,7 @@
             <a href="/item/{{$item.TypeID}}" class="text-light">
               <strong>{{if $item.TypeName}}{{$item.TypeName}}{{else}}{{$item.Name}}{{end}}{{if $item.Extra.BPC}} (Copy)</a>
               <span class="badge badge-primary">Runs: {{$item.Extra.BPCRuns}}</span>{{else}}</a>{{end}}
+              {{if ne $item.Extra.PlayerName ""}}<span class="badge badge-primary">{{$item.Extra.PlayerName}}</span>{{end}}
               </strong>
           </td>
           <td class="numeric-cell text-right align-middle" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{humanizeVolume $item.TypeVolume }}</td>

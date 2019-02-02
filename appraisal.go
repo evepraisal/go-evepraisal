@@ -583,6 +583,15 @@ func parserResultToAppraisalItems(result parsers.ParserResult) []AppraisalItem {
 		for _, item := range r.Items {
 			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
 		}
+	case *parsers.MoonLedger:
+		for _, item := range r.Items {
+			newItem := AppraisalItem{
+				Name:     item.Name,
+				Quantity: item.Quantity,
+			}
+			newItem.Extra.PlayerName = item.PlayerName
+			items = append(items, newItem)
+		}
 	case *parsers.HeuristicResult:
 		for _, item := range r.Items {
 			items = append(items, AppraisalItem{Name: item.Name, Quantity: item.Quantity})
