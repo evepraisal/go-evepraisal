@@ -60,9 +60,9 @@ lint:
 	@echo "goconst"
 	@goconst -ignore "vendor\/" ${PKG_FILES}
 	@echo "gofmt"
-	@gofmt -l ${PKG_FILES}
+	@gofmt -d ${PKG_FILES}
 	@echo "goimports"
-	@goimports -l ${PKG_FILES}
+	@goimports -d ${PKG_FILES}
 	@echo "ineffassign"
 	@ineffassign .
 	@echo "line length linter"

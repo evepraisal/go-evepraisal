@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/elazarl/go-bindata-assetfs"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/go-zoo/bone"
 	"github.com/gorilla/context"
 	"github.com/mash/go-accesslog"
-	"github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent"
 )
 
 // HandleIndex is the handler for /

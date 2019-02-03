@@ -22,7 +22,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/gregjones/httpcache"
-	"github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent"
 	"github.com/sethgrid/pester"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"

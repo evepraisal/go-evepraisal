@@ -45,7 +45,7 @@ require (
 	github.com/husobee/vestigo v1.0.2
 	github.com/jgautheron/goconst v0.0.0-20170703170152-9740945f5dcb // indirect
 	github.com/jmhodges/levigo v0.0.0-20161115193449-c42d9e0ca023 // indirect
-	github.com/jstemmer/go-junit-report v0.0.0-20180614143834-385fac0ced9a // indirect
+	github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
@@ -86,7 +86,7 @@ require (
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20180110071738-810d70003458 // indirect
 	golang.org/x/text v0.0.0-20171227012246-e19ae1496984 // indirect
-	golang.org/x/tools v0.0.0-20181221235234-d00ac6d27372 // indirect
+	golang.org/x/tools v0.0.0-20190202235157-7414d4c1f71c // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7

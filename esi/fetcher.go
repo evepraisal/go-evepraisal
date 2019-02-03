@@ -17,6 +17,7 @@ type MarketOrder struct {
 	ID            int64   `json:"order_id"`
 	Type          int64   `json:"type_id"`
 	StationID     int64   `json:"location_id"`
+	SystemID      int64   `json:"system_id"`
 	Volume        int64   `json:"volume_remain"`
 	MinVolume     int64   `json:"min_volume"`
 	Price         float64 `json:"price"`
@@ -31,25 +32,12 @@ type MarketOrder struct {
 var SpecialRegions = []struct {
 	name     string
 	stations []int64
+	systems  []int64
 }{
 	{
 		// 10000002
 		name: "jita",
-		stations: []int64{
-			60003466,
-			60003760,
-			60003757,
-			60000361,
-			60000451,
-			60004423,
-			60002959,
-			60003460,
-			60003055,
-			60003469,
-			60000364,
-			60002953,
-			60000463,
-			60003463},
+		systems: []int64{30000142, 30000144},
 	}, {
 		// 10000043
 		name:     "amarr",
@@ -64,8 +52,8 @@ var SpecialRegions = []struct {
 		stations: []int64{60005236, 60004516, 60015140, 60005686, 60011287, 60005236},
 	}, {
 		// 10000030
-		name:     "rens",
-		stations: []int64{60004588, 60005725, 60004594, 60012727, 60012721, 60012724, 60009106},
+		name: "rens",
+		systems: []int64{30002510, 30002526},
 	},
 }
 
@@ -316,6 +304,13 @@ func (p *PriceFetcher) FetchOrderData(client *pester.Client, baseURL string, reg
 				matched := false
 				for _, station := range region.stations {
 					if station == order.StationID {
+						matched = true
+						ordercount++
+						break
+					}
+				}
+				for _, system := range region.systems {
+					if system == order.SystemID {
 						matched = true
 						ordercount++
 						break
