@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  evepraisal:
+    container_name: evepraisal
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+      - 8081:8081
+    volumes:
+      - ./evepraisal.toml:/evepraisal/evepraisal.toml
+    restart: always
