@@ -14,9 +14,9 @@ The following was tested on Ubuntu Server 18.10
 ```
 - Download Dockerfile, docker-compose.yml, and evepraisal.toml to a directory
 ```
-  $ wget https://github.com/evepraisal/go-evepraisal/blob/master/Dockerfile
-  $ wget https://github.com/evepraisal/go-evepraisal/blob/master/docker-compose.yml
-  $ wget https://github.com/evepraisal/go-evepraisal/blob/master/evepraisal.toml
+  $ wget https://raw.githubusercontent.com/evepraisal/go-evepraisal/master/Dockerfile
+  $ wget https://raw.githubusercontent.com/evepraisal/go-evepraisal/master/docker-compose.yml
+  $ wget https://raw.githubusercontent.com/evepraisal/go-evepraisal/master/evepraisal.toml
 ```
 - build, and bring the container up
 ```
