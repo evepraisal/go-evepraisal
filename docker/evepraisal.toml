@@ -1,18 +1,58 @@
+#./evepraisal/app.go:279:        if viper.GetString("http_addr") != "" {
+#./evepraisal/app.go:280:                log.Printf("Starting HTTP server (%s)", viper.GetString("http_addr"))
+#./evepraisal/app.go:299:                        Addr:              viper.GetString("http_addr"),
 http_addr=":8080"
-extra-js=""
-base-url="http://127.0.0.1:8080"
+#./evepraisal/app.go:245:        if viper.GetString("https_addr") != "" {
+#./evepraisal/app.go:246:                log.Printf("Starting HTTPS server (%s) (%s)", viper.GetString("https_addr"), viper.GetStringSlice("https_domain-whitelist"))
+#./evepraisal/app.go:260:                        Addr:              viper.GetString("https_addr"),
 https_addr=":8085"
-newrelic_app-name="Evepraisal"
-db_path="db/"
-sso-verify-url="https://login.eveonline.com/oauth/verify"
-newrelic_license-key=""
-backup_path="db/backups/"
-letsencrypt_email=""
-esi_baseurl="https://esi.evetech.net/latest"
-sso-authorize-url="https://login.eveonline.com/oauth/authorize"
-https_domain-whitelist="evepraisal.com"
-ad-block=""
+#./evepraisal/app.go:223:        log.Printf("Starting Management HTTP server (%s)", viper.GetString("management_addr"))
+#./evepraisal/app.go:225:                Addr:    viper.GetString("management_addr"),
+#./evepraisal/restore.go:87:             req, err = http.NewRequest("POST", "http://"+viper.GetString("management_addr")+"/restore", &buf)
 management_addr="127.0.0.1:8090"
-sso-token-url="https://login.eveonline.com/oauth/token"
+#./evepraisal/app.go:283:                if viper.GetBool("http_redirect") {
 http_redirect=false
+#./evepraisal/app.go:252:                        Email:      viper.GetString("letsencrypt_email"),
+letsencrypt_email=""
+#./evepraisal/app.go:250:                        HostPolicy: autocert.HostWhitelist(viper.GetStringSlice("https_domain-whitelist")...),
+https_domain-whitelist=["evepraisal.com"]
 
+#./evepraisal/app.go:181:        webContext.BaseURL = strings.TrimSuffix(viper.GetString("base-url"), "/")
+#./evepraisal/app.go:200:                        RedirectURL: viper.GetString("base-url") + "/oauthcallback",
+base-url="http://127.0.0.1:8080"
+
+#./evepraisal/app.go:183:        webContext.AdBlock = viper.GetString("ad-block")
+ad-block=""
+
+#./evepraisal/app.go:184:        if viper.GetString("cookie-auth-key") != "" {
+#./evepraisal/app.go:186:                        []byte(viper.GetString("cookie-auth-key")),
+#./evepraisal/app.go:187:                        []byte(viper.GetString("cookie-encryption-key")))
+#./evepraisal/app.go:182:        webContext.ExtraJS = viper.GetString("extra-js")
+extra-js=""
+
+#./evepraisal/app.go:37: priceDB, err := bolt.NewPriceDB(filepath.Join(viper.GetString("db_path"), "prices"))
+#./evepraisal/app.go:49: httpCache, err := bolt.NewHTTPCache(filepath.Join(viper.GetString("db_path"), "httpcache"))
+#./evepraisal/app.go:84: appraisalDB, err := bolt.NewAppraisalDB(filepath.Join(viper.GetString("db_path"), "appraisals"))
+#./evepraisal/app.go:127:        staticFetcher, err := staticdump.NewStaticFetcher(staticdumpHTTPClient, viper.GetString("db_path"), func(typeDB typedb.TypeDB) {
+#./evepraisal/app.go:251:                        Cache:      autocert.DirCache(filepath.Join(viper.GetString("db_path"), "certs")),
+#./evepraisal/restore.go:54:     staticFetcher, err := staticdump.NewStaticFetcher(staticdumpHTTPClient, viper.GetString("db_path"), func(newTypeDB typedb.TypeDB) {
+db_path="db/"
+#./evepraisal/app.go:226:                Handler: management.HTTPHandler(app, filepath.Join(viper.GetString("backup_path"), "appraisals.gz")),
+backup_path="db/backups/"
+
+#./evepraisal/app.go:113:        if viper.GetString("newrelic_license-key") != "" {
+#./evepraisal/app.go:114:                newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
+newrelic_app-name="Evepraisal"
+newrelic_license-key=""
+
+#./evepraisal/app.go:70: priceFetcher, err := esi.NewPriceFetcher(fetcherCtx, priceDB, viper.GetString("esi_baseurl"), httpClient)
+esi_baseurl="https://esi.evetech.net/latest"
+#./evepraisal/app.go:197:                                AuthURL:  viper.GetString("sso-authorize-url"),
+sso-authorize-url="https://login.eveonline.com/oauth/authorize"
+#./evepraisal/app.go:202:                webContext.OauthVerifyURL = viper.GetString("sso-verify-url")
+sso-verify-url="https://login.eveonline.com/oauth/verify"
+#./evepraisal/app.go:198:                                TokenURL: viper.GetString("sso-token-url"),
+sso-token-url="https://login.eveonline.com/oauth/token"
+#./evepraisal/app.go:191:        if viper.GetString("sso-client-id") != "" {
+#./evepraisal/app.go:193:                        ClientID:     viper.GetString("sso-client-id"),
+#./evepraisal/app.go:194:                        ClientSecret: viper.GetString("sso-client-secret"),
