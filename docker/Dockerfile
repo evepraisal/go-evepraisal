@@ -12,4 +12,4 @@ RUN apk --update add --no-cache --virtual build-dependencies git gcc musl-dev ma
     rm -rf $GOPATH && \
     apk del build-dependencies
 WORKDIR /evepraisal/
-CMD ["evepraisal"]
+CMD ["./evepraisal"]
