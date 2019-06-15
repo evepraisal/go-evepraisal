@@ -142,7 +142,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 					log.Printf("Adding %s as %s", path, httpPath)
 					body, err := ioutil.ReadFile(path)
 					if err != nil {
-						log.Printf("ERROR: not able to read static file", err)
+						log.Printf("ERROR: not able to read static file: %s", err)
 						return nil
 					}
 					router.GetFunc(

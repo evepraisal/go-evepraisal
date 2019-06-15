@@ -35,7 +35,7 @@ require (
 	github.com/golang/protobuf v0.0.0-20171113180720-1e59b77b52bf // indirect
 	github.com/golang/snappy v0.0.0-20170215233205-553a64147049
 	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect
-	github.com/gordonklaus/ineffassign v0.0.0-20180909121442-1003c8bd00dc // indirect
+	github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8 // indirect
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v0.0.0-20171008214740-a3acf13e802c
@@ -80,12 +80,12 @@ require (
 	github.com/tinylib/msgp v1.0.2 // indirect
 	github.com/walle/lll v0.0.0-20160702150637-8b13b3fbf731 // indirect
 	github.com/willf/bitset v1.1.3 // indirect
-	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
-	golang.org/x/net v0.0.0-20190520210107-018c4d40a106 // indirect
+	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
+	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
 	golang.org/x/oauth2 v0.0.0-20180104230036-30785a2c434e
-	golang.org/x/sys v0.0.0-20190520201301-c432e742b0af // indirect
+	golang.org/x/sys v0.0.0-20190614160838-b47fdc937951 // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20190521203540-521d6ed310dd // indirect
+	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59 // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
