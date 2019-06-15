@@ -11,13 +11,14 @@ import (
 
 // Context contains all of the 'global' app context for the HTTP app
 type Context struct {
-	App            *evepraisal.App
-	BaseURL        string
-	ExtraJS        string
-	AdBlock        string
-	CookieStore    *sessions.CookieStore
-	OauthConfig    *oauth2.Config
-	OauthVerifyURL string
+	App                 *evepraisal.App
+	BaseURL             string
+	ExtraJS             string
+	AdBlock             string
+	CookieStore         *sessions.CookieStore
+	OauthConfig         *oauth2.Config
+	OauthVerifyURL      string
+	ExtraStaticFilePath string
 
 	templates map[string]*template.Template
 	etags     map[string]string

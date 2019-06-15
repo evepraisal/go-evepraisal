@@ -67,6 +67,10 @@ func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath s
 
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {
+		rmErr := os.Remove(staticDataPath)
+		if rmErr != nil {
+			log.Printf("ERROR: Failed to remove type db zip file after failing to fully download it", rmErr)
+		}
 		return err
 	}
 

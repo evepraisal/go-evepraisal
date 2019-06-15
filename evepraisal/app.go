@@ -105,7 +105,7 @@ func appMain() {
 	staticdumpHTTPClient.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	staticdumpHTTPClient.Timeout = 60 * time.Second
+	staticdumpHTTPClient.Timeout = 600 * time.Second
 	staticdumpHTTPClient.Backoff = pester.ExponentialJitterBackoff
 	staticdumpHTTPClient.MaxRetries = 2
 	staticdumpHTTPClient.LogHook = func(e pester.ErrEntry) { log.Println(httpClient.FormatError(e)) }
@@ -181,6 +181,7 @@ func appMain() {
 	webContext.BaseURL = strings.TrimSuffix(viper.GetString("base-url"), "/")
 	webContext.ExtraJS = viper.GetString("extra-js")
 	webContext.AdBlock = viper.GetString("ad-block")
+	webContext.ExtraStaticFilePath = viper.GetString("extra-static-file-path")
 	if viper.GetString("cookie-auth-key") != "" {
 		webContext.CookieStore = sessions.NewCookieStore(
 			[]byte(viper.GetString("cookie-auth-key")),

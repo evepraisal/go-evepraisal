@@ -2,15 +2,19 @@ package web
 
 import (
 	"io"
+	"io/ioutil"
 	"log"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/NYTimes/gziphandler"
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/go-zoo/bone"
 	"github.com/gorilla/context"
-	"github.com/mash/go-accesslog"
+	accesslog "github.com/mash/go-accesslog"
 	newrelic "github.com/newrelic/go-agent"
 )
 
@@ -129,6 +133,31 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	router.GetFunc("/user/history", ctx.authWrapper(ctx.HandleUserHistoryAppraisals))
 	router.PostFunc("/user/history", ctx.authWrapper(ctx.HandleUserHistoryAppraisals))
 	router.PostFunc("/a/delete/#appraisalID^[a-zA-Z0-9]+$", ctx.authWrapper(ctx.HandleDeleteAppraisal))
+
+	if ctx.ExtraStaticFilePath != "" {
+		err := filepath.Walk(ctx.ExtraStaticFilePath,
+			func(path string, info os.FileInfo, err error) error {
+				if !info.IsDir() {
+					httpPath := strings.TrimPrefix(path, ctx.ExtraStaticFilePath)
+					log.Printf("Adding %s as %s", path, httpPath)
+					body, err := ioutil.ReadFile(path)
+					if err != nil {
+						log.Printf("ERROR: not able to read static file", err)
+						return nil
+					}
+					router.GetFunc(
+						httpPath,
+						func(w http.ResponseWriter, r *http.Request) {
+							r.Header["Content-Type"] = []string{mime.TypeByExtension(filepath.Ext(path))}
+							w.Write(body)
+						})
+				}
+				return nil
+			})
+		if err != nil {
+			log.Println(err)
+		}
+	}
 
 	router.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx.renderErrorPage(r, w, http.StatusNotFound, "Not Found", "I couldn't find what you're looking for")

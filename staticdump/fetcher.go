@@ -36,7 +36,7 @@ func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB
 
 	err := fetcher.RunOnce()
 	if err != nil {
-		return nil, err
+		log.Printf("ERROR: failed to fetch static data from CCP: %s", err)
 	}
 
 	fetcher.wg.Add(1)
