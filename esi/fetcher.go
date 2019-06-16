@@ -167,7 +167,7 @@ func (p *PriceFetcher) runOnce() {
 		items := make([]evepraisal.MarketItemPrices, len(pmap))
 		i := 0
 		for typeID, prices := range pmap {
-			items[0] = evepraisal.MarketItemPrices{
+			items[i] = evepraisal.MarketItemPrices{
 				Market: market,
 				TypeID: typeID,
 				Prices: prices,
