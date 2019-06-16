@@ -236,8 +236,12 @@ func (db *TypeDB) PutTypes(eveTypes []typedb.EveType) error {
 			encodedEveTypeID := make([]byte, 8)
 			binary.BigEndian.PutUint64(encodedEveTypeID, uint64(eveType.ID))
 
-			// NOTE - only index market items by name. We don't care as much about non-market items
-			if eveType.MarketGroupID != 0 {
+			// NOTE - only index off-market items by name if it's not going to override another type
+			skipByName := eveType.MarketGroupID == 0 && db.HasType(eveType.Name)
+			if skipByName {
+				log.Println("skipping", eveType)
+			}
+			if !skipByName {
 				byName := tx.Bucket([]byte("types_by_name"))
 				err = byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
 				if err != nil {
