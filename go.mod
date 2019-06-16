@@ -5,6 +5,7 @@ require (
 	github.com/NYTimes/gziphandler v1.0.0
 	github.com/RoaringBitmap/roaring v0.4.0 // indirect
 	github.com/Smerity/govarint v0.0.0-20150407073650-7265e41f48f1 // indirect
+	github.com/aclements/go-moremath v0.0.0-20190506201756-286cc0be6f75 // indirect
 	github.com/alexflint/go-arg v0.0.0-20180516182405-f7c0423bd11e // indirect
 	github.com/alexflint/go-scalar v0.0.0-20170216020425-e80c3b7ed292 // indirect
 	github.com/blevesearch/bleve v0.0.0-20180111160135-4d71e901e866
@@ -19,7 +20,7 @@ require (
 	github.com/cznic/mathutil v0.0.0-20180504122225-ca4c9f2c1369 // indirect
 	github.com/cznic/strutil v0.0.0-20171016134553-529a34b1c186 // indirect
 	github.com/davecgh/go-spew v1.1.0
-	github.com/dietsche/rfsnotify v0.0.0-20150112005255-94bf32bab0af
+	github.com/dietsche/rfsnotify v0.0.0-20150112005255-94bf32bab0af // indirect
 	github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4
 	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712 // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.0
@@ -34,6 +35,12 @@ require (
 	github.com/go-zoo/bone v0.0.0-20160911183509-fd0aebc74e90
 	github.com/golang/protobuf v0.0.0-20171113180720-1e59b77b52bf // indirect
 	github.com/golang/snappy v0.0.0-20170215233205-553a64147049
+	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect
+	github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82
+	github.com/gonum/internal v0.0.0-20181124074243-f884aa714029 // indirect
+	github.com/gonum/lapack v0.0.0-20181123203213-e4cdc5a0bff9 // indirect
+	github.com/gonum/matrix v0.0.0-20181209220409-c518dec07be9 // indirect
+	github.com/gonum/stat v0.0.0-20181125101827-41a0da705a5b
 	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect
 	github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8 // indirect
 	github.com/gorilla/context v1.1.1
@@ -86,9 +93,10 @@ require (
 	golang.org/x/sys v0.0.0-20190614160838-b47fdc937951 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59 // indirect
+	gonum.org/v1/gonum v0.0.0-20190614173140-2bf3099108bb // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/fsnotify.v1 v1.4.7
+	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.0.0
 )
