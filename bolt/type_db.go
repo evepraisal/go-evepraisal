@@ -238,9 +238,6 @@ func (db *TypeDB) PutTypes(eveTypes []typedb.EveType) error {
 
 			// NOTE - only index off-market items by name if it's not going to override another type
 			skipByName := eveType.MarketGroupID == 0 && db.HasType(eveType.Name)
-			if skipByName {
-				log.Println("skipping", eveType)
-			}
 			if !skipByName {
 				byName := tx.Bucket([]byte("types_by_name"))
 				err = byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
