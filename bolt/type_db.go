@@ -223,27 +223,33 @@ func (db *TypeDB) ListTypes(startingTypeID int64, limit int64) ([]typedb.EveType
 	return items, err
 }
 
-// PutType will insert/update the given EveType
-func (db *TypeDB) PutType(eveType typedb.EveType) error {
-	typeBytes, err := json.Marshal(eveType)
-	if err != nil {
-		return err
-	}
-	typeBytes = snappy.Encode(nil, typeBytes)
-	encodedEveTypeID := make([]byte, 8)
-	binary.BigEndian.PutUint64(encodedEveTypeID, uint64(eveType.ID))
+// PutTypes will insert/update the given EveTypes
+func (db *TypeDB) PutTypes(eveTypes []typedb.EveType) error {
+	err := db.db.Update(func(tx *bolt.Tx) error {
+		for _, eveType := range eveTypes {
 
-	err = db.db.Update(func(tx *bolt.Tx) error {
-		byName := tx.Bucket([]byte("types_by_name"))
-		err = byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
-		if err != nil {
-			return err
-		}
+			typeBytes, err := json.Marshal(eveType)
+			if err != nil {
+				return err
+			}
+			typeBytes = snappy.Encode(nil, typeBytes)
+			encodedEveTypeID := make([]byte, 8)
+			binary.BigEndian.PutUint64(encodedEveTypeID, uint64(eveType.ID))
 
-		byID := tx.Bucket([]byte("types_by_id"))
-		err = byID.Put(encodedEveTypeID, typeBytes)
-		if err != nil {
-			return err
+			// NOTE - only index market items by name. We don't care as much about non-market items
+			if eveType.MarketGroupID != 0 {
+				byName := tx.Bucket([]byte("types_by_name"))
+				err = byName.Put([]byte(strings.ToLower(eveType.Name)), typeBytes)
+				if err != nil {
+					return err
+				}
+			}
+
+			byID := tx.Bucket([]byte("types_by_id"))
+			err = byID.Put(encodedEveTypeID, typeBytes)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -252,7 +258,15 @@ func (db *TypeDB) PutType(eveType typedb.EveType) error {
 		return err
 	}
 
-	return db.index.Index(strconv.FormatInt(eveType.ID, 10), eveType.Name)
+	batch := db.index.NewBatch()
+	for _, eveType := range eveTypes {
+		err := batch.Index(strconv.FormatInt(eveType.ID, 10), eveType.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return db.index.Batch(batch)
 }
 
 // Search allows for searching based on an incomplete name of a type
@@ -276,7 +290,7 @@ func (db *TypeDB) Search(s string) []typedb.EveType {
 
 	q := bleve.NewDisjunctionQuery(q1, q2, q3)
 
-	searchRequest := bleve.NewSearchRequest(q)
+	searchRequest := bleve.NewSearchRequestOptions(q, 20, 0, false)
 	searchResults, err := db.index.Search(searchRequest)
 	if err != nil {
 		fmt.Println(err)

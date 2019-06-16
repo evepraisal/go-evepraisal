@@ -164,11 +164,20 @@ func (p *PriceFetcher) runOnce() {
 		default:
 		}
 
-		for itemName, price := range pmap {
-			err = p.db.UpdatePrice(market, itemName, price)
-			if err != nil {
-				log.Printf("Error when updating price: %s", err)
+		items := make([]evepraisal.MarketItemPrices, len(pmap))
+		i := 0
+		for typeID, prices := range pmap {
+			items[0] = evepraisal.MarketItemPrices{
+				Market: market,
+				TypeID: typeID,
+				Prices: prices,
 			}
+			i++
+		}
+
+		err = p.db.UpdatePrices(items)
+		if err != nil {
+			log.Printf("Error when updating prices: %s", err)
 		}
 	}
 	log.Println("Done fetching market data")

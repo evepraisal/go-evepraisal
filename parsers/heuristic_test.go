@@ -54,7 +54,7 @@ func TestHeuristicParser(rt *testing.T) {
 				typeIDMap:   make(map[int64]typedb.EveType),
 			}
 			for _, t := range c.types {
-				db.PutType(t)
+				db.PutTypes([]Evetype{t})
 			}
 			p := HeuristicParser{typeDB: db}
 			result, rest := p.Parse(StringToInput(c.in))
@@ -69,9 +69,11 @@ type StaticTypeDB struct {
 	typeIDMap   map[int64]typedb.EveType
 }
 
-func (db *StaticTypeDB) PutType(t typedb.EveType) error {
-	db.typeNameMap[strings.ToLower(t.Name)] = t
-	db.typeIDMap[t.ID] = t
+func (db *StaticTypeDB) PutTypes(types []typedb.EveType) error {
+	for _, t := range types {
+		db.typeNameMap[strings.ToLower(t.Name)] = t
+		db.typeIDMap[t.ID] = t
+	}
 	return nil
 }
 

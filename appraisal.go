@@ -152,6 +152,12 @@ func (i AppraisalItem) RepresentativePrice() float64 {
 	return float64(i.Quantity) * i.SingleRepresentativePrice()
 }
 
+type MarketItemPrices struct {
+	Market string
+	TypeID int64
+	Prices Prices
+}
+
 // Prices represents prices for an item
 type Prices struct {
 	All      PriceStats `json:"all"`

@@ -144,33 +144,45 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 		}
 	}()
 
-	for i, t := range types {
+	chunkSize := 1000
+	for i := 0; i < len(types); i += chunkSize {
+		end := i + chunkSize
+
+		if end > len(types) {
+			end = len(types)
+		}
+
 		if i%1000 == 0 {
 			select {
 			case <-f.stop:
 				return nil
 			default:
+				log.Printf("Indexed %d/%d types", i, len(types))
 			}
 		}
 
-		var volume float64
-		var ok bool
-		volume, ok = volumeGroupOverrides[t.GroupID]
-		if ok {
-			t.PackagedVolume = volume
+		chunk := make([]typedb.EveType, len(types[i:end]))
+		for i, t := range types[i:end] {
+			var volume float64
+			var ok bool
+			volume, ok = volumeGroupOverrides[t.GroupID]
+			if ok {
+				t.PackagedVolume = volume
+			}
+
+			volume, ok = volumeMarketGroupOverrides[t.MarketGroupID]
+			if ok {
+				t.PackagedVolume = volume
+			}
+
+			volume, ok = volumeItemOverrides[t.ID]
+			if ok {
+				t.PackagedVolume = volume
+			}
+			chunk[i] = t
 		}
 
-		volume, ok = volumeMarketGroupOverrides[t.MarketGroupID]
-		if ok {
-			t.PackagedVolume = volume
-		}
-
-		volume, ok = volumeItemOverrides[t.ID]
-		if ok {
-			t.PackagedVolume = volume
-		}
-
-		err = typeDB.PutType(t)
+		err = typeDB.PutTypes(chunk)
 		if err != nil {
 			return err
 		}

@@ -74,6 +74,7 @@ func appMain() {
 	defer func() {
 		log.Println("Stopping price fetcher")
 		fetcherCancel()
+		// TODO: don't wait forever or fix the bug that causes it to hang
 		derr := priceFetcher.Close()
 		if derr != nil {
 			log.Fatalf("Problem closing priceDB: %s", derr)

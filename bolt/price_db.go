@@ -62,16 +62,23 @@ func (db *PriceDB) GetPrice(market string, typeID int64) (evepraisal.Prices, boo
 
 }
 
-// UpdatePrice updates the price for the given typeID in the given market
-func (db *PriceDB) UpdatePrice(market string, typeID int64, prices evepraisal.Prices) error {
+// UpdatePrices updates the price for the given typeID in the given market
+func (db *PriceDB) UpdatePrices(items []evepraisal.MarketItemPrices) error {
 	return db.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("prices"))
-		priceBytes, err := json.Marshal(prices)
-		if err != nil {
-			return err
-		}
 
-		return b.Put([]byte(fmt.Sprintf("%s|%d", market, typeID)), snappy.Encode(nil, priceBytes))
+		for _, item := range items {
+			priceBytes, err := json.Marshal(item.Prices)
+			if err != nil {
+				return err
+			}
+
+			err = b.Put([]byte(fmt.Sprintf("%s|%d", item.Market, item.TypeID)), snappy.Encode(nil, priceBytes))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
 
