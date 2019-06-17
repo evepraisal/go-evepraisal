@@ -120,5 +120,20 @@ Tritanium X 1`,
 		},
 		Input{},
 		false,
+	}, {
+		"with beginning whitespace",
+		`1865 Compressed Glossy Scordite
+ 105 Compressed Brilliant Gneiss
+  27 Compressed Jet Ochre`,
+		&Listing{
+			Items: []ListingItem{
+				{Name: "Compressed Brilliant Gneiss", Quantity: 105},
+				{Name: "Compressed Glossy Scordite", Quantity: 1865},
+				{Name: "Compressed Jet Ochre", Quantity: 27},
+			},
+			lines: []int{0, 1, 2},
+		},
+		Input{},
+		false,
 	},
 }
