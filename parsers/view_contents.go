@@ -34,7 +34,7 @@ type ViewContentsItem struct {
 var reViewContents = regexp.MustCompile(strings.Join([]string{
 	`^([\S ]*)\t`, // name
 	`([\S ]*)\t`,  // group
-	`(Cargo Hold|Ore Hold|(?:Drone|Fuel) Bay|(?:Low|Medium|High|Rig) Slot|Subsystem|Fighter Bay|)\t`, // location
+	`(Cargo Hold|Ore Hold|(?:Drone|Fuel) Bay|(?:Low|Medium|High|Rig) Slot|Subsystem|Fighter Bay|Fighter Launch Tube|)\t`, // location
 	`([\d,'\.]+)$`, // quantity
 }, ""))
 
