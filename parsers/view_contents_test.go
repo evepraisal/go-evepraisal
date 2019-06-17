@@ -53,5 +53,15 @@ Men's 'Esquire' Coat (red/gold)	Outer	1`,
 			lines: []int{0}},
 		Input{},
 		true,
+	}, {
+		"Fighters - Issue #94",
+		`Einherji II	Light Fighter	Fighter Bay	27`,
+		&ViewContents{
+			Items: []ViewContentsItem{
+				{Name: "Einherji II", Group: "Light Fighter", Location: "Fighter Bay", Quantity: 27},
+			},
+			lines: []int{0}},
+		Input{},
+		true,
 	},
 }
