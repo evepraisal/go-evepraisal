@@ -50,7 +50,6 @@ func (p *ContextListingParser) Parse(input Input) (ParserResult, Input) {
 	}
 
 	matches2, rest := regexParseLines(reListing2, rest)
-
 	for i, match := range matches2 {
 		name := CleanTypeName(match[1])
 		if p.typeDB.HasType(name) {

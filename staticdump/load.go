@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
@@ -152,7 +153,7 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 			ID:                typeID,
 			GroupID:           t.GroupID,
 			MarketGroupID:     t.MarketGroupID,
-			Name:              t.Name.En,
+			Name:              strings.TrimSpace(t.Name.En),
 			Volume:            t.Volume,
 			BasePrice:         t.BasePrice,
 			BlueprintProducts: resolveBlueprintProducts(blueprintsByProductType, typeID),

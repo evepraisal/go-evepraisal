@@ -135,5 +135,16 @@ Tritanium X 1`,
 		},
 		Input{},
 		false,
+	}, {
+		"Singularity Radiation Convertor",
+		`2  Singularity Radiation Convertor`,
+		&Listing{
+			Items: []ListingItem{
+				{Name: "Singularity Radiation Convertor", Quantity: 2},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 }
