@@ -87,12 +87,12 @@ require (
 	github.com/tinylib/msgp v1.0.2 // indirect
 	github.com/walle/lll v0.0.0-20160702150637-8b13b3fbf731 // indirect
 	github.com/willf/bitset v1.1.3 // indirect
-	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
+	golang.org/x/crypto v0.0.0-20190617133340-57b3e21c3d56
 	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
 	golang.org/x/oauth2 v0.0.0-20180104230036-30785a2c434e
-	golang.org/x/sys v0.0.0-20190614160838-b47fdc937951 // indirect
+	golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59 // indirect
+	golang.org/x/tools v0.0.0-20190617190820-da514acc4774 // indirect
 	gonum.org/v1/gonum v0.0.0-20190614173140-2bf3099108bb // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect

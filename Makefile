@@ -22,7 +22,7 @@ default: build
 
 setup:
 	go get -u github.com/go-bindata/go-bindata/go-bindata@v1.0.0
-	go get -u github.com/cespare/reflex@v0.2.0
+	go get -u github.com/cespare/reflex
 	go get -u github.com/jstemmer/go-junit-report@master
 	go get -u github.com/fzipp/gocyclo
 	go get -u github.com/jgautheron/goconst/cmd/goconst

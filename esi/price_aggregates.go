@@ -49,7 +49,7 @@ func getPriceAggregatesForOrders(orders []MarketOrder) evepraisal.Prices {
 		prices.Buy.Min = floats.Min(buyPrices)
 		prices.Buy.Max = floats.Max(buyPrices)
 		prices.Buy.Median = nanToZero(stat.Quantile(0.5, stat.Empirical, buyPrices, buyWeights))
-		prices.Buy.Percentile = nanToZero(stat.Quantile(0.9, stat.Empirical, buyPrices, buyWeights))
+		prices.Buy.Percentile = nanToZero(stat.Quantile(0.99, stat.Empirical, buyPrices, buyWeights))
 		prices.Buy.Stddev = nanToZero(stat.StdDev(buyPrices, buyWeights))
 	}
 
@@ -60,7 +60,7 @@ func getPriceAggregatesForOrders(orders []MarketOrder) evepraisal.Prices {
 		prices.Sell.Min = floats.Min(sellPrices)
 		prices.Sell.Max = floats.Max(sellPrices)
 		prices.Sell.Median = nanToZero(stat.Quantile(0.5, stat.Empirical, sellPrices, sellWeights))
-		prices.Sell.Percentile = nanToZero(stat.Quantile(0.1, stat.Empirical, sellPrices, sellWeights))
+		prices.Sell.Percentile = nanToZero(stat.Quantile(0.01, stat.Empirical, sellPrices, sellWeights))
 		prices.Sell.Stddev = nanToZero(stat.StdDev(sellPrices, sellWeights))
 	}
 
