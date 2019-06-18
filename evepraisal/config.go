@@ -15,6 +15,7 @@ func init() {
 	viper.SetDefault("newrelic_app-name", "Evepraisal")
 	viper.SetDefault("newrelic_license-key", "")
 	viper.SetDefault("management_addr", "127.0.0.1:8090")
+	viper.SetDefault("extra-html-header", "")
 	viper.SetDefault("extra-js", "")
 	viper.SetDefault("ad-block", "")
 	viper.SetDefault("extra-static-file-path", "")

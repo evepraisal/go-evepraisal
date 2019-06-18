@@ -180,6 +180,7 @@ func appMain() {
 
 	webContext := web.NewContext(app)
 	webContext.BaseURL = strings.TrimSuffix(viper.GetString("base-url"), "/")
+	webContext.ExtraHTMLHeader = viper.GetString("extra-html-header")
 	webContext.ExtraJS = viper.GetString("extra-js")
 	webContext.AdBlock = viper.GetString("ad-block")
 	webContext.ExtraStaticFilePath = viper.GetString("extra-static-file-path")

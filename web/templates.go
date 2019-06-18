@@ -167,6 +167,7 @@ func (ctx *Context) Reload() error {
 		}
 	}
 
+	root.New("extra-html-header").Parse(ctx.ExtraHTMLHeader)
 	root.New("extra-javascript").Parse(ctx.ExtraJS)
 	root.New("ad-block").Parse(ctx.AdBlock)
 

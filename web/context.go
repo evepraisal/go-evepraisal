@@ -14,6 +14,7 @@ type Context struct {
 	App                 *evepraisal.App
 	BaseURL             string
 	ExtraJS             string
+	ExtraHTMLHeader     string
 	AdBlock             string
 	CookieStore         *sessions.CookieStore
 	OauthConfig         *oauth2.Config
