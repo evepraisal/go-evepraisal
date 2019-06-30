@@ -63,5 +63,15 @@ Men's 'Esquire' Coat (red/gold)	Outer	1`,
 			lines: []int{0}},
 		Input{},
 		true,
+	}, {
+		"Planetray Commodieties Hold",
+		`Transmitter	Refined Commodities - Tier 2	Planetary Commodities Hold	5605`,
+		&ViewContents{
+			Items: []ViewContentsItem{
+				{Name: "Transmitter", Group: "Refined Commodities - Tier 2", Location: "Planetary Commodities Hold", Quantity: 5605},
+			},
+			lines: []int{0}},
+		Input{},
+		true,
 	},
 }
