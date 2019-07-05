@@ -215,12 +215,15 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	formatHandler := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasSuffix(r.URL.Path, ".json") {
+				r.URL.RawPath = strings.TrimSuffix(r.URL.EscapedPath(), ".json")
 				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".json")
 				r.Header.Set("format", "json")
 			} else if strings.HasSuffix(r.URL.Path, ".raw") {
+				r.URL.RawPath = strings.TrimSuffix(r.URL.EscapedPath(), ".raw")
 				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".raw")
 				r.Header.Set("format", "raw")
 			} else if strings.HasSuffix(r.URL.Path, ".debug") {
+				r.URL.RawPath = strings.TrimSuffix(r.URL.EscapedPath(), ".debug")
 				r.URL.Path = strings.TrimSuffix(r.URL.Path, ".debug")
 				r.Header.Set("format", "debug")
 			} else {
