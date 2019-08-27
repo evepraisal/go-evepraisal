@@ -6,8 +6,7 @@ require (
 	github.com/RoaringBitmap/roaring v0.4.0 // indirect
 	github.com/Smerity/govarint v0.0.0-20150407073650-7265e41f48f1 // indirect
 	github.com/aclements/go-moremath v0.0.0-20190506201756-286cc0be6f75 // indirect
-	github.com/alexflint/go-arg v0.0.0-20180516182405-f7c0423bd11e // indirect
-	github.com/alexflint/go-scalar v0.0.0-20170216020425-e80c3b7ed292 // indirect
+	github.com/alexflint/go-arg v1.1.0 // indirect
 	github.com/blevesearch/bleve v0.0.0-20180111160135-4d71e901e866
 	github.com/blevesearch/blevex v0.0.0-20180227211930-4b158bb555a3 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.1 // indirect
@@ -19,7 +18,7 @@ require (
 	github.com/cznic/b v0.0.0-20180115125044-35e9bbe41f07 // indirect
 	github.com/cznic/mathutil v0.0.0-20180504122225-ca4c9f2c1369 // indirect
 	github.com/cznic/strutil v0.0.0-20171016134553-529a34b1c186 // indirect
-	github.com/davecgh/go-spew v1.1.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dietsche/rfsnotify v0.0.0-20150112005255-94bf32bab0af // indirect
 	github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4
 	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712 // indirect
@@ -70,7 +69,6 @@ require (
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/pelletier/go-toml v1.0.1 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/ffjson v0.0.0-20180717144149-af8b230fcd20
 	github.com/sethgrid/pester v0.0.0-20171127025028-760f8913c048
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
@@ -81,22 +79,23 @@ require (
 	github.com/spf13/pflag v1.0.0 // indirect
 	github.com/spf13/viper v0.0.0-20171227194143-aafc9e6bc7b7
 	github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2 // indirect
-	github.com/stretchr/testify v1.2.0
+	github.com/stretchr/objx v0.2.0 // indirect
+	github.com/stretchr/testify v1.4.0
 	github.com/syndtr/goleveldb v0.0.0-20180815032940-ae2bd5eed72d // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20180730101644-8b1d981498e1 // indirect
 	github.com/tinylib/msgp v1.0.2 // indirect
-	github.com/walle/lll v0.0.0-20160702150637-8b13b3fbf731 // indirect
+	github.com/walle/lll v1.0.1 // indirect
 	github.com/willf/bitset v1.1.3 // indirect
-	golang.org/x/crypto v0.0.0-20190617133340-57b3e21c3d56
-	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
+	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20180104230036-30785a2c434e
-	golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f // indirect
+	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20190617190820-da514acc4774 // indirect
+	golang.org/x/tools v0.0.0-20190825031127-d72b05d2b1b6 // indirect
 	gonum.org/v1/gonum v0.0.0-20190614173140-2bf3099108bb // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v2 v2.0.0
+	gopkg.in/yaml.v2 v2.2.2
 )
