@@ -148,8 +148,8 @@
           </td>
           <td class="numeric-cell text-right align-middle" data-sort-value="-{{$item.TypeVolume | printf "%f"}}">{{humanizeVolume $item.TypeVolume }}<br />{{humanizeVolume $item.TotalVolume }}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.SingleRepresentativePrice | printf "%f"}}">
-            {{commaf $item.Prices.Sell.Percentile}}<br />
-            {{commaf $item.Prices.Buy.Percentile}}</td>
+            {{commaf $item.SellPrice}}<br />
+            {{commaf $item.BuyPrice}}</td>
           <td class="numeric-cell text-right" data-sort-value="-{{$item.RepresentativePrice | printf "%f"}}">
             {{commaf $item.SellTotal}}<br />
             {{commaf $item.BuyTotal}}</td>

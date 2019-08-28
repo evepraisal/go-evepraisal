@@ -119,40 +119,47 @@ type AppraisalItem struct {
 	} `json:"meta,omitempty"`
 }
 
+func (i AppraisalItem) SellPrice() float64 {
+	if i.Prices.Sell.Percentile - i.Prices.Sell.Min > i.Prices.Sell.Min * 0.02 {
+		return i.Prices.Sell.Min
+	}
+	return i.Prices.Sell.Percentile
+}
+
+func (i AppraisalItem) BuyPrice() float64 {
+	if i.Prices.Buy.Max - i.Prices.Buy.Percentile > i.Prices.Buy.Max * 0.02 {
+		return i.Prices.Buy.Max
+	}
+	return i.Prices.Buy.Percentile
+}
+
 // SellTotal is used to give a representative sell total for an item
 func (i AppraisalItem) SellTotal() float64 {
-	return float64(i.Quantity) * i.Prices.Sell.Percentile
+	return float64(i.Quantity) * i.SellPrice()
 }
 
 // BuyTotal is used to give a representative buy total for an item
 func (i AppraisalItem) BuyTotal() float64 {
-	return float64(i.Quantity) * i.Prices.Buy.Percentile
+	return float64(i.Quantity) * i.BuyPrice()
 }
 
 // SellISKVolume is used to give ISK per volume using the representative sell price
 func (i AppraisalItem) SellISKVolume() float64 {
-	return i.Prices.Sell.Percentile / i.TypeVolume
+	return i.SellPrice() / i.TypeVolume
 }
 
 // BuyISKVolume is used to give ISK per volume using the representative buy price
 func (i AppraisalItem) BuyISKVolume() float64 {
-	return i.Prices.Buy.Percentile / i.TypeVolume
+	return i.BuyPrice() / i.TypeVolume
 }
 
 // SingleRepresentativePrice is used to give a representative price for a single item
 func (i AppraisalItem) SingleRepresentativePrice() float64 {
-	if i.Prices.Sell.Percentile != 0 {
+	if i.SellPrice() != 0 {
 		return i.Prices.Sell.Percentile
 	}
 
-	if i.Prices.Buy.Percentile != 0 {
-		return i.Prices.Buy.Percentile
-	}
-
-	if i.Prices.Sell.Min != 0 {
-		return i.Prices.Sell.Min
-	}
-	return i.Prices.Buy.Max
+	return i.Prices.Buy.Percentile
 }
 
 // RepresentativePrice is used to give a representative price for an item. This is used for sorting.
@@ -331,7 +338,7 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 				continue
 			}
 
-			marketPrices = marketPrices.Add(p.Set(p.Sell.Percentile).Mul(float64(product.Quantity)))
+			marketPrices = marketPrices.Add(p.Set(p.Sell.Min).Mul(float64(product.Quantity)))
 		}
 
 		manufacturedPrices := Prices{Strategy: "bpc"}
@@ -341,7 +348,7 @@ func (app *App) PricesForItem(market string, item AppraisalItem) (Prices, error)
 				log.Println("Failed getting getting price for component", component.TypeID)
 				continue
 			}
-			manufacturedPrices = manufacturedPrices.Add(p.Set(math.Min(p.Sell.Percentile, p.Buy.Percentile)).Mul(float64(component.Quantity)))
+			manufacturedPrices = manufacturedPrices.Add(p.Set(math.Min(p.Sell.Min, p.Buy.Max)).Mul(float64(component.Quantity)))
 		}
 
 		// Assume Industry V (+10%) and misc costs (-1%)
@@ -406,8 +413,8 @@ func (app *App) PopulateItems(appraisal *Appraisal) {
 			prices = prices.Mul(appraisal.PricePercentage / 100)
 		}
 		appraisal.Items[i].Prices = prices
-		appraisal.Totals.Buy += prices.Buy.Percentile * float64(appraisal.Items[i].Quantity)
-		appraisal.Totals.Sell += prices.Sell.Percentile * float64(appraisal.Items[i].Quantity)
+		appraisal.Totals.Buy += prices.Buy.Max * float64(appraisal.Items[i].Quantity)
+		appraisal.Totals.Sell += prices.Sell.Min * float64(appraisal.Items[i].Quantity)
 		appraisal.Totals.Volume += appraisal.Items[i].TypeVolume * float64(appraisal.Items[i].Quantity)
 	}
 }
