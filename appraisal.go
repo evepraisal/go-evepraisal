@@ -120,14 +120,14 @@ type AppraisalItem struct {
 }
 
 func (i AppraisalItem) SellPrice() float64 {
-	if i.Prices.Sell.Percentile - i.Prices.Sell.Min > i.Prices.Sell.Min * 0.02 {
+	if i.Prices.Sell.Percentile-i.Prices.Sell.Min > i.Prices.Sell.Min*0.02 {
 		return i.Prices.Sell.Min
 	}
 	return i.Prices.Sell.Percentile
 }
 
 func (i AppraisalItem) BuyPrice() float64 {
-	if i.Prices.Buy.Max - i.Prices.Buy.Percentile > i.Prices.Buy.Max * 0.02 {
+	if i.Prices.Buy.Max-i.Prices.Buy.Percentile > i.Prices.Buy.Max*0.02 {
 		return i.Prices.Buy.Max
 	}
 	return i.Prices.Buy.Percentile
