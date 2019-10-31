@@ -66,7 +66,7 @@ lint:
 	@echo "ineffassign"
 	@ineffassign .
 	@echo "line length linter"
-	@lll --maxlength 150 ${PKG_FILES}
+	@lll --maxlength 150 --skiplist="" ${PKG_FILES}
 	@echo "misspell"
 	@misspell ${PKG_FILES}
 

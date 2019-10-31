@@ -6,7 +6,7 @@ require (
 	github.com/RoaringBitmap/roaring v0.4.0 // indirect
 	github.com/Smerity/govarint v0.0.0-20150407073650-7265e41f48f1 // indirect
 	github.com/aclements/go-moremath v0.0.0-20190506201756-286cc0be6f75 // indirect
-	github.com/alexflint/go-arg v1.1.0 // indirect
+	github.com/alexflint/go-arg v1.2.0 // indirect
 	github.com/blevesearch/bleve v0.0.0-20180111160135-4d71e901e866
 	github.com/blevesearch/blevex v0.0.0-20180227211930-4b158bb555a3 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.1 // indirect
@@ -15,6 +15,7 @@ require (
 	github.com/cespare/reflex v0.2.0 // indirect
 	github.com/client9/misspell v0.3.4 // indirect
 	github.com/couchbase/vellum v0.0.0-20171220004538-ed84a675e24e // indirect
+	github.com/creack/pty v1.1.9 // indirect
 	github.com/cznic/b v0.0.0-20180115125044-35e9bbe41f07 // indirect
 	github.com/cznic/mathutil v0.0.0-20180504122225-ca4c9f2c1369 // indirect
 	github.com/cznic/strutil v0.0.0-20171016134553-529a34b1c186 // indirect
@@ -26,12 +27,14 @@ require (
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
+	github.com/fogleman/gg v1.3.0
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 // indirect
 	github.com/glycerine/go-unsnap-stream v0.0.0-20171127062821-62a9a9eb44fd // indirect
 	github.com/glycerine/goconvey v0.0.0-20180728074245-46e3a41ad493 // indirect
 	github.com/go-bindata/go-bindata v1.0.0 // indirect
 	github.com/go-zoo/bone v0.0.0-20160911183509-fd0aebc74e90
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/protobuf v0.0.0-20171113180720-1e59b77b52bf // indirect
 	github.com/golang/snappy v0.0.0-20170215233205-553a64147049
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect
@@ -51,10 +54,11 @@ require (
 	github.com/husobee/vestigo v1.0.2
 	github.com/jgautheron/goconst v0.0.0-20170703170152-9740945f5dcb // indirect
 	github.com/jmhodges/levigo v0.0.0-20161115193449-c42d9e0ca023 // indirect
-	github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024 // indirect
+	github.com/jstemmer/go-junit-report v0.9.2-0.20191008195320-984a47ca6b0a // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kr/pty v1.1.8 // indirect
 	github.com/leekchan/accounting v0.0.0-20161211142212-a35854c07593
 	github.com/magiconair/properties v1.7.4 // indirect
 	github.com/martinlindhe/base36 v0.0.0-20160713145151-44e007f2c95e
@@ -87,11 +91,12 @@ require (
 	github.com/walle/lll v1.0.1 // indirect
 	github.com/willf/bitset v1.1.3 // indirect
 	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20180104230036-30785a2c434e
-	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
+	golang.org/x/sys v0.0.0-20191029155521-f43be2a4598c // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20190825031127-d72b05d2b1b6 // indirect
+	golang.org/x/tools v0.0.0-20191031160344-02d0efc0fb61 // indirect
 	gonum.org/v1/gonum v0.0.0-20190614173140-2bf3099108bb // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
@@ -99,3 +104,5 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )
+
+go 1.13
