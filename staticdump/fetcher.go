@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -64,16 +63,21 @@ func NewStaticFetcher(client *pester.Client, dbPath string, callback func(typeDB
 
 // RunOnce will fetch, parse and call the callback with a fresh type database
 func (f *StaticFetcher) RunOnce() error {
-	staticDumpURL, err := FindLastStaticDumpURL(f.client)
+	staticDumpChecksum, err := FindLastStaticDumpChecksum(f.client)
 	if err != nil {
 		// TODO: fallback to previously downloaded static data
 		return err
 	}
 
-	log.Println("Latest Static Dump URL", staticDumpURL)
+	staticDumpURL, err := FindLastStaticDumpUrl(f.client)
+	if err != nil {
+		// TODO: fallback to previously downloaded static data
+		return err
+	}
 
-	staticDumpURLBase := filepath.Base(staticDumpURL)
-	typedbPath := filepath.Join(f.dbPath, "types-"+strings.TrimSuffix(staticDumpURLBase, filepath.Ext(staticDumpURLBase)))
+	log.Println("Latest Static Dump URL", staticDumpURL, staticDumpChecksum)
+
+	typedbPath := filepath.Join(f.dbPath, "types-"+staticDumpChecksum+".zip")
 	if _, err = os.Stat(typedbPath); os.IsNotExist(err) {
 		err = f.loadTypes(typedbPath, staticDumpURL)
 		if err != nil {
@@ -83,7 +87,7 @@ func (f *StaticFetcher) RunOnce() error {
 		return err
 	}
 
-	log.Println("Done loading types", staticDumpURLBase)
+	log.Println("Done loading types", typedbPath)
 
 	typeDB, err := bolt.NewTypeDB(typedbPath, false)
 	if err != nil {

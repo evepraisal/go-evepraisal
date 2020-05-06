@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/sethgrid/pester"
@@ -17,34 +17,38 @@ import (
 
 var userAgent = "go-evepraisal"
 
-// FindLastStaticDumpURL returns the URL of the last eve static data dump
-func FindLastStaticDumpURL(client *pester.Client) (string, error) {
-	i := 0
-	current := time.Now()
-	for i < 200 {
-		url := "https://cdn1.eveonline.com/data/sde/tranquility/sde-" + current.Format("20060102") + "-TRANQUILITY.zip"
-		req, err := http.NewRequest("HEAD", url, nil)
-		if err != nil {
-			return "", err
-		}
-		req.Header.Add("User-Agent", userAgent)
+func FindLastStaticDumpUrl(client *pester.Client) (string, error) {
+	return "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/sde.zip", nil
+}
 
-		resp, err := client.Do(req)
-		if err != nil {
-			return "", err
-		}
-
-		switch resp.StatusCode {
-		case 200, 304:
-			return url, nil
-		case 404:
-			current = current.Add(-24 * time.Hour)
-			continue
-		default:
-			return "", fmt.Errorf("Unexpected response when trying to find last static dump: %s", resp.Status)
-		}
+// FindLastStaticDumpChecksum returns the URL of the last eve static data dump
+func FindLastStaticDumpChecksum(client *pester.Client) (string, error) {
+	req, err := http.NewRequest("GET", "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/checksum", nil)
+	if err != nil {
+		return "", err
 	}
-	return "", errors.New("Could not find latest static dump URL")
+	req.Header.Add("User-Agent", userAgent)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("BODY:", string(body), resp.StatusCode)
+
+	switch resp.StatusCode {
+	case 200, 304:
+		return string(body), nil
+	case 404:
+		return "", errors.New("Could not find latest static dump checksum (404)")
+	default:
+		return "", fmt.Errorf("Unexpected response when trying to find last static dump checksum: %s", resp.Status)
+	}
 }
 
 func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath string) error {
