@@ -18,6 +18,7 @@ type EveType struct {
 	GroupID           int64       `json:"group_id"`
 	MarketGroupID     int64       `json:"market_group_id"`
 	Name              string      `json:"name"`
+	Aliases           []string    `json:"aliases"`
 	Volume            float64     `json:"volume"`
 	PackagedVolume    float64     `json:"packaged_volume"`
 	BasePrice         float64     `json:"base_price"`

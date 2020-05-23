@@ -164,6 +164,13 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 			Components:        resolveComponents(blueprintsByProductType, typeID),
 			BaseComponents:    flattenComponents(resolveBaseComponents(blueprintsByProductType, typeID, 1, 5)),
 		}
+
+		nameOverride, ok := nameOverrides[typeID]
+		if ok {
+			eveType.Aliases = []string{eveType.Name}
+			eveType.Name = nameOverride
+		}
+
 		types = append(types, eveType)
 	}
 
