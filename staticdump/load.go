@@ -39,7 +39,7 @@ func FindLastStaticDumpChecksum(client *pester.Client) (string, error) {
 		return "", err
 	}
 
-	log.Println("BODY:", string(body), resp.StatusCode)
+	log.Println("Checksum Body:", string(body), resp.StatusCode)
 
 	switch resp.StatusCode {
 	case 200, 304:
@@ -160,16 +160,15 @@ func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 			Name:              strings.TrimSpace(t.Name.En),
 			Volume:            t.Volume,
 			BasePrice:         t.BasePrice,
+			Aliases:           []string{},
 			BlueprintProducts: resolveBlueprintProducts(blueprintsByProductType, typeID),
 			Components:        resolveComponents(blueprintsByProductType, typeID),
 			BaseComponents:    flattenComponents(resolveBaseComponents(blueprintsByProductType, typeID, 1, 5)),
 		}
 
-		nameOverride, ok := nameOverrides[typeID]
-		if ok {
-			eveType.Aliases = []string{eveType.Name}
-			eveType.Name = nameOverride
-		}
+		name, aliases := computeAliases(typeID, eveType.Name)
+		eveType.Name = name
+		eveType.Aliases = aliases
 
 		types = append(types, eveType)
 	}
