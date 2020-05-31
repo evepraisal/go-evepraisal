@@ -2,8 +2,13 @@ package staticdump
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
+	"strings"
 )
+
+// NOTE(sudorandom): This entire file seems incresibly bad. For some reason, CCP stopped updating the static data to coorespond to the
+// item renames that they started doing this year.
 
 var nameOverrides = map[int64]string{
 	// https://www.eveonline.com/article/q46atf/patch-notes-for-january-2020-release
@@ -129,7 +134,59 @@ func patch_18_04RigOverride(typeName string) (string, bool) {
 	return b.String(), true
 }
 
-var patch_18_04ArmorHardenerOverrideRegex = regexp.MustCompile(`^(|Experimental|Limited|Prototype|Upgraded|Ammatar Navy|Dark Blood|Domination|Federation Navy|Imperial Navy|Khanid Navy|Republic Fleet|Shadow Serpentis|True Sansha|Ahremen's Modified|Brokara's Modified|Brynn's Modified|Chelm's Modified|Cormack's Modified|Draclira's Modified|Raysere's Modified|Selynne's Modified|Setele's Modified|Tairei's Modified|Tuvan's Modified|Vizan's Modified|Centus A-Type|Centus B-Type|Centus C-Type|Centus X-Type|Core A-Type|Core B-Type|Core C-Type|Core X-Type|Corpus A-Type|Corpus B-Type|Corpus C-Type|Corpus X-Type) Armor (EM|Kinetic|Explosive|Thermal) Hardener ?(I|II)? ?(Blueprint)?$`)
+var flavorTypes = []string{
+	"",
+	"Experimental",
+	"Limited",
+	"Prototype",
+	"Upgraded",
+	"Ammatar Navy",
+	"Dark Blood",
+	"Domination",
+	"Federation Navy",
+	"Imperial Navy",
+	"Khanid Navy",
+	"Republic Fleet",
+	"Shadow Serpentis",
+	"True Sansha",
+	"Ahremen's Modified",
+	"Brokara's Modified",
+	"Brynn's Modified",
+	"Chelm's Modified",
+	"Cormack's Modified",
+	"Draclira's Modified",
+	"Raysere's Modified",
+	"Selynne's Modified",
+	"Setele's Modified",
+	"Tairei's Modified",
+	"Tuvan's Modified",
+	"Vizan's Modified",
+	"Centus A-Type",
+	"Centus B-Type",
+	"Centus C-Type",
+	"Centus X-Type",
+	"Core A-Type",
+	"Core B-Type",
+	"Core C-Type",
+	"Core X-Type",
+	"Corpus A-Type",
+	"Corpus B-Type",
+	"Corpus C-Type",
+	"Corpus X-Type",
+}
+
+var damageTypes = []string{
+	"EM",
+	"Kinetic",
+	"Explosive",
+	"Thermal",
+}
+
+var patch_18_04ArmorHardenerOverrideRegex = regexp.MustCompile(fmt.Sprintf(
+	`^(%s) Armor (%s) Hardener ?(I|II)? ?(Blueprint)?$`,
+	strings.Join(flavorTypes, "|"),
+	strings.Join(damageTypes, "|"),
+))
 
 func patch_18_04ArmorHardenerOverride(typeName string) (string, bool) {
 	match := patch_18_04ArmorHardenerOverrideRegex.FindStringSubmatch(typeName)
