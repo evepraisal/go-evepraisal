@@ -113,7 +113,25 @@ func computeAliases(typeID int64, typeName string) (string, []string) {
 	return typeName, nil
 }
 
-var patch_18_04RigOverrideRegex = regexp.MustCompile(`^Anti-(EM|Kinetic|Explosive|Thermal) (Screen Reinforcer|Pump)$`)
+var sizes = []string{
+	"Small",
+	"Medium",
+	"Large",
+	"Capital",
+}
+
+var damageTypes = []string{
+	"EM",
+	"Kinetic",
+	"Explosive",
+	"Thermal",
+}
+
+var patch_18_04RigOverrideRegex = regexp.MustCompile(fmt.Sprintf(
+	`^(%s) Anti-(%s) (Screen Reinforcer|Pump) (I|II)$`,
+	strings.Join(sizes, "|"),
+	strings.Join(damageTypes, "|"),
+))
 
 func patch_18_04RigOverride(typeName string) (string, bool) {
 	match := patch_18_04RigOverrideRegex.FindStringSubmatch(typeName)
@@ -122,15 +140,20 @@ func patch_18_04RigOverride(typeName string) (string, bool) {
 	}
 
 	b := bytes.NewBuffer(nil)
-	// Damage Type
+	// Size
 	b.WriteString(match[1])
 	b.WriteString(" ")
-	switch match[2] {
+	// Damage Type
+	b.WriteString(match[2])
+	b.WriteString(" ")
+	switch match[3] {
 	case "Screen Reinforcer":
 		b.WriteString("Shield Reinforcer")
 	case "Pump":
 		b.WriteString("Armor Reinforcer")
 	}
+	b.WriteString(" ")
+	b.WriteString(match[4])
 	return b.String(), true
 }
 
@@ -173,13 +196,6 @@ var flavorTypes = []string{
 	"Corpus B-Type",
 	"Corpus C-Type",
 	"Corpus X-Type",
-}
-
-var damageTypes = []string{
-	"EM",
-	"Kinetic",
-	"Explosive",
-	"Thermal",
 }
 
 var patch_18_04ArmorHardenerOverrideRegex = regexp.MustCompile(fmt.Sprintf(
