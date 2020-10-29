@@ -1,4 +1,5 @@
-{{define "title"}}Evepraisal - Appraisal Result {{.Page.Appraisal.ID}} [{{.Page.Appraisal.Kind}}]{{end}}
+{{define "title"}}Evepraisal - Appraisal {{.Page.Appraisal.ID}}: {{prettybignumber .Page.Appraisal.Totals.Buy}} Buy / {{prettybignumber .Page.Appraisal.Totals.Sell}} Sell{{end}}
+{{define "description"}}{{range $i, $item := .Page.Appraisal.Items}}{{ if (lt $i 10) }}{{$item.TypeName}} - {{comma $item.Quantity}}&#xD;&#xA;{{end}}{{end}}{{end}}
 
 {{define "content"}}
 <!-- Delete Modal -->
