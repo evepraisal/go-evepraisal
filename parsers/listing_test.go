@@ -146,5 +146,16 @@ Tritanium X 1`,
 		},
 		Input{},
 		false,
+	}, {
+		"With colon after item name",
+		`Tritanium: 53333`,
+		&Listing{
+			Items: []ListingItem{
+				{Name: "Tritanium", Quantity: 53333},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		false,
 	},
 }

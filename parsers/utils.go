@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-var bigNumberRegex = `[\d,'\.\ ` + "\u00a0\xc2\xa0" + `]`
-var cleanIntegers = regexp.MustCompile(`[,\'\.\ ` + "\u00a0\xc2\xa0" + `]`)
+var bigNumberRegex = `[\d,'\.\ ’` + "\u00a0\xc2\xa0’" + `]`
+var cleanIntegers = regexp.MustCompile(`[,\'\.\ ’` + "\u00a0\xc2\xa0" + `]`)
 var separatorCharacters = map[rune]bool{
 	',':    true,
 	'.':    true,
@@ -17,6 +17,7 @@ var separatorCharacters = map[rune]bool{
 	'\'':   true,
 	'\xc2': true,
 	'\xa0': true,
+	'’':    true,
 }
 
 func splitDecimal(s string) (string, string) {

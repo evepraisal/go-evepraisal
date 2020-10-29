@@ -138,5 +138,16 @@ Typhoon Blueprint	1	Battleship Blueprint	Blueprint	BLUEPRINT COPY`,
 		},
 		Input{},
 		true,
+	}, {
+		"German thousands separator",
+		`Chiral Structures*	8’865	Grundlegende Güter – Rang 1*	Planetarische Güter*	`,
+		&Contract{
+			Items: []ContractItem{
+				{Name: "Chiral Structures", Quantity: 8865, Type: "Grundlegende Güter – Rang 1*", Category: "Planetarische Güter*"},
+			},
+			lines: []int{0},
+		},
+		Input{},
+		true,
 	},
 }

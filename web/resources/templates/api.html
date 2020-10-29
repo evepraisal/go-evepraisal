@@ -81,244 +81,112 @@ pre {
 }
 </code></pre>
 
-  <h3>Create Appraisal <small class="text-muted">POST /appraisal.json</small></h3>
-  <p>This enpoint creates a new appraisal.</p>
+  <h3>Create Appraisal <small class="text-muted">POST /appraisal/structured.json</small></h3>
+  <p>This enpoint creates a new appraisal and returns the price data in JSON format.</p>
 
-  <h4>CURL Example (without persisting)</h4>
-  <pre><code>curl -XPOST "https://evepraisal.com/appraisal.json?market=jita&raw_textarea=avatar&persist=no"</code></pre>
-
-  <pre><code>{
-    "appraisal": {
-        "created": 1505593417,
-        "items": [
-            {
-                "meta": {
-                    "bpc": false
-                },
-                "name": "avatar",
-                "prices": {
-                    "all": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
-                    },
-                    "buy": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
-                    },
-                    "sell": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
-                    },
-                    "strategy": "ccp",
-                    "updated": "2017-09-16T20:22:26.885313357Z"
-                },
-                "quantity": 1,
-                "typeID": 11567,
-                "typeName": "Avatar",
-                "typeVolume": 10000000
-            }
-        ],
-        "kind": "listing",
-        "market_name": "jita",
-        "raw": "avatar",
-        "totals": {
-            "buy": 64840457150.95,
-            "sell": 64840457150.95,
-            "volume": 10000000
-        },
-        "unparsed": {}
-    }
-}</code></pre>
-
-  <h4>CURL Example (with persisting)</h4>
-  <pre><code>curl -XPOST "https://evepraisal.com/appraisal.json?market=jita&raw_textarea=avatar"</code></pre>
+  <h4>CURL Example</h4>
+  <pre><code>curl -XPOST "https://evepraisal.com/appraisal/structured.json" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'</code></pre>
 
   <pre><code>{
     "appraisal": {
-        "created": 1505593417,
-        "id": "coyfr",
+        "created": 1603934571,
         "items": [
             {
-                "meta": {
-                    "bpc": false
-                },
-                "name": "avatar",
+                "meta": {},
+                "name": "Rifter",
                 "prices": {
                     "all": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
+                        "avg": 425135.29147805576,
+                        "max": 2899000,
+                        "median": 434000,
+                        "min": 10210,
+                        "order_count": 25,
+                        "percentile": 560000,
+                        "stddev": 168744.1130833041,
+                        "volume": 554
                     },
                     "buy": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
+                        "avg": 341622.44776817923,
+                        "max": 451300,
+                        "median": 416200,
+                        "min": 10210,
+                        "order_count": 12,
+                        "percentile": 451300,
+                        "stddev": 80502.83186350626,
+                        "volume": 323
                     },
                     "sell": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
+                        "avg": 577212.5309505196,
+                        "max": 2899000,
+                        "median": 559100,
+                        "min": 558600,
+                        "order_count": 13,
+                        "percentile": 558600,
+                        "stddev": 167899.35545500438,
+                        "volume": 231
                     },
-                    "strategy": "ccp",
-                    "updated": "2017-09-16T20:22:26.885313357Z"
+                    "strategy": "orders",
+                    "updated": "2020-10-29T01:18:14.941116237Z"
                 },
                 "quantity": 1,
-                "typeID": 11567,
-                "typeName": "Avatar",
-                "typeVolume": 10000000
-            }
-        ],
-        "kind": "listing",
-        "market_name": "jita",
-        "raw": "avatar",
-        "totals": {
-            "buy": 64840457150.95,
-            "sell": 64840457150.95,
-            "volume": 10000000
-        },
-        "unparsed": {}
-    }
-}</code></pre>
-
-  <h4>CURL Example using POST data</h4>
-  <pre><code>curl -v "https://evepraisal.com/appraisal.json?market=jita" --data "avatar"</code></pre>
-
-  <pre><code>{
-    "appraisal": {
-        "created": 1505593448,
-        "id": "coyg5",
-        "items": [
-            {
-                "meta": {
-                    "bpc": false
-                },
-                "name": "Erebus",
-                "prices": {
-                    "all": {
-                        "avg": 0,
-                        "max": 73105235239.37,
-                        "median": 73105235239.37,
-                        "min": 73105235239.37,
-                        "order_count": 0,
-                        "percentile": 73105235239.37,
-                        "stddev": 0,
-                        "volume": 0
-                    },
-                    "buy": {
-                        "avg": 0,
-                        "max": 73105235239.37,
-                        "median": 73105235239.37,
-                        "min": 73105235239.37,
-                        "order_count": 0,
-                        "percentile": 73105235239.37,
-                        "stddev": 0,
-                        "volume": 0
-                    },
-                    "sell": {
-                        "avg": 0,
-                        "max": 73105235239.37,
-                        "median": 73105235239.37,
-                        "min": 73105235239.37,
-                        "order_count": 0,
-                        "percentile": 73105235239.37,
-                        "stddev": 0,
-                        "volume": 0
-                    },
-                    "strategy": "ccp",
-                    "updated": "2017-09-16T20:22:26.885313357Z"
-                },
-                "quantity": 1,
-                "typeID": 671,
-                "typeName": "Erebus",
-                "typeVolume": 10000000
+                "typeID": 587,
+                "typeName": "Rifter",
+                "typeVolume": 2500
             },
             {
-                "meta": {
-                    "bpc": false
-                },
-                "name": "Avatar",
+                "meta": {},
+                "name": "",
                 "prices": {
                     "all": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
+                        "avg": 5.127115278624414,
+                        "max": 9998,
+                        "median": 9.83,
+                        "min": 0.01,
+                        "order_count": 173,
+                        "percentile": 14.18,
+                        "stddev": 103.65841794616796,
+                        "volume": 11486932925
                     },
                     "buy": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
+                        "avg": 0.1077433860746228,
+                        "max": 7.87,
+                        "median": 0.01,
+                        "min": 0.01,
+                        "order_count": 21,
+                        "percentile": 7.78,
+                        "stddev": 3.232129715938109,
+                        "volume": 1802680289
                     },
                     "sell": {
-                        "avg": 0,
-                        "max": 64840457150.95,
-                        "median": 64840457150.95,
-                        "min": 64840457150.95,
-                        "order_count": 0,
-                        "percentile": 64840457150.95,
-                        "stddev": 0,
-                        "volume": 0
+                        "avg": 10.522742318531256,
+                        "max": 9998,
+                        "median": 10,
+                        "min": 8.74,
+                        "order_count": 152,
+                        "percentile": 8.74,
+                        "stddev": 112.8195790348922,
+                        "volume": 9684252636
                     },
-                    "strategy": "ccp",
-                    "updated": "2017-09-16T20:22:26.885313357Z"
+                    "strategy": "orders",
+                    "updated": "2020-10-29T01:18:14.941116237Z"
                 },
                 "quantity": 1,
-                "typeID": 11567,
-                "typeName": "Avatar",
-                "typeVolume": 10000000
+                "typeID": 34,
+                "typeName": "Tritanium",
+                "typeVolume": 0.01
             }
         ],
-        "kind": "listing",
+        "kind": "structured",
+        "live": false,
         "market_name": "jita",
-        "raw": "Avatar\nErebus\n",
+        "private": false,
+        "raw": "",
         "totals": {
-            "buy": 137945692390.32,
-            "sell": 137945692390.32,
-            "volume": 20000000
+            "buy": 451307.87,
+            "sell": 558608.74,
+            "volume": 2500.01
         },
-        "unparsed": {}
+        "unparsed": null
     }
 }</code></pre>
 </div>

@@ -32,10 +32,10 @@ setup:
 	go get -u github.com/client9/misspell/cmd/misspell
 
 build: generate
-	go build -mod vendor ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
+	@go build -gcflags=-trimpath=$(shell pwd) -asmflags=-trimpath=$(shell pwd) -mod vendor ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
 
 install: generate
-	go install -mod vendor ${BUILD_OPTS} ${PKG_DIRS}
+	@go install -gcflags=-trimpath=$(shell pwd) -asmflags=-trimpath=$(shell pwd) -mod vendor ${BUILD_OPTS} ${PKG_DIRS}
 
 generate:
 	go generate ${BUILD_OPTS} ${PKG_DIRS}

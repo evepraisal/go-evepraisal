@@ -106,7 +106,6 @@ var volumeItemOverrides = map[int64]float64{
 	17368: 100000, // Station Warehouse Container
 	41237: 1000,   // 10000MN Y-S8 Compact Afterburner
 	41417: 1000,   // Sentient Fighter Support Unit
-	42890: 4000,   // Industrial Core II (for some reason, doesn't match other siege modules)
 	41249: 1000,
 	41250: 1000,
 	41251: 1000,

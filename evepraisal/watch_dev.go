@@ -13,6 +13,7 @@ import (
 )
 
 func startEnvironmentWatchers(app *evepraisal.App) {
+	log.Println("startEnvironmentWatchers (dev env)")
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Printf("ERROR: Not able to set up resource watcher: %s", err)

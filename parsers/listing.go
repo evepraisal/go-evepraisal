@@ -29,7 +29,7 @@ type ListingItem struct {
 }
 
 var reListing = regexp.MustCompile(`^\s*([\d,'\.]+?) ?(?:x|X)? ([\S ]+)[\s]*$`)
-var reListing2 = regexp.MustCompile(`^([\S ]+?) (?:x|X)? ?([\d,'\.]+)[\s]*$`)
+var reListing2 = regexp.MustCompile(`^([\S ]+?):? (?:x|X)? ?([\d,'\.]+)[\s]*$`)
 var reListing3 = regexp.MustCompile(`^\s*([\S ]+)[\s]*$`)
 var reListing4 = regexp.MustCompile(`^\s*([\d,'\.]+)\t([\S ]+?)[\s]*$`)
 var reListingWithAmmo = regexp.MustCompile(`^([\S ]+), ?([a-zA-Z][\S ]+)[\s]*$`)
