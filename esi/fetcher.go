@@ -38,19 +38,19 @@ var SpecialRegions = []struct {
 		// 10000002
 		name:    "jita",
 		systems: []int64{30000142},
-	},
-	{
+	}, {
 		name:    "perimeter",
 		systems: []int64{30000144},
-	},
-	{
+	}, {
 		// 10000043
 		name:     "amarr",
 		stations: []int64{60008950, 60002569, 60008494},
+		systems:  []int64{30003491},
 	}, {
 		// 10000032
 		name:     "dodixie",
 		stations: []int64{60011866, 60001867},
+		systems:  []int64{30002661},
 	}, {
 		// 10000042
 		name:     "hek",
