@@ -22,7 +22,11 @@ func fetchURL(ctx context.Context, client *pester.Client, url string, r interfac
 		return err
 	}
 
-	if resp.StatusCode != 200 {
+	switch resp.StatusCode {
+	case 200:
+	case 404:
+		return nil
+	default:
 		return fmt.Errorf("Error talking to esi: %s", resp.Status)
 	}
 

@@ -122,7 +122,7 @@ func regionNames() []string {
 
 func (p *PriceFetcher) runOnce() {
 	log.Println("Fetch market data")
-	priceMap, err := p.FetchOrderData(p.client, p.baseURL, []int{10000002, 10000042, 10000032, 10000043, 10000030})
+	priceMap, err := p.FetchOrderData(p.client, p.baseURL, []int{10000002, 10000027, 10000030, 10000032, 10000042, 10000043})
 	if err != nil {
 		log.Println("ERROR: fetching market data: ", err)
 		return
@@ -252,14 +252,15 @@ func (p *PriceFetcher) FetchOrderData(client *pester.Client, baseURL string, reg
 			return false, err
 		}
 
+		if len(orders) == 0 {
+			return false, nil
+		}
+
 		l.Lock()
 		for _, order := range orders {
 			allOrdersByType[order.Type] = append(allOrdersByType[order.Type], order)
 		}
 		l.Unlock()
-		if len(orders) == 0 {
-			return false, nil
-		}
 		return true, nil
 	}
 
