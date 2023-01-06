@@ -21,15 +21,15 @@ default: build
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
 setup:
-	go get -u github.com/go-bindata/go-bindata/go-bindata@v1.0.0
-	go get -u github.com/cespare/reflex
-	go get -u github.com/jstemmer/go-junit-report@master
-	go get -u github.com/fzipp/gocyclo
-	go get -u github.com/jgautheron/goconst/cmd/goconst
-	go get -u golang.org/x/tools/cmd/goimports
-	go get -u github.com/gordonklaus/ineffassign
-	go get -u github.com/walle/lll/cmd/lll
-	go get -u github.com/client9/misspell/cmd/misspell
+	go install github.com/go-bindata/go-bindata/go-bindata@v1.0.0
+	go install github.com/cespare/reflex
+	go install github.com/jstemmer/go-junit-report@master
+	go install github.com/fzipp/gocyclo
+	go install github.com/jgautheron/goconst/cmd/goconst
+	go install golang.org/x/tools/cmd/goimports
+	go install github.com/gordonklaus/ineffassign
+	go install github.com/walle/lll/cmd/lll
+	go install github.com/client9/misspell/cmd/misspell
 
 build: generate
 	@go build -gcflags=-trimpath=$(shell pwd) -asmflags=-trimpath=$(shell pwd) -mod vendor ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
@@ -80,4 +80,4 @@ dist:
 	ENV=PROD GOOS=linux GOARCH=amd64 make build
 
 deploy-prod: dist
-	USERNAME=root HOSTNAME=new.evepraisal.com ./scripts/deploy.sh
+	USERNAME=root HOSTNAME=evepraisal.com ./scripts/deploy.sh

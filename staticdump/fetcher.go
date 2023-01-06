@@ -1,6 +1,7 @@
 package staticdump
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -66,22 +67,23 @@ func (f *StaticFetcher) RunOnce() error {
 	staticDumpChecksum, err := FindLastStaticDumpChecksum(f.client)
 	if err != nil {
 		// TODO: fallback to previously downloaded static data
-		return err
+		return fmt.Errorf("error fetching static dump checksum: %w", err)
 	}
 
 	staticDumpURL, err := FindLastStaticDumpUrl(f.client)
 	if err != nil {
 		// TODO: fallback to previously downloaded static data
-		return err
+		return fmt.Errorf("error fetching static data: %w", err)
 	}
 
 	log.Println("Latest Static Dump URL", staticDumpURL, staticDumpChecksum)
 
-	typedbPath := filepath.Join(f.dbPath, "types-"+staticDumpChecksum+".zip")
+	typedbPath := filepath.Join(f.dbPath, "types-"+staticDumpChecksum)
+	typedbCachePath := filepath.Join(f.dbPath, "types-"+staticDumpChecksum+".zip")
 	if _, err = os.Stat(typedbPath); os.IsNotExist(err) {
-		err = f.loadTypes(typedbPath, staticDumpURL)
+		err = f.loadTypes(typedbPath, typedbCachePath, staticDumpURL)
 		if err != nil {
-			return err
+			return fmt.Errorf("loading types: %w", err)
 		}
 	} else if err != nil {
 		return err
@@ -91,7 +93,7 @@ func (f *StaticFetcher) RunOnce() error {
 
 	typeDB, err := bolt.NewTypeDB(typedbPath, false)
 	if err != nil {
-		return err
+		return fmt.Errorf("NewTypeDB: %w", err)
 	}
 	log.Println("done making new typedb")
 
@@ -106,19 +108,21 @@ func (f *StaticFetcher) Close() error {
 	return nil
 }
 
-func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) error {
+func (f *StaticFetcher) loadTypes(typedbPath, staticCacheFile string, staticDumpURL string) error {
+	volumes, err := downloadTypeVolumes(f.client)
+	if err != nil {
+		return err
+	}
 
-	// TODO: I need to find a reliable source for this information..... CCP????
-	// typeVolumes, err := downloadTypeVolumes(f.client)
-	// if err != nil {
-	// 	return err
-	// }
+	packagedVolumes, err := downloadPackagedVolumes(f.client)
+	if err != nil {
+		return err
+	}
 
 	// avoid re-downloading the entire static dump if we already have it
-	cachepath := staticCacheFile + ".zip"
-	if _, err := os.Stat(cachepath); os.IsNotExist(err) {
-		log.Printf("Downloading static dump to %s", cachepath)
-		err = downloadTypes(f.client, staticDumpURL, cachepath)
+	if _, err := os.Stat(staticCacheFile); os.IsNotExist(err) {
+		log.Printf("Downloading static dump to %s", staticCacheFile)
+		err = downloadTypes(f.client, staticDumpURL, staticCacheFile)
 		if err != nil {
 			return err
 		}
@@ -126,19 +130,23 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 		return err
 	}
 
-	types, err := loadtypes(cachepath)
+	types, err := loadtypes(staticCacheFile)
 	if err != nil {
 		return err
 	}
 
-	typeDB, err := bolt.NewTypeDB(staticCacheFile, true)
+	typeDB, err := bolt.NewTypeDB(typedbPath, true)
 	if err != nil {
-		return err
+		return fmt.Errorf("NewTypeDB: %w", err)
 	}
 	finished := false
 	defer func() {
 		if finished == true {
-			typeDB.Close()
+			log.Println("Finished typedb fetch")
+			err := typeDB.Close()
+			if err != nil {
+				log.Printf("ERROR: closing typeDB: %s", err)
+			}
 		} else {
 			log.Println("Deleting new typedb because it was stopped before finishing")
 			err = typeDB.Delete()
@@ -167,21 +175,14 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 
 		chunk := make([]typedb.EveType, len(types[i:end]))
 		for i, t := range types[i:end] {
-			var volume float64
-			var ok bool
-			volume, ok = volumeGroupOverrides[t.GroupID]
+			volume, ok := volumes[t.ID]
 			if ok {
-				t.PackagedVolume = volume
+				t.Volume = volume
 			}
 
-			volume, ok = volumeMarketGroupOverrides[t.MarketGroupID]
+			packagedVolume, ok := packagedVolumes[t.ID]
 			if ok {
-				t.PackagedVolume = volume
-			}
-
-			volume, ok = volumeItemOverrides[t.ID]
-			if ok {
-				t.PackagedVolume = volume
+				t.PackagedVolume = packagedVolume
 			}
 			chunk[i] = t
 		}
@@ -192,6 +193,5 @@ func (f *StaticFetcher) loadTypes(staticCacheFile string, staticDumpURL string) 
 		}
 	}
 	finished = true
-	log.Println("Finished typedb fetch")
 	return nil
 }

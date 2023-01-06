@@ -2,6 +2,7 @@ package staticdump
 
 import (
 	"archive/zip"
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/evepraisal/go-evepraisal/typedb"
@@ -115,7 +117,7 @@ type Blueprint struct {
 func loadtypes(staticDataPath string) ([]typedb.EveType, error) {
 	r, err := zip.OpenReader(staticDataPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unzip static data: %w (staticDataPath)", err)
 	}
 	defer r.Close()
 
@@ -241,4 +243,90 @@ func resolveBaseComponents(blueprintsByProductType map[int64][]Blueprint, typeID
 		}
 	}
 	return components
+}
+
+func parseVolume(s string) (float64, error) {
+	// if s == "0E-10" {
+	// 	return 0, nil
+	// }
+
+	return strconv.ParseFloat(s, 64)
+}
+
+func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
+	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latest/invTypes.csv", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("User-Agent", userAgent)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	r := csv.NewReader(resp.Body)
+	r.Read()
+	volumes := map[int64]float64{}
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		typeID, err := strconv.ParseInt(record[0], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		vol, err := parseVolume(record[5])
+		if err != nil {
+			return nil, err
+		}
+
+		volumes[typeID] = vol
+	}
+	return volumes, nil
+}
+
+func downloadPackagedVolumes(client *pester.Client) (map[int64]float64, error) {
+	req, err := http.NewRequest("GET", "https://www.fuzzwork.co.uk/dump/latest/invVolumes.csv", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("User-Agent", userAgent)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	r := csv.NewReader(resp.Body)
+	r.Read()
+	volumes := map[int64]float64{}
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		typeID, err := strconv.ParseInt(record[0], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		vol, err := parseVolume(record[1])
+		if err != nil {
+			return nil, err
+		}
+
+		volumes[typeID] = vol
+	}
+	return volumes, nil
 }

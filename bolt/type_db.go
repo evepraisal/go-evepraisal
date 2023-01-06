@@ -43,29 +43,29 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 		opts.ReadOnly = true
 		db, err = bolt.Open(filename, 0600, opts)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("opening database: %w", err)
 		}
 	} else {
 		db, err = bolt.Open(filename, 0600, opts)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("opening database (for writing): %w", err)
 		}
 
 		// Init our buckets in case this is a fresh DB
 		err = db.Update(func(tx *bolt.Tx) error {
 			_, err = tx.CreateBucket([]byte("types_by_name"))
 			if err != nil && err != bolt.ErrBucketExists {
-				return err
+				return fmt.Errorf("bucket 'types_by_name' create error: %w", err)
 			}
 
 			_, err = tx.CreateBucket([]byte("types_by_id"))
 			if err != nil && err != bolt.ErrBucketExists {
-				return err
+				return fmt.Errorf("bucket 'types_by_id' create error: %w", err)
 			}
 			return nil
 		})
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("init error: %w", err)
 		}
 	}
 
@@ -79,25 +79,25 @@ func NewTypeDB(filename string, writable bool) (typedb.TypeDB, error) {
 		mapping.DefaultAnalyzer = "standard"
 		index, err = bleve.New(indexFilename, mapping)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("opening bleve database (new): %w", err)
 		}
 	} else if err == nil {
 		if writable {
 			index, err = bleve.Open(indexFilename)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("opening bleve database (writable): %w", err)
 			}
 		} else {
 			index, err = bleve.OpenUsing(indexFilename, map[string]interface{}{
 				"read_only": true,
 			})
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("opening bleve database (read only): %w", err)
 			}
 		}
 
 	} else {
-		return nil, err
+		return nil, fmt.Errorf("index file stat error: %w", err)
 	}
 
 	return &TypeDB{db: db, index: index, filename: filename, indexFilename: indexFilename}, err
