@@ -11,14 +11,18 @@ permissions:
   contents: read
 
 jobs:
-  golangci:
-    name: lint
+  build-and-test:
+    name: build-and-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
       - uses: actions/checkout@v3
+
+      - name: Setup
+        run: make setup
+
       - name: Build
         run: make build
 

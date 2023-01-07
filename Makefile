@@ -24,7 +24,7 @@ setup:
 	go install github.com/go-bindata/go-bindata/go-bindata@v1.0.0
 	go install github.com/cespare/reflex
 	go install github.com/jstemmer/go-junit-report@master
-	brew install golangci-lint
+	# brew install golangci-lint
 
 build: generate
 	@go build -gcflags=-trimpath=$(shell pwd) \
