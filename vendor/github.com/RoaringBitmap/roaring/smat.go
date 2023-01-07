@@ -1,3 +1,4 @@
+//go:build gofuzz
 // +build gofuzz
 
 /*
@@ -22,7 +23,7 @@ To run the smat tests for roaring...
 
 2.  Build go-fuzz test program with instrumentation:
 ```
-    go-fuzz-build github.com/RoaringBitmap/roaring
+    go-fuzz-build -func FuzzSmat github.com/RoaringBitmap/roaring
 ```
 
 3.  Run go-fuzz:
@@ -62,12 +63,12 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/bits-and-blooms/bitset"
 	"github.com/mschoch/smat"
-	"github.com/willf/bitset"
 )
 
 // fuzz test using state machine driven by byte stream.
-func Fuzz(data []byte) int {
+func FuzzSmat(data []byte) int {
 	return smat.Fuzz(&smatContext{}, smat.ActionID('S'), smat.ActionID('T'),
 		smatActionMap, data)
 }

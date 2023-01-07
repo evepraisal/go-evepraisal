@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import (
@@ -5,7 +8,8 @@ import (
 	"errors"
 )
 
-func deobfuscate(in string, key []byte) ([]byte, error) {
+// Deobfuscate deobfuscates a byte array.
+func Deobfuscate(in string, key []byte) ([]byte, error) {
 	if len(key) == 0 {
 		return nil, errors.New("key cannot be zero length")
 	}
@@ -23,7 +27,8 @@ func deobfuscate(in string, key []byte) ([]byte, error) {
 	return out, nil
 }
 
-func obfuscate(in, key []byte) (string, error) {
+// Obfuscate obfuscates a byte array for transmission in CAT and RUM.
+func Obfuscate(in, key []byte) (string, error) {
 	if len(key) == 0 {
 		return "", errors.New("key cannot be zero length")
 	}

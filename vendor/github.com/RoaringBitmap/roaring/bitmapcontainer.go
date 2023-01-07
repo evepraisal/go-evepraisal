@@ -5,8 +5,6 @@ import (
 	"unsafe"
 )
 
-//go:generate msgp -unexported
-
 type bitmapContainer struct {
 	cardinality int
 	bitmap      []uint64
@@ -96,6 +94,18 @@ func (bc *bitmapContainer) maximum() uint16 {
 	return uint16(0)
 }
 
+func (bc *bitmapContainer) iterate(cb func(x uint16) bool) bool {
+	iterator := bitmapContainerShortIterator{bc, bc.NextSetBit(0)}
+
+	for iterator.hasNext() {
+		if !cb(iterator.next()) {
+			return false
+		}
+	}
+
+	return true
+}
+
 type bitmapContainerShortIterator struct {
 	ptr *bitmapContainer
 	i   int
@@ -103,17 +113,127 @@ type bitmapContainerShortIterator struct {
 
 func (bcsi *bitmapContainerShortIterator) next() uint16 {
 	j := bcsi.i
-	bcsi.i = bcsi.ptr.NextSetBit(bcsi.i + 1)
+	bcsi.i = bcsi.ptr.NextSetBit(uint(bcsi.i) + 1)
 	return uint16(j)
 }
 func (bcsi *bitmapContainerShortIterator) hasNext() bool {
 	return bcsi.i >= 0
 }
+
+func (bcsi *bitmapContainerShortIterator) peekNext() uint16 {
+	return uint16(bcsi.i)
+}
+
+func (bcsi *bitmapContainerShortIterator) advanceIfNeeded(minval uint16) {
+	if bcsi.hasNext() && bcsi.peekNext() < minval {
+		bcsi.i = bcsi.ptr.NextSetBit(uint(minval))
+	}
+}
+
 func newBitmapContainerShortIterator(a *bitmapContainer) *bitmapContainerShortIterator {
 	return &bitmapContainerShortIterator{a, a.NextSetBit(0)}
 }
-func (bc *bitmapContainer) getShortIterator() shortIterable {
+
+func (bc *bitmapContainer) getShortIterator() shortPeekable {
 	return newBitmapContainerShortIterator(bc)
+}
+
+type reverseBitmapContainerShortIterator struct {
+	ptr *bitmapContainer
+	i   int
+}
+
+func (bcsi *reverseBitmapContainerShortIterator) next() uint16 {
+	if bcsi.i == -1 {
+		panic("reverseBitmapContainerShortIterator.next() going beyond what is available")
+	}
+
+	j := bcsi.i
+	bcsi.i = bcsi.ptr.PrevSetBit(bcsi.i - 1)
+	return uint16(j)
+}
+
+func (bcsi *reverseBitmapContainerShortIterator) hasNext() bool {
+	return bcsi.i >= 0
+}
+
+func newReverseBitmapContainerShortIterator(a *bitmapContainer) *reverseBitmapContainerShortIterator {
+	if a.cardinality == 0 {
+		return &reverseBitmapContainerShortIterator{a, -1}
+	}
+	return &reverseBitmapContainerShortIterator{a, int(a.maximum())}
+}
+
+func (bc *bitmapContainer) getReverseIterator() shortIterable {
+	return newReverseBitmapContainerShortIterator(bc)
+}
+
+type bitmapContainerManyIterator struct {
+	ptr    *bitmapContainer
+	base   int
+	bitset uint64
+}
+
+func (bcmi *bitmapContainerManyIterator) nextMany(hs uint32, buf []uint32) int {
+	n := 0
+	base := bcmi.base
+	bitset := bcmi.bitset
+
+	for n < len(buf) {
+		if bitset == 0 {
+			base++
+			if base >= len(bcmi.ptr.bitmap) {
+				bcmi.base = base
+				bcmi.bitset = bitset
+				return n
+			}
+			bitset = bcmi.ptr.bitmap[base]
+			continue
+		}
+		t := bitset & -bitset
+		buf[n] = uint32(((base * 64) + int(popcount(t-1)))) | hs
+		n = n + 1
+		bitset ^= t
+	}
+
+	bcmi.base = base
+	bcmi.bitset = bitset
+	return n
+}
+
+func (bcmi *bitmapContainerManyIterator) nextMany64(hs uint64, buf []uint64) int {
+	n := 0
+	base := bcmi.base
+	bitset := bcmi.bitset
+
+	for n < len(buf) {
+		if bitset == 0 {
+			base++
+			if base >= len(bcmi.ptr.bitmap) {
+				bcmi.base = base
+				bcmi.bitset = bitset
+				return n
+			}
+			bitset = bcmi.ptr.bitmap[base]
+			continue
+		}
+		t := bitset & -bitset
+		buf[n] = uint64(((base * 64) + int(popcount(t-1)))) | hs
+		n = n + 1
+		bitset ^= t
+	}
+
+	bcmi.base = base
+	bcmi.bitset = bitset
+	return n
+}
+
+func newBitmapContainerManyIterator(a *bitmapContainer) *bitmapContainerManyIterator {
+	return &bitmapContainerManyIterator{a, -1, 0}
+}
+
+func (bc *bitmapContainer) getManyIterator() manyIterable {
+	return newBitmapContainerManyIterator(bc)
 }
 
 func (bc *bitmapContainer) getSizeInBytes() int {
@@ -121,8 +241,8 @@ func (bc *bitmapContainer) getSizeInBytes() int {
 }
 
 func (bc *bitmapContainer) serializedSizeInBytes() int {
-	return bc.Msgsize()
-	//return len(bc.bitmap) * 8 // +  bcBaseBytes
+	//return bc.Msgsize()// NOO! This breaks GetSerializedSizeInBytes
+	return len(bc.bitmap) * 8
 }
 
 const bcBaseBytes = int(unsafe.Sizeof(bitmapContainer{}))
@@ -134,20 +254,17 @@ func bitmapContainerSizeInBytes() int {
 
 func bitmapEquals(a, b []uint64) bool {
 	if len(a) != len(b) {
-		//p("bitmaps differ on length. len(a)=%v; len(b)=%v", len(a), len(b))
 		return false
 	}
 	for i, v := range a {
 		if v != b[i] {
-			//p("bitmaps differ on element i=%v", i)
 			return false
 		}
 	}
-	//p("bitmapEquals returning true")
 	return true
 }
 
-func (bc *bitmapContainer) fillLeastSignificant16bits(x []uint32, i int, mask uint32) {
+func (bc *bitmapContainer) fillLeastSignificant16bits(x []uint32, i int, mask uint32) int {
 	// TODO: should be written as optimized assembly
 	pos := i
 	base := mask
@@ -161,14 +278,13 @@ func (bc *bitmapContainer) fillLeastSignificant16bits(x []uint32, i int, mask ui
 		}
 		base += 64
 	}
+	return pos
 }
 
 func (bc *bitmapContainer) equals(o container) bool {
 	srb, ok := o.(*bitmapContainer)
 	if ok {
-		//p("bitmapContainers.equals: both are bitmapContainers")
 		if srb.cardinality != bc.cardinality {
-			//p("bitmapContainers.equals: card differs: %v vs %v", srb.cardinality, bc.cardinality)
 			return false
 		}
 		return bitmapEquals(bc.bitmap, srb.bitmap)
@@ -218,12 +334,6 @@ func (bc *bitmapContainer) iremoveReturnMinimized(i uint16) container {
 
 // iremove returns true if i was found.
 func (bc *bitmapContainer) iremove(i uint16) bool {
-	/* branchless code
-	  w := bc.bitmap[i>>6]
-		mask := uint64(1) << (i % 64)
-		neww := w &^ mask
-		bc.cardinality -= int((w ^ neww) >> (i % 64))
-		bc.bitmap[i>>6] = neww */
 	if bc.contains(i) {
 		bc.cardinality--
 		bc.bitmap[i/64] &^= (uint64(1) << (i % 64))
@@ -238,6 +348,10 @@ func (bc *bitmapContainer) isFull() bool {
 
 func (bc *bitmapContainer) getCardinality() int {
 	return bc.cardinality
+}
+
+func (bc *bitmapContainer) isEmpty() bool {
+	return bc.cardinality == 0
 }
 
 func (bc *bitmapContainer) clone() container {
@@ -263,14 +377,10 @@ func (bc *bitmapContainer) iremoveRange(firstOfRange, lastOfRange int) container
 
 // flip all values in range [firstOfRange,endx)
 func (bc *bitmapContainer) inot(firstOfRange, endx int) container {
-	p("bc.inot() called with [%v, %v)", firstOfRange, endx)
 	if endx-firstOfRange == maxCapacity {
-		//p("endx-firstOfRange == maxCapacity")
 		flipBitmapRange(bc.bitmap, firstOfRange, endx)
 		bc.cardinality = maxCapacity - bc.cardinality
-		//p("bc.cardinality is now %v", bc.cardinality)
 	} else if endx-firstOfRange > maxCapacity/2 {
-		//p("endx-firstOfRange > maxCapacity/2")
 		flipBitmapRange(bc.bitmap, firstOfRange, endx)
 		bc.computeCardinality()
 	} else {
@@ -347,13 +457,28 @@ func (bc *bitmapContainer) lazyIOR(a container) container {
 		if x.isFull() {
 			return x.clone()
 		}
-		// TODO : implement efficient in-place lazy OR to bitmap
-		for i := range x.iv {
-			setBitmapRange(bc.bitmap, int(x.iv[i].start), int(x.iv[i].last())+1)
-			//bc.iaddRange(int(x.iv[i].start), int(x.iv[i].last)+1)
+
+		// Manually inlined setBitmapRange function
+		bitmap := bc.bitmap
+		for _, iv := range x.iv {
+			start := int(iv.start)
+			end := int(iv.last()) + 1
+			if start >= end {
+				continue
+			}
+			firstword := start / 64
+			endword := (end - 1) / 64
+			if firstword == endword {
+				bitmap[firstword] |= (^uint64(0) << uint(start%64)) & (^uint64(0) >> (uint(-end) % 64))
+				continue
+			}
+			bitmap[firstword] |= ^uint64(0) << uint(start%64)
+			for i := firstword + 1; i < endword; i++ {
+				bitmap[i] = ^uint64(0)
+			}
+			bitmap[endword] |= ^uint64(0) >> (uint(-end) % 64)
 		}
 		bc.cardinality = invalidCardinality
-		//bc.computeCardinality()
 		return bc
 	}
 	panic("unsupported container type")
@@ -459,11 +584,31 @@ func (bc *bitmapContainer) iorBitmap(value2 *bitmapContainer) container {
 func (bc *bitmapContainer) lazyIORArray(value2 *arrayContainer) container {
 	answer := bc
 	c := value2.getCardinality()
-	for k := 0; k < c; k++ {
+	for k := 0; k+3 < c; k += 4 {
+		content := (*[4]uint16)(unsafe.Pointer(&value2.content[k]))
+		vc0 := content[0]
+		i0 := uint(vc0) >> 6
+		answer.bitmap[i0] = answer.bitmap[i0] | (uint64(1) << (vc0 % 64))
+
+		vc1 := content[1]
+		i1 := uint(vc1) >> 6
+		answer.bitmap[i1] = answer.bitmap[i1] | (uint64(1) << (vc1 % 64))
+
+		vc2 := content[2]
+		i2 := uint(vc2) >> 6
+		answer.bitmap[i2] = answer.bitmap[i2] | (uint64(1) << (vc2 % 64))
+
+		vc3 := content[3]
+		i3 := uint(vc3) >> 6
+		answer.bitmap[i3] = answer.bitmap[i3] | (uint64(1) << (vc3 % 64))
+	}
+
+	for k := c &^ 3; k < c; k++ {
 		vc := value2.content[k]
 		i := uint(vc) >> 6
 		answer.bitmap[i] = answer.bitmap[i] | (uint64(1) << (vc % 64))
 	}
+
 	answer.cardinality = invalidCardinality
 	return answer
 }
@@ -654,11 +799,11 @@ func (bc *bitmapContainer) getCardinalityInRange(start, end uint) int {
 	endword := (end - 1) / 64
 	const allones = ^uint64(0)
 	if firstword == endword {
-		return int(popcount(bc.bitmap[firstword] & ((allones << (start % 64)) & (allones >> (64 - (end % 64))))))
+		return int(popcount(bc.bitmap[firstword] & ((allones << (start % 64)) & (allones >> ((64 - end) & 63)))))
 	}
 	answer := popcount(bc.bitmap[firstword] & (allones << (start % 64)))
 	answer += popcntSlice(bc.bitmap[firstword+1 : endword])
-	answer += popcount(bc.bitmap[endword] & (allones >> (64 - (end % 64))))
+	answer += popcount(bc.bitmap[endword] & (allones >> ((64 - end) & 63)))
 	return int(answer)
 }
 
@@ -731,8 +876,6 @@ func (bc *bitmapContainer) andNotRun16(rc *runContainer16) container {
 }
 
 func (bc *bitmapContainer) iandNot(a container) container {
-	//p("bitmapContainer.iandNot() starting")
-
 	switch x := a.(type) {
 	case *arrayContainer:
 		return bc.iandNotArray(x)
@@ -786,12 +929,15 @@ func (bc *bitmapContainer) andNotBitmap(value2 *bitmapContainer) container {
 	return ac
 }
 
-func (bc *bitmapContainer) iandNotBitmapSurely(value2 *bitmapContainer) *bitmapContainer {
+func (bc *bitmapContainer) iandNotBitmapSurely(value2 *bitmapContainer) container {
 	newCardinality := int(popcntMaskSlice(bc.bitmap, value2.bitmap))
 	for k := 0; k < len(bc.bitmap); k++ {
 		bc.bitmap[k] = bc.bitmap[k] &^ value2.bitmap[k]
 	}
 	bc.cardinality = newCardinality
+	if bc.getCardinality() <= arrayDefaultMaxSize {
+		return bc.toArrayContainer()
+	}
 	return bc
 }
 
@@ -818,6 +964,32 @@ func (bc *bitmapContainer) loadData(arrayContainer *arrayContainer) {
 	}
 }
 
+func (bc *bitmapContainer) resetTo(a container) {
+	switch x := a.(type) {
+	case *arrayContainer:
+		fill(bc.bitmap, 0)
+		bc.loadData(x)
+
+	case *bitmapContainer:
+		bc.cardinality = x.cardinality
+		copy(bc.bitmap, x.bitmap)
+
+	case *runContainer16:
+		bc.cardinality = len(x.iv)
+		lastEnd := 0
+		for _, r := range x.iv {
+			bc.cardinality += int(r.length)
+			resetBitmapRange(bc.bitmap, lastEnd, int(r.start))
+			lastEnd = int(r.start+r.length) + 1
+			setBitmapRange(bc.bitmap, int(r.start), lastEnd)
+		}
+		resetBitmapRange(bc.bitmap, lastEnd, maxCapacity)
+
+	default:
+		panic("unsupported container type")
+	}
+}
+
 func (bc *bitmapContainer) toArrayContainer() *arrayContainer {
 	ac := &arrayContainer{}
 	ac.loadData(bc)
@@ -840,20 +1012,49 @@ func (bc *bitmapContainer) fillArray(container []uint16) {
 	}
 }
 
-func (bc *bitmapContainer) NextSetBit(i int) int {
-	x := i / 64
-	if x >= len(bc.bitmap) {
+func (bc *bitmapContainer) NextSetBit(i uint) int {
+	var (
+		x      = i / 64
+		length = uint(len(bc.bitmap))
+	)
+	if x >= length {
 		return -1
 	}
 	w := bc.bitmap[x]
 	w = w >> uint(i%64)
 	if w != 0 {
-		return i + countTrailingZeros(w)
+		return int(i) + countTrailingZeros(w)
 	}
 	x++
-	for ; x < len(bc.bitmap); x++ {
+	for ; x < length; x++ {
 		if bc.bitmap[x] != 0 {
-			return (x * 64) + countTrailingZeros(bc.bitmap[x])
+			return int(x*64) + countTrailingZeros(bc.bitmap[x])
+		}
+	}
+	return -1
+}
+
+func (bc *bitmapContainer) PrevSetBit(i int) int {
+	if i < 0 {
+		return -1
+	}
+	x := i / 64
+	if x >= len(bc.bitmap) {
+		return -1
+	}
+
+	w := bc.bitmap[x]
+
+	b := i % 64
+
+	w = w << uint(63-b)
+	if w != 0 {
+		return i - countLeadingZeros(w)
+	}
+	x--
+	for ; x >= 0; x-- {
+		if bc.bitmap[x] != 0 {
+			return (x * 64) + 63 - countLeadingZeros(bc.bitmap[x])
 		}
 	}
 	return -1
@@ -895,7 +1096,7 @@ func (bc *bitmapContainer) toEfficientContainer() container {
 	card := bc.getCardinality()
 	sizeAsArrayContainer := arrayContainerSizeInBytes(card)
 
-	if sizeAsRunContainer <= min(sizeAsBitmapContainer, sizeAsArrayContainer) {
+	if sizeAsRunContainer <= minOfInt(sizeAsBitmapContainer, sizeAsArrayContainer) {
 		return newRunContainer16FromBitmapContainer(bc)
 	}
 	if card <= arrayDefaultMaxSize {
@@ -921,4 +1122,62 @@ func newBitmapContainerFromRun(rc *runContainer16) *bitmapContainer {
 
 func (bc *bitmapContainer) containerType() contype {
 	return bitmapContype
+}
+
+func (bc *bitmapContainer) addOffset(x uint16) (container, container) {
+	var low, high *bitmapContainer
+
+	if bc.cardinality == 0 {
+		return nil, nil
+	}
+
+	b := uint32(x) >> 6
+	i := uint32(x) % 64
+	end := uint32(1024) - b
+
+	low = newBitmapContainer()
+	if i == 0 {
+		copy(low.bitmap[b:], bc.bitmap[:end])
+	} else {
+		low.bitmap[b] = bc.bitmap[0] << i
+		for k := uint32(1); k < end; k++ {
+			newval := bc.bitmap[k] << i
+			newval |= bc.bitmap[k-1] >> (64 - i)
+			low.bitmap[b+k] = newval
+		}
+	}
+	low.computeCardinality()
+
+	if low.cardinality == bc.cardinality {
+		// All elements from bc ended up in low, meaning high will be empty.
+		return low, nil
+	}
+
+	if low.cardinality == 0 {
+		// low is empty, let's reuse the container for high.
+		high = low
+		low = nil
+	} else {
+		// None of the containers will be empty, so allocate both.
+		high = newBitmapContainer()
+	}
+
+	if i == 0 {
+		copy(high.bitmap[:b], bc.bitmap[end:])
+	} else {
+		for k := end; k < 1024; k++ {
+			newval := bc.bitmap[k] << i
+			newval |= bc.bitmap[k-1] >> (64 - i)
+			high.bitmap[k-end] = newval
+		}
+		high.bitmap[b] = bc.bitmap[1023] >> (64 - i)
+	}
+	high.computeCardinality()
+
+	// Ensure proper nil interface.
+	if low == nil {
+		return nil, high
+	}
+
+	return low, high
 }

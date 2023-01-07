@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import (
@@ -27,6 +30,11 @@ var (
 type TxnCrossProcess struct {
 	// The user side switch controlling whether CAT is enabled or not.
 	Enabled bool
+
+	// The user side switch controlling whether Distributed Tracing is enabled or not
+	// This is required by synthetics support.  If Distributed Tracing is enabled,
+	// any synthetics functionality that is triggered should not set nr.guid.
+	DistributedTracingEnabled bool
 
 	// Rather than copying in the entire ConnectReply, here are the fields that
 	// we need to support CAT.
@@ -60,14 +68,13 @@ type CrossProcessMetadata struct {
 }
 
 // Init initialises a TxnCrossProcess based on the given application connect
-// reply and metadata fields, if any.
-func (txp *TxnCrossProcess) Init(enabled bool, reply *ConnectReply, metadata CrossProcessMetadata) error {
+// reply.
+func (txp *TxnCrossProcess) Init(enabled bool, dt bool, reply *ConnectReply) {
 	txp.CrossProcessID = []byte(reply.CrossProcessID)
 	txp.EncodingKey = []byte(reply.EncodingKey)
+	txp.DistributedTracingEnabled = dt
 	txp.Enabled = enabled
 	txp.TrustedAccounts = reply.TrustedAccounts
-
-	return txp.handleInboundRequestHeaders(metadata)
 }
 
 // CreateCrossProcessMetadata generates request metadata that enable CAT and
@@ -106,7 +113,7 @@ func (txp *TxnCrossProcess) CreateCrossProcessMetadata(txnName, appName string) 
 // Finalise handles any end-of-transaction tasks. In practice, this simply
 // means ensuring the path hash is set if it hasn't already been.
 func (txp *TxnCrossProcess) Finalise(txnName, appName string) error {
-	if txp.Used() {
+	if txp.Enabled && txp.Used() {
 		_, err := txp.setPathHash(txnName, appName)
 		return err
 	}
@@ -143,7 +150,7 @@ func (txp *TxnCrossProcess) ParseAppData(encodedAppData string) (*cat.AppDataHea
 		return nil, nil
 	}
 	if encodedAppData != "" {
-		rawAppData, err := deobfuscate(encodedAppData, txp.EncodingKey)
+		rawAppData, err := Deobfuscate(encodedAppData, txp.EncodingKey)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +186,7 @@ func (txp *TxnCrossProcess) CreateAppData(name string, queueTime, responseTime t
 		return "", err
 	}
 
-	obfuscated, err := obfuscate(data, txp.EncodingKey)
+	obfuscated, err := Obfuscate(data, txp.EncodingKey)
 	if err != nil {
 		return "", err
 	}
@@ -245,12 +252,12 @@ func (txp *TxnCrossProcess) handleInboundRequestHeaders(metadata CrossProcessMet
 }
 
 func (txp *TxnCrossProcess) handleInboundRequestEncodedCAT(encodedID, encodedTxnData string) error {
-	rawID, err := deobfuscate(encodedID, txp.EncodingKey)
+	rawID, err := Deobfuscate(encodedID, txp.EncodingKey)
 	if err != nil {
 		return err
 	}
 
-	rawTxnData, err := deobfuscate(encodedTxnData, txp.EncodingKey)
+	rawTxnData, err := Deobfuscate(encodedTxnData, txp.EncodingKey)
 	if err != nil {
 		return err
 	}
@@ -299,7 +306,7 @@ func (txp *TxnCrossProcess) handleInboundRequestTxnData(raw []byte) error {
 }
 
 func (txp *TxnCrossProcess) handleInboundRequestEncodedSynthetics(encoded string) error {
-	raw, err := deobfuscate(encoded, txp.EncodingKey)
+	raw, err := Deobfuscate(encoded, txp.EncodingKey)
 	if err != nil {
 		return err
 	}
@@ -331,7 +338,7 @@ func (txp *TxnCrossProcess) handleInboundRequestSynthetics(raw []byte) error {
 }
 
 func (txp *TxnCrossProcess) outboundID() (string, error) {
-	return obfuscate(txp.CrossProcessID, txp.EncodingKey)
+	return Obfuscate(txp.CrossProcessID, txp.EncodingKey)
 }
 
 func (txp *TxnCrossProcess) outboundTxnData(txnName, appName string) (string, error) {
@@ -349,12 +356,17 @@ func (txp *TxnCrossProcess) outboundTxnData(txnName, appName string) (string, er
 		return "", err
 	}
 
-	return obfuscate(data, txp.EncodingKey)
+	return Obfuscate(data, txp.EncodingKey)
 }
 
 // setRequireGUID ensures that the transaction has a valid GUID, and sets the
-// GUID and trip ID if they are not already set.
+// nr.guid and trip ID if they are not already set.  If the customer has enabled
+// DistributedTracing, then the new style of guid will be set elsewhere.
 func (txp *TxnCrossProcess) setRequireGUID() {
+	if txp.DistributedTracingEnabled {
+		return
+	}
+
 	if txp.GUID != "" {
 		return
 	}
@@ -362,12 +374,15 @@ func (txp *TxnCrossProcess) setRequireGUID() {
 	txp.GUID = fmt.Sprintf("%x", RandUint64())
 
 	if txp.TripID == "" {
-		txp.TripID = txp.GUID
+		txp.requireTripID()
 	}
 }
 
 // requireTripID ensures that the transaction has a valid trip ID.
 func (txp *TxnCrossProcess) requireTripID() {
+	if !txp.Enabled {
+		return
+	}
 	if txp.TripID != "" {
 		return
 	}

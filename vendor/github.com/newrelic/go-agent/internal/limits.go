@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import "time"
@@ -5,11 +8,13 @@ import "time"
 const (
 	// app behavior
 
-	// ConnectBackoff is the wait time between unsuccessful connect
-	// attempts.
-	ConnectBackoff = 20 * time.Second
-	// HarvestPeriod is the period that collected data is sent to New Relic.
-	HarvestPeriod = 60 * time.Second
+	// FixedHarvestPeriod is the period that fixed period data (metrics,
+	// traces, and span events) is sent to New Relic.
+	FixedHarvestPeriod = 60 * time.Second
+	// DefaultConfigurableEventHarvestMs is the period for custom, error,
+	// and transaction events if the connect response's
+	// "event_harvest_config.report_period_ms" is missing or invalid.
+	DefaultConfigurableEventHarvestMs = 60 * 1000
 	// CollectorTimeout is the timeout used in the client for communication
 	// with New Relic's servers.
 	CollectorTimeout = 20 * time.Second
@@ -18,24 +23,38 @@ const (
 	AppDataChanSize           = 200
 	failedMetricAttemptsLimit = 5
 	failedEventsAttemptsLimit = 10
+	// maxPayloadSizeInBytes specifies the maximum payload size in bytes that
+	// should be sent to any endpoint
+	maxPayloadSizeInBytes = 1000 * 1000
 
 	// transaction behavior
 	maxStackTraceFrames = 100
 	// MaxTxnErrors is the maximum number of errors captured per
 	// transaction.
 	MaxTxnErrors      = 5
-	maxTxnTraceNodes  = 256
 	maxTxnSlowQueries = 10
 
+	startingTxnTraceNodes = 16
+	maxTxnTraceNodes      = 256
+
 	// harvest data
-	maxMetrics          = 2 * 1000
-	maxCustomEvents     = 10 * 1000
-	maxTxnEvents        = 10 * 1000
+	maxMetrics = 2 * 1000
+	// MaxCustomEvents is the maximum number of Transaction Events that can be captured
+	// per 60-second harvest cycle
+	MaxCustomEvents = 10 * 1000
+	// MaxTxnEvents is the maximum number of Transaction Events that can be captured
+	// per 60-second harvest cycle
+	MaxTxnEvents        = 10 * 1000
 	maxRegularTraces    = 1
 	maxSyntheticsTraces = 20
-	maxErrorEvents      = 100
-	maxHarvestErrors    = 20
-	maxHarvestSlowSQLs  = 10
+	// MaxErrorEvents is the maximum number of Error Events that can be captured
+	// per 60-second harvest cycle
+	MaxErrorEvents     = 100
+	maxHarvestErrors   = 20
+	maxHarvestSlowSQLs = 10
+	// MaxSpanEvents is the maximum number of Span Events that can be captured
+	// per 60-second harvest cycle
+	MaxSpanEvents = 1000
 
 	// attributes
 	attributeKeyLengthLimit   = 255
@@ -44,7 +63,6 @@ const (
 	// AttributeErrorLimit limits the number of extra attributes that can be
 	// provided when noticing an error.
 	AttributeErrorLimit       = 32
-	attributeAgentLimit       = 255 - (attributeUserLimit + AttributeErrorLimit)
 	customEventAttributeLimit = 64
 
 	// Limits affecting Config validation are found in the config package.
@@ -55,4 +73,6 @@ const (
 	// be changed without notifying customers that they must update all
 	// instance simultaneously for valid runtime metrics.
 	RuntimeSamplerPeriod = 60 * time.Second
+
+	txnNameCacheLimit = 40
 )

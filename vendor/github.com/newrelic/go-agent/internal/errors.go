@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import (
@@ -36,10 +39,17 @@ func TxnErrorFromPanic(now time.Time, v interface{}) ErrorData {
 
 // TxnErrorFromResponseCode creates a new TxnError from an http response code.
 func TxnErrorFromResponseCode(now time.Time, code int) ErrorData {
+	codeStr := strconv.Itoa(code)
+	msg := http.StatusText(code)
+	if msg == "" {
+		// Use a generic message if the code was not an http code
+		// to support gRPC.
+		msg = "response code " + codeStr
+	}
 	return ErrorData{
 		When:  now,
-		Msg:   http.StatusText(code),
-		Klass: strconv.Itoa(code),
+		Msg:   msg,
+		Klass: codeStr,
 	}
 }
 
@@ -109,12 +119,6 @@ func (h *tracedError) WriteJSON(buf *bytes.Buffer) {
 		buf.WriteByte(':')
 		h.Stack.WriteJSON(buf)
 	}
-	if h.CleanURL != "" {
-		buf.WriteByte(',')
-		buf.WriteString(`"request_uri"`)
-		buf.WriteByte(':')
-		jsonx.AppendString(buf, h.CleanURL)
-	}
 	buf.WriteByte('}')
 
 	buf.WriteByte(']')
@@ -168,3 +172,7 @@ func (errors harvestErrors) Data(agentRunID string, harvestStart time.Time) ([]b
 }
 
 func (errors harvestErrors) MergeIntoHarvest(h *Harvest) {}
+
+func (errors harvestErrors) EndpointMethod() string {
+	return cmdErrorData
+}

@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import (
@@ -39,6 +42,15 @@ func (w *jsonFieldsWriter) intField(key string, val int64) {
 func (w *jsonFieldsWriter) floatField(key string, val float64) {
 	w.addKey(key)
 	jsonx.AppendFloat(w.buf, val)
+}
+
+func (w *jsonFieldsWriter) boolField(key string, val bool) {
+	w.addKey(key)
+	if val {
+		w.buf.WriteString("true")
+	} else {
+		w.buf.WriteString("false")
+	}
 }
 
 func (w *jsonFieldsWriter) rawField(key string, val JSONString) {

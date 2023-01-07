@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import (
@@ -50,7 +53,6 @@ type metricTable struct {
 	metricPeriodStart time.Time
 	failedHarvests    int
 	maxTableSize      int // After this max is reached, only forced metrics are added
-	numDropped        int // Number of unforced metrics dropped due to full table
 	metrics           map[metricID]*metric
 }
 
@@ -89,7 +91,7 @@ func (mt *metricTable) mergeMetric(id metricID, m metric) {
 	}
 
 	if mt.full() && (unforced == m.forced) {
-		mt.numDropped++
+		mt.addSingleCount(supportabilityDropped, forced)
 		return
 	}
 	// NOTE: `new` is used in place of `&m` since the latter will make `m`
@@ -255,4 +257,8 @@ func (mt *metricTable) ApplyRules(rules metricRules) *metricTable {
 	}
 
 	return applied
+}
+
+func (mt *metricTable) EndpointMethod() string {
+	return cmdMetrics
 }

@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 import (
@@ -6,16 +9,9 @@ import (
 	"github.com/newrelic/go-agent/internal/cat"
 )
 
-// InitFromHTTPRequest initialises the TxnCrossProcess from the given request.
-// This is a convenience method to keep newTxn() as clean as possible, and to
-// support unit tests.
-func (txp *TxnCrossProcess) InitFromHTTPRequest(enabled bool, reply *ConnectReply, req *http.Request) error {
-	metadata := CrossProcessMetadata{}
-	if req != nil {
-		metadata = HTTPHeaderToMetadata(req.Header)
-	}
-
-	return txp.Init(enabled, reply, metadata)
+// InboundHTTPRequest adds the inbound request metadata to the TxnCrossProcess.
+func (txp *TxnCrossProcess) InboundHTTPRequest(hdr http.Header) error {
+	return txp.handleInboundRequestHeaders(HTTPHeaderToMetadata(hdr))
 }
 
 // AppDataToHTTPHeader encapsulates the given appData value in the correct HTTP

@@ -10,11 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blevesearch/bleve"
-	// Imported to register the standard analysis
-	_ "github.com/blevesearch/bleve/analysis/analyzer/standard"
-	// Imported to register boltdb with bleve
-	_ "github.com/blevesearch/bleve/index/store/boltdb"
+	bleve "github.com/blevesearch/bleve/v2"
 	"github.com/boltdb/bolt"
 	"github.com/evepraisal/go-evepraisal/typedb"
 	"github.com/golang/snappy"

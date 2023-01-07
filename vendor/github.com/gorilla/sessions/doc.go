@@ -26,7 +26,12 @@ Let's start with an example that shows the sessions API in a nutshell:
 		"github.com/gorilla/sessions"
 	)
 
-	var store = sessions.NewCookieStore([]byte("something-very-secret"))
+	// Note: Don't store your key in your source code. Pass it via an
+	// environmental variable, or flag (or both), and don't accidentally commit it
+	// alongside your code. Ensure your key is sufficiently random - i.e. use Go's
+	// crypto/rand or securecookie.GenerateRandomKey(32) and persist the result.
+	// Ensure SESSION_KEY exists in the environment, or sessions will fail.
+	var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 
 	func MyHandler(w http.ResponseWriter, r *http.Request) {
 		// Get a session. Get() always returns a session, even if empty.
@@ -40,7 +45,11 @@ Let's start with an example that shows the sessions API in a nutshell:
 		session.Values["foo"] = "bar"
 		session.Values[42] = 43
 		// Save it before we write to the response/return from the handler.
-		session.Save(r, w)
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 First we initialize a session store calling NewCookieStore() and passing a
@@ -54,14 +63,6 @@ session.Save(r, w), and either display an error message or otherwise handle it.
 
 Save must be called before writing to the response, otherwise the session
 cookie will not be sent to the client.
-
-Important Note: If you aren't using gorilla/mux, you need to wrap your handlers
-with context.ClearHandler as or else you will leak memory! An easy way to do this
-is to wrap the top-level mux when calling http.ListenAndServe:
-
-    http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux))
-
-The ClearHandler function is provided by the gorilla/context package.
 
 That's all you need to know for the basic usage. Let's take a look at other
 options, starting with flash messages.
@@ -79,14 +80,18 @@ flashes, call session.Flashes(). Here is an example:
 			return
 		}
 
-		// Get the previously flashes, if any.
+		// Get the previous flashes, if any.
 		if flashes := session.Flashes(); len(flashes) > 0 {
 			// Use the flash values.
 		} else {
 			// Set a new flash.
 			session.AddFlash("Hello, flash messages world!")
 		}
-		session.Save(r, w)
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 Flash messages are useful to set information to be read after a redirection,
@@ -189,7 +194,11 @@ at once: it's sessions.Save(). Here's an example:
 		session2, _ := store.Get(r, "session-two")
 		session2.Values[42] = 43
 		// Save all sessions.
-		sessions.Save(r, w)
+		err = sessions.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 This is possible because when we call Get() from a session store, it adds the

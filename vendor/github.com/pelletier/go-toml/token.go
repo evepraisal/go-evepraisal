@@ -1,10 +1,6 @@
 package toml
 
-import (
-	"fmt"
-	"strconv"
-	"unicode"
-)
+import "fmt"
 
 // Define tokens
 type tokenType int
@@ -23,6 +19,8 @@ const (
 	tokenTrue
 	tokenFalse
 	tokenFloat
+	tokenInf
+	tokenNan
 	tokenEqual
 	tokenLeftBracket
 	tokenRightBracket
@@ -32,7 +30,9 @@ const (
 	tokenRightParen
 	tokenDoubleLeftBracket
 	tokenDoubleRightBracket
-	tokenDate
+	tokenLocalDate
+	tokenLocalTime
+	tokenTimeOffset
 	tokenKeyGroup
 	tokenKeyGroupArray
 	tokenComma
@@ -55,6 +55,8 @@ var tokenTypeNames = []string{
 	"True",
 	"False",
 	"Float",
+	"Inf",
+	"NaN",
 	"=",
 	"[",
 	"]",
@@ -64,7 +66,9 @@ var tokenTypeNames = []string{
 	")",
 	"]]",
 	"[[",
-	"Date",
+	"LocalDate",
+	"LocalTime",
+	"TimeOffset",
 	"KeyGroup",
 	"KeyGroupArray",
 	",",
@@ -91,14 +95,6 @@ func (tt tokenType) String() string {
 	return "Unknown"
 }
 
-func (t token) Int() int {
-	if result, err := strconv.Atoi(t.val); err != nil {
-		panic(err)
-	} else {
-		return result
-	}
-}
-
 func (t token) String() string {
 	switch t.typ {
 	case tokenEOF:
@@ -115,7 +111,7 @@ func isSpace(r rune) bool {
 }
 
 func isAlphanumeric(r rune) bool {
-	return unicode.IsLetter(r) || r == '_'
+	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || r == '_'
 }
 
 func isKeyChar(r rune) bool {
@@ -130,7 +126,7 @@ func isKeyStartChar(r rune) bool {
 }
 
 func isDigit(r rune) bool {
-	return unicode.IsNumber(r)
+	return '0' <= r && r <= '9'
 }
 
 func isHexDigit(r rune) bool {

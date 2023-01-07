@@ -2,11 +2,18 @@ package accesslog
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+)
+
+type contextKey int
+
+var (
+	ctxLoggerKey contextKey
 )
 
 type LogRecord struct {
@@ -39,6 +46,12 @@ func (r *LoggingWriter) WriteHeader(status int) {
 	r.ResponseWriter.WriteHeader(status)
 }
 
+// SetCustomLogRecord and GetCustomLogRecord functions provide accessors to the logRecord.CustomRecords.
+// You can use it to store arbitrary strings that are relevant to this request.
+//
+// Alternative method would be to store the value in context.
+// Which doesn't work when you want to retrieve the value from a HTTP middleware that is earlier in the middleware chain, eg: accesslog, recovery.
+//
 // w.(accesslogger.LoggingWriter).SetCustomLogRecord("X-User-Id", "3")
 func (r *LoggingWriter) SetCustomLogRecord(key, value string) {
 	if r.logRecord.CustomRecords == nil {
@@ -47,8 +60,17 @@ func (r *LoggingWriter) SetCustomLogRecord(key, value string) {
 	r.logRecord.CustomRecords[key] = value
 }
 
+// w.(accesslogger.LoggingWriter).GetCustomLogRecord("X-User-Id")
+func (r *LoggingWriter) GetCustomLogRecord(key string) string{
+	return r.logRecord.CustomRecords[key]
+}
+
+// http.CloseNotifier interface
 func (r *LoggingWriter) CloseNotify() <-chan bool {
-	return r.ResponseWriter.(http.CloseNotifier).CloseNotify()
+	if w, ok := r.ResponseWriter.(http.CloseNotifier); ok {
+		return w.CloseNotify()
+	}
+	return make(chan bool)
 }
 
 func (r *LoggingWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
@@ -58,20 +80,62 @@ func (r *LoggingWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return nil, nil, fmt.Errorf("ResponseWriter doesn't support Hijacker interface")
 }
 
+// http.Flusher
+func (r *LoggingWriter) Flush() {
+	flusher, ok := r.ResponseWriter.(http.Flusher)
+	if ok {
+		flusher.Flush()
+	}
+}
+
+// http.Pusher
+func (r *LoggingWriter) Push(target string, opts *http.PushOptions) error {
+	pusher, ok := r.ResponseWriter.(http.Pusher)
+	if ok {
+		return pusher.Push(target, opts)
+	}
+	return fmt.Errorf("ResponseWriter doesn't support Pusher interface")
+}
+
+// WrapWriter interface
+func (r *LoggingWriter) WrappedWriter() http.ResponseWriter {
+	return r.ResponseWriter
+}
+
 type Logger interface {
 	Log(record LogRecord)
 }
 
+type ContextLogger interface {
+	Logger
+	LogContext(context.Context, LogRecord)
+}
+
 type LoggingHandler struct {
 	handler   http.Handler
-	logger    Logger
+	logger    ContextLogger
 	logBefore bool
+}
+
+type wrapLogger struct {
+	Logger
+}
+
+func (wl *wrapLogger) LogContext(ctx context.Context, l LogRecord) {
+	wl.Log(l)
+}
+
+func contextLogger(l Logger) ContextLogger {
+	if cl, ok := l.(ContextLogger); ok {
+		return cl
+	}
+	return &wrapLogger{l}
 }
 
 func NewLoggingHandler(handler http.Handler, logger Logger) http.Handler {
 	return &LoggingHandler{
 		handler:   handler,
-		logger:    logger,
+		logger:    contextLogger(logger),
 		logBefore: false,
 	}
 }
@@ -79,7 +143,7 @@ func NewLoggingHandler(handler http.Handler, logger Logger) http.Handler {
 func NewAroundLoggingHandler(handler http.Handler, logger Logger) http.Handler {
 	return &LoggingHandler{
 		handler:   handler,
-		logger:    logger,
+		logger:    contextLogger(logger),
 		logBefore: true,
 	}
 }
@@ -102,9 +166,39 @@ func NewAroundLoggingMiddleware(logger Logger) func(http.Handler) http.Handler {
 	}
 }
 
-func (h *LoggingHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	ip := strings.Split(r.RemoteAddr, ":")[0]
+// readIp return the real ip when behide nginx or apache
+func (h *LoggingHandler) realIp(r *http.Request) string {
+	// Check if behide nginx or apache
+	xRealIP := r.Header.Get("X-Real-Ip")
+	if xRealIP != "" {
+		return xRealIP
+	}
 
+	xForwardedFor := r.Header.Get("X-Forwarded-For")
+	for _, address := range strings.Split(xForwardedFor, ",") {
+		address = strings.TrimSpace(address)
+		if address != "" {
+			return address
+		}
+	}
+
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return ip
+}
+
+func GetLoggingWriter(ctx context.Context) *LoggingWriter {
+	iface := ctx.Value(ctxLoggerKey)
+	if l, ok := iface.(*LoggingWriter); ok {
+		return l
+	}
+	return nil
+}
+
+func (h *LoggingHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	ip := h.realIp(r)
 	username := "-"
 	if r.URL.User != nil {
 		if name := r.URL.User.Username(); name != "" {
@@ -132,8 +226,11 @@ func (h *LoggingHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	if h.logBefore {
 		writer.SetCustomLogRecord("at", "before")
-		h.logger.Log(writer.logRecord)
+		h.logger.LogContext(r.Context(), writer.logRecord)
 	}
+
+	ctx := context.WithValue(r.Context(), ctxLoggerKey, writer)
+	r = r.WithContext(ctx)
 	h.handler.ServeHTTP(writer, r)
 	finishTime := time.Now()
 
@@ -143,5 +240,5 @@ func (h *LoggingHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if h.logBefore {
 		writer.SetCustomLogRecord("at", "after")
 	}
-	h.logger.Log(writer.logRecord)
+	h.logger.LogContext(r.Context(), writer.logRecord)
 }

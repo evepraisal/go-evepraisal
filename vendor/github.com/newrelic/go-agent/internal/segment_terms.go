@@ -1,3 +1,6 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package internal
 
 // https://newrelic.atlassian.net/wiki/display/eng/Language+agent+transaction+segment+terms+rules
@@ -81,8 +84,8 @@ func (rule *segmentRule) apply(name string) string {
 		segments := strings.Split(s, separator)
 
 		for i, segment := range segments {
-			_, whitelisted := rule.TermsMap[segment]
-			if whitelisted {
+			_, allowed := rule.TermsMap[segment]
+			if allowed {
 				segments[i] = segment
 			} else {
 				segments[i] = placeholder
