@@ -1,4 +1,4 @@
-name: golangci-lint
+name: golang-test
 on:
   push:
     tags:
@@ -20,7 +20,7 @@ jobs:
           go-version: 1.19
       - uses: actions/checkout@v3
       - name: Build
-        run: go build -v ./...
+        run: make build
 
       - name: Test
-        run: go test -v ./...
+        run: make test
