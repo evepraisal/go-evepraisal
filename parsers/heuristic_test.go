@@ -54,7 +54,8 @@ func TestHeuristicParser(rt *testing.T) {
 				typeIDMap:   make(map[int64]typedb.EveType),
 			}
 			for _, t := range c.types {
-				db.PutTypes([]typedb.EveType{t})
+				err := db.PutTypes([]typedb.EveType{t})
+				assert.NoError(rt, err)
 			}
 			p := HeuristicParser{typeDB: db}
 			result, rest := p.Parse(StringToInput(c.in))

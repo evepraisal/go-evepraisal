@@ -160,7 +160,7 @@ func (p *HeuristicParser) heuristicMethod1(line string) []HeuristicItem {
 		case *Listing:
 			var items []HeuristicItem
 			for _, item := range r.Items {
-				items = append(items, HeuristicItem{Name: item.Name, Quantity: item.Quantity})
+				items = append(items, HeuristicItem(item))
 			}
 			return items
 		}

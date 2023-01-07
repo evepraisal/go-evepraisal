@@ -651,6 +651,7 @@ func filterUnparsed(unparsed map[int]string) map[int]string {
 	return unparsed
 }
 
+//nolint:unused
 func priceByComponents(t typedb.EveType, priceDB PriceDB, market string) Prices {
 	var prices Prices
 	for _, component := range t.Components {

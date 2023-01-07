@@ -48,9 +48,7 @@ func ParseCargoScan(input Input) (ParserResult, Input) {
 			item.Name = strings.TrimSuffix(item.Name, " (Copy)")
 		}
 
-		if strings.HasSuffix(item.Name, " (Original)") {
-			item.Name = strings.TrimSuffix(item.Name, " (Original)")
-		}
+		item.Name = strings.TrimSuffix(item.Name, " (Original)")
 		matchgroup[item] += ToInt(match[1])
 	}
 

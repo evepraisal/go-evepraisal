@@ -24,18 +24,25 @@ setup:
 	go install github.com/go-bindata/go-bindata/go-bindata@v1.0.0
 	go install github.com/cespare/reflex
 	go install github.com/jstemmer/go-junit-report@master
-	go install github.com/fzipp/gocyclo
-	go install github.com/jgautheron/goconst/cmd/goconst
-	go install golang.org/x/tools/cmd/goimports
-	go install github.com/gordonklaus/ineffassign
-	go install github.com/walle/lll/cmd/lll
-	go install github.com/client9/misspell/cmd/misspell
+	brew install golangci-lint
 
 build: generate
-	@go build -gcflags=-trimpath=$(shell pwd) -asmflags=-trimpath=$(shell pwd) -mod vendor ${BUILD_OPTS} -o ./target/evepraisal-${GOOS}-${GOARCH} ./evepraisal
+	@go build -gcflags=-trimpath=$(shell pwd) \
+		-asmflags=-trimpath=$(shell pwd) \
+		-gcflags=-trimpath=$(shell pwd) \
+		-mod vendor \
+		${BUILD_OPTS} \
+		-o ./target/evepraisal-${GOOS}-${GOARCH} \
+		./evepraisal
 
 install: generate
 	@go install -gcflags=-trimpath=$(shell pwd) -asmflags=-trimpath=$(shell pwd) -mod vendor ${BUILD_OPTS} ${PKG_DIRS}
+	@go install -gcflags=-trimpath=$(shell pwd) \
+		-asmflags=-trimpath=$(shell pwd) \
+		-gcflags=-trimpath=$(shell pwd) \
+		-mod vendor \
+		${BUILD_OPTS} \
+		${PKG_DIRS}
 
 generate:
 	go generate ${BUILD_OPTS} ${PKG_DIRS}
@@ -53,22 +60,7 @@ test-reload:
 	reflex -c reflex.test.conf
 
 lint:
-	@echo "govet"
-	go vet ${PKG_DIRS}
-	@echo "gocyclo"
-	@gocyclo -over 50 ${PKG_FILES}
-	@echo "goconst"
-	@goconst -ignore "vendor\/" ${PKG_FILES}
-	@echo "gofmt"
-	@gofmt -d ${PKG_FILES}
-	@echo "goimports"
-	@goimports -d ${PKG_FILES}
-	@echo "ineffassign"
-	@ineffassign .
-	@echo "line length linter"
-	@lll --maxlength 150 --skiplist="" ${PKG_FILES}
-	@echo "misspell"
-	@misspell ${PKG_FILES}
+	golangci-lint run -v ./...
 
 run: install
 	evepraisal

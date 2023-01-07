@@ -30,7 +30,7 @@ func (ctx *Context) HandleUserHistoryAppraisals(w http.ResponseWriter, r *http.R
 		cleanAppraisals = cleanAppraisals[0:limit]
 	}
 
-	ctx.render(r, w, "user_history.html", struct {
+	_ = ctx.render(r, w, "user_history.html", struct {
 		Appraisals []evepraisal.Appraisal `json:"appraisals"`
 		Before     string                 `json:"before"`
 		Limit      int                    `json:"limit"`

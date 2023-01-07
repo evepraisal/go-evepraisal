@@ -136,7 +136,7 @@ func (ctx *Context) renderErrorPageWithRoot(r *http.Request, w http.ResponseWrit
 		ErrorMessage string `json:"error_message"`
 	}{title, message}
 	w.WriteHeader(statusCode)
-	ctx.renderWithRoot(r, w, "error.html", root)
+	_ = ctx.renderWithRoot(r, w, "error.html", root)
 }
 
 func (ctx *Context) renderServerError(r *http.Request, w http.ResponseWriter, err error) {
@@ -168,9 +168,19 @@ func (ctx *Context) Reload() error {
 		}
 	}
 
-	root.New("extra-html-header").Parse(ctx.ExtraHTMLHeader)
-	root.New("extra-javascript").Parse(ctx.ExtraJS)
-	root.New("ad-block").Parse(ctx.AdBlock)
+	var err error
+	_, err = root.New("extra-html-header").Parse(ctx.ExtraHTMLHeader)
+	if err != nil {
+		return err
+	}
+	_, err = root.New("extra-javascript").Parse(ctx.ExtraJS)
+	if err != nil {
+		return err
+	}
+	_, err = root.New("ad-block").Parse(ctx.AdBlock)
+	if err != nil {
+		return err
+	}
 
 	for _, path := range AssetNames() {
 		baseName := filepath.Base(path)

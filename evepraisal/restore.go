@@ -23,7 +23,7 @@ func restoreMain() {
 	restoreCmd := flag.NewFlagSet("restore", flag.ExitOnError)
 	filenamesStr := restoreCmd.String("files", "", "comma-separated filenames to import data from")
 	err := restoreCmd.Parse(os.Args[2:])
-	if err != nil || restoreCmd.Parsed() == false {
+	if err != nil || !restoreCmd.Parsed() {
 		restoreCmd.PrintDefaults()
 		os.Exit(2)
 	}

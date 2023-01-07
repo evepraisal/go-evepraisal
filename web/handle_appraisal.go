@@ -136,7 +136,11 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 	)
 
 	if isMultiPart(r) || isURLEncodedFormData(r) {
-		r.ParseMultipartForm(appraisalBodySizeLimit)
+		err = r.ParseMultipartForm(appraisalBodySizeLimit)
+		if err != nil {
+			return "", err
+		}
+
 		f, _, err = r.FormFile("uploadappraisal")
 		if err != nil && err != http.ErrNotMultipart && err != http.ErrMissingFile {
 			return "", err
@@ -273,7 +277,12 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		go ctx.App.AppraisalDB.IncrementTotalAppraisals()
+		go func() {
+			err := ctx.App.AppraisalDB.IncrementTotalAppraisals()
+			if err != nil {
+				log.Printf("ERROR: Error updating total appraisal count: %s", err)
+			}
+		}()
 	}
 
 	// Log for later analyics
@@ -296,7 +305,7 @@ func (ctx *Context) HandleAppraisal(w http.ResponseWriter, r *http.Request) {
 		IsOwner:   IsAppraisalOwner(user, appraisal),
 		Appraisal: cleanAppraisal(appraisal),
 	}
-	ctx.renderWithRoot(r, w, "appraisal.html", root)
+	_ = ctx.renderWithRoot(r, w, "appraisal.html", root)
 }
 
 // HandleAppraisalStructured is the handler for POST /appraisal/structured.json
@@ -362,7 +371,12 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 
 	ctx.App.PopulateItems(appraisal)
 
-	go ctx.App.AppraisalDB.IncrementTotalAppraisals()
+	go func() {
+		err := ctx.App.AppraisalDB.IncrementTotalAppraisals()
+		if err != nil {
+			log.Printf("ERROR: Error updating total appraisal count: %s", err)
+		}
+	}()
 
 	// Log for later analyics
 	log.Println(appraisal.Summary())
@@ -371,7 +385,7 @@ func (ctx *Context) HandleAppraisalStructured(w http.ResponseWriter, r *http.Req
 		return appraisal.Items[i].RepresentativePrice() > appraisal.Items[j].RepresentativePrice()
 	})
 
-	ctx.render(r, w, "appraisal.html",
+	_ = ctx.render(r, w, "appraisal.html",
 		AppraisalPage{
 			Appraisal: cleanAppraisal(appraisal),
 		},
@@ -431,12 +445,12 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 
 	if r.Header.Get("format") == formatJSON {
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(appraisal)
+		_ = json.NewEncoder(w).Encode(appraisal)
 		return
 	}
 
 	if r.Header.Get("format") == formatRaw {
-		io.WriteString(w, appraisal.Raw)
+		_, _ = io.WriteString(w, appraisal.Raw)
 		return
 	}
 
@@ -445,7 +459,7 @@ func (ctx *Context) HandleViewAppraisal(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ctx.render(r, w, "appraisal.html",
+	_ = ctx.render(r, w, "appraisal.html",
 		AppraisalPage{
 			Appraisal: appraisal,
 			ShowFull:  getRequestParam(r, "full") != "",
@@ -481,7 +495,7 @@ func (ctx *Context) renderAppraisalDebug(w http.ResponseWriter, r *http.Request,
 	}
 
 	result, _ := ctx.App.Parser(parsers.StringToInput(appraisal.Raw))
-	ctx.render(r, w, "appraisal_debug.html",
+	_ = ctx.render(r, w, "appraisal_debug.html",
 		AppraisalDebugPage{
 			Appraisal:    appraisal,
 			Lines:        debugLines,

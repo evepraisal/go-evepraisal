@@ -55,7 +55,9 @@ func FindLastStaticDumpChecksum(client *pester.Client) (string, error) {
 
 func downloadTypes(client *pester.Client, staticDumpURL string, staticDataPath string) error {
 	out, err := os.Create(staticDataPath)
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	if err != nil {
 		return err
 	}
@@ -266,7 +268,11 @@ func downloadTypeVolumes(client *pester.Client) (map[int64]float64, error) {
 	}
 	defer resp.Body.Close()
 	r := csv.NewReader(resp.Body)
-	r.Read()
+
+	_, err = r.Read()
+	if err != nil {
+		return nil, err
+	}
 	volumes := map[int64]float64{}
 	for {
 		record, err := r.Read()
@@ -305,7 +311,10 @@ func downloadPackagedVolumes(client *pester.Client) (map[int64]float64, error) {
 	}
 	defer resp.Body.Close()
 	r := csv.NewReader(resp.Body)
-	r.Read()
+	_, err = r.Read()
+	if err != nil {
+		return nil, err
+	}
 	volumes := map[int64]float64{}
 	for {
 		record, err := r.Read()

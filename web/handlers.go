@@ -25,37 +25,37 @@ func (ctx *Context) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		ctx.renderServerError(r, w, err)
 		return
 	}
-	ctx.render(r, w, "main.html", struct {
+	_ = ctx.render(r, w, "main.html", struct {
 		TotalAppraisalCount int64 `json:"total_appraisal_count"`
 	}{TotalAppraisalCount: total})
 }
 
 // HandleNewAppraisal is the handler for /new-appraisal
 func (ctx *Context) HandleNewAppraisal(w http.ResponseWriter, r *http.Request) {
-	ctx.render(r, w, "new-appraisal.html", struct {
+	_ = ctx.render(r, w, "new-appraisal.html", struct {
 		ShowLargePastePanel bool `json:"show_large_paste_panel"`
 	}{ShowLargePastePanel: true})
 }
 
 // HandleLegal is the handler for /legal
 func (ctx *Context) HandleLegal(w http.ResponseWriter, r *http.Request) {
-	ctx.render(r, w, "legal.html", nil)
+	_ = ctx.render(r, w, "legal.html", nil)
 }
 
 // HandleAbout is the handler for /about
 func (ctx *Context) HandleAbout(w http.ResponseWriter, r *http.Request) {
-	ctx.render(r, w, "about.html", nil)
+	_ = ctx.render(r, w, "about.html", nil)
 }
 
 // HandleAPIDocs is the handler for /api-docs
 func (ctx *Context) HandleAPIDocs(w http.ResponseWriter, r *http.Request) {
-	ctx.render(r, w, "api.html", nil)
+	_ = ctx.render(r, w, "api.html", nil)
 }
 
 // HandleRobots is the handler for /robots.txt
 func (ctx *Context) HandleRobots(w http.ResponseWriter, r *http.Request) {
 	r.Header["Content-Type"] = []string{"text/plain"}
-	io.WriteString(w, `User-agent: *
+	_, _ = io.WriteString(w, `User-agent: *
 Disallow:`)
 }
 
@@ -149,7 +149,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 						httpPath,
 						func(w http.ResponseWriter, r *http.Request) {
 							r.Header["Content-Type"] = []string{mime.TypeByExtension(filepath.Ext(path))}
-							w.Write(body)
+							_, _ = w.Write(body)
 						})
 				}
 				return nil

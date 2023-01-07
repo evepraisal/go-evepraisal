@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -214,7 +215,12 @@ func appMain() {
 
 	for _, server := range servers {
 		stopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer server.Shutdown(stopCtx)
+		defer func() {
+			err := server.Shutdown(stopCtx)
+			if err != nil {
+				fmt.Printf("Error: shutting down HTTP server: %s", err)
+			}
+		}()
 		go func() {
 			time.Sleep(10 * time.Second)
 			cancel()
@@ -325,12 +331,16 @@ func NewRoundTripper(newrelicApp newrelic.Application, original http.RoundTrippe
 
 	return roundTripperFunc(func(request *http.Request) (*http.Response, error) {
 		txn := newrelicApp.StartTransaction("http", nil, nil)
+		defer func() {
+			_ = txn.End()
+		}()
 		segment := newrelic.StartExternalSegment(txn, request)
+		defer func() {
+			_ = segment.End()
+		}()
+
 		response, err := original.RoundTrip(request)
 		segment.Response = response
-		segment.End()
-		txn.End()
-
 		return response, err
 	})
 }

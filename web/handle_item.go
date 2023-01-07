@@ -80,7 +80,7 @@ func (ctx *Context) HandleViewItems(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ctx.render(r, w, "view_items.html", struct {
+	_ = ctx.render(r, w, "view_items.html", struct {
 		Items []itemResult `json:"items"`
 	}{Items: items})
 }
@@ -134,5 +134,5 @@ func (ctx *Context) HandleViewItem(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	ctx.render(r, w, "view_item.html", itemResult{Type: item, Summaries: summaries})
+	_ = ctx.render(r, w, "view_item.html", itemResult{Type: item, Summaries: summaries})
 }

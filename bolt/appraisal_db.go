@@ -69,7 +69,7 @@ func NewAppraisalDB(filename string) (evepraisal.AppraisalDB, error) {
 			return err
 		}
 
-		b, err = tx.CreateBucket([]byte("stats"))
+		_, err = tx.CreateBucket([]byte("stats"))
 		if err == nil {
 			err = putTotalAppraisals(tx, totalAppraisals)
 			log.Printf("Stats bucket created at total_appraisals=%d", totalAppraisals)
@@ -143,7 +143,12 @@ func (db *AppraisalDB) PutNewAppraisal(appraisal *evepraisal.Appraisal) error {
 	})
 	if err == nil {
 		go db.setLastUsedTime(dbID)
-		go db.IncrementTotalAppraisals()
+		go func() {
+			err := db.IncrementTotalAppraisals()
+			if err != nil {
+				log.Printf("ERROR: Error updating total appraisal count: %s", err)
+			}
+		}()
 	}
 	return err
 }

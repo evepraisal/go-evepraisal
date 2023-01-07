@@ -141,7 +141,7 @@ func (f *StaticFetcher) loadTypes(typedbPath, staticCacheFile string, staticDump
 	}
 	finished := false
 	defer func() {
-		if finished == true {
+		if finished {
 			log.Println("Finished typedb fetch")
 			err := typeDB.Close()
 			if err != nil {

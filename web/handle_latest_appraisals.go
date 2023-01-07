@@ -25,7 +25,7 @@ func (ctx *Context) HandleLatestAppraisals(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	ctx.render(r, w, "latest.html", struct {
+	_ = ctx.render(r, w, "latest.html", struct {
 		Appraisals []evepraisal.Appraisal `json:"appraisals"`
 	}{cleanAppraisals(appraisals)})
 }
