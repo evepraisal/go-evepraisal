@@ -6,7 +6,6 @@ require (
 	github.com/boltdb/bolt v0.0.0-20171120010307-9da317453632
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dustin/go-humanize v1.0.0
-	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-zoo/bone v1.3.0
 	github.com/golang/snappy v0.0.4
 	github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82
@@ -23,6 +22,7 @@ require (
 	github.com/mssola/user_agent v0.5.3
 	github.com/newrelic/go-agent/v3 v3.20.2
 	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
+	github.com/radovskyb/watcher v1.0.7
 	github.com/sethgrid/pester v1.2.0
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
@@ -50,6 +50,7 @@ require (
 	github.com/blevesearch/zapx/v14 v14.3.7 // indirect
 	github.com/blevesearch/zapx/v15 v15.3.8 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect

@@ -1,3 +1,4 @@
+//go:build dev
 // +build dev
 
 package main
@@ -7,28 +8,57 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/evepraisal/go-evepraisal"
-	"github.com/fsnotify/fsnotify"
+	"github.com/radovskyb/watcher"
 )
 
 func startEnvironmentWatchers(app *evepraisal.App) {
 	log.Println("startEnvironmentWatchers (dev env)")
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Printf("ERROR: Not able to set up resource watcher: %s", err)
-		return
-	}
-	defer watcher.Close()
+	w := watcher.New()
+	defer w.Close()
 
-	err = filepath.Walk("web/resources/",
+	go func() {
+		for {
+			select {
+			case <-w.Closed:
+				return
+			case event, ok := <-w.Event:
+				if !ok {
+					return
+				}
+				log.Printf("%s %s", event.Name, event.Op)
+				switch event.Op {
+				case watcher.Create, watcher.Remove, watcher.Rename:
+					log.Println("Detected new, removed or renamed resources, shutting down")
+					os.Exit(1)
+				case watcher.Write:
+					log.Println("Detected resource changes, reloading templates")
+					err := app.WebContext.Reload()
+					if err != nil {
+						log.Printf("Could not reload templates %s", err)
+					} else {
+						log.Println("Done reloading templates")
+					}
+				}
+			case err, ok := <-w.Error:
+				if !ok {
+					return
+				}
+				log.Printf("ERROR: Watching for fs watcher: %s", err)
+			}
+		}
+	}()
+
+	err := filepath.Walk("web/resources/",
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 
 			if strings.HasSuffix(path, ".html") {
-				err = watcher.Add(path)
+				err = w.Add(path)
 				if err != nil {
 					return err
 				}
@@ -40,20 +70,8 @@ func startEnvironmentWatchers(app *evepraisal.App) {
 	}
 
 	go func() {
-		for event := range watcher.Events {
-			switch event.Op {
-			case fsnotify.Create, fsnotify.Remove, fsnotify.Rename:
-				log.Println("Detected new, removed or renamed resources, shutting down")
-				os.Exit(1)
-			case fsnotify.Write:
-				log.Println("Detected resource changes, reloading templates")
-				err := app.WebContext.Reload()
-				if err != nil {
-					log.Printf("Could not reload templates %s", err)
-				} else {
-					log.Println("Done reloading templates")
-				}
-			}
+		if err := w.Start(time.Millisecond * 100); err != nil {
+			log.Fatalln(err)
 		}
 	}()
 }
