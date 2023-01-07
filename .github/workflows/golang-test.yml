@@ -29,6 +29,13 @@ jobs:
       - name: Test
         run: make test
 
+      - name: Test Summary
+        uses: test-summary/action@v1
+        with:
+          paths: |
+            target/reports/go-test-report.xml
+        if: always()
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
