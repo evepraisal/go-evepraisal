@@ -3,7 +3,7 @@ package staticdump
 import (
 	"archive/zip"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"gopkg.in/yaml.v2"
 )
@@ -28,7 +28,7 @@ func loadDataFromZipFile(r *zip.ReadCloser, filename string, res interface{}) er
 		return err
 	}
 
-	contents, err := ioutil.ReadAll(fr)
+	contents, err := io.ReadAll(fr)
 	if err != nil {
 		return err
 	}

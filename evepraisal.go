@@ -6,7 +6,7 @@ import (
 
 	"github.com/evepraisal/go-evepraisal/parsers"
 	"github.com/evepraisal/go-evepraisal/typedb"
-	newrelic "github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // App holds references to all of the app state that's needed. This is typically created in the 'evepraisal' package.
@@ -16,7 +16,7 @@ type App struct {
 	PriceDB             PriceDB
 	Parser              parsers.Parser
 	WebContext          WebContext
-	NewRelicApplication newrelic.Application
+	NewRelicApplication *newrelic.Application
 }
 
 // AppraisalDB allows for creating, deleting and retreiving appraisals

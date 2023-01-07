@@ -2,7 +2,6 @@ package web
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"mime"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/gorilla/context"
 	accesslog "github.com/mash/go-accesslog"
-	newrelic "github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // HandleIndex is the handler for /
@@ -140,7 +139,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 				if !info.IsDir() {
 					httpPath := strings.TrimPrefix(path, ctx.ExtraStaticFilePath)
 					log.Printf("Adding %s as %s", path, httpPath)
-					body, err := ioutil.ReadFile(path)
+					body, err := os.ReadFile(path)
 					if err != nil {
 						log.Printf("ERROR: not able to read static file: %s", err)
 						return nil

@@ -22,7 +22,7 @@ require (
 	github.com/mash/go-accesslog v1.3.0
 	github.com/montanaflynn/stats v0.6.6
 	github.com/mssola/user_agent v0.5.3
-	github.com/newrelic/go-agent v3.20.2+incompatible
+	github.com/newrelic/go-agent/v3 v3.20.2
 	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
 	github.com/sethgrid/pester v1.2.0
 	github.com/spf13/viper v1.14.0
@@ -33,7 +33,6 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/RoaringBitmap/roaring v1.2.1 // indirect
 	github.com/bits-and-blooms/bitset v1.4.0 // indirect
 	github.com/blevesearch/bleve_index_api v1.0.5 // indirect
@@ -61,7 +60,6 @@ require (
 	github.com/gonum/matrix v0.0.0-20181209220409-c518dec07be9 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -81,10 +79,10 @@ require (
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/genproto v0.0.0-20221024183307-1bc688fe9f3e // indirect
+	google.golang.org/grpc v1.50.1 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

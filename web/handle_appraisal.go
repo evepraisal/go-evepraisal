@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -150,7 +149,7 @@ func parseAppraisalBody(r *http.Request) (string, error) {
 	}
 
 	if f != nil {
-		bodyBytes, err := ioutil.ReadAll(io.LimitReader(f, appraisalBodySizeLimit))
+		bodyBytes, err := io.ReadAll(io.LimitReader(f, appraisalBodySizeLimit))
 		if err != nil {
 			return "", err
 		}

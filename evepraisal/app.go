@@ -23,7 +23,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/gregjones/httpcache"
-	newrelic "github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/sethgrid/pester"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
@@ -113,10 +113,12 @@ func appMain() {
 	staticdumpHTTPClient.LogHook = func(e pester.ErrEntry) { log.Println(httpClient.FormatError(e)) }
 
 	if viper.GetString("newrelic_license-key") != "" {
-		newRelicConfig := newrelic.NewConfig(viper.GetString("newrelic_app-name"), viper.GetString("newrelic_license-key"))
-		newRelicConfig.ErrorCollector.IgnoreStatusCodes = []int{400, 401, 404}
-		var newRelicApplication newrelic.Application
-		newRelicApplication, err = newrelic.NewApplication(newRelicConfig)
+		newRelicApplication, err := newrelic.NewApplication(
+			newrelic.ConfigAppName(viper.GetString("newrelic_app-name")),
+			newrelic.ConfigLicense(viper.GetString("newrelic_license-key")),
+			newrelic.ConfigDebugLogger(os.Stdout),
+			newrelic.ConfigDistributedTracerEnabled(true),
+		)
 		if err != nil {
 			log.Fatalf("Problem configuring new relic: %s", err)
 		}
@@ -324,20 +326,16 @@ func mustStartServers(handler http.Handler) []*http.Server {
 }
 
 // NewRoundTripper returns an http.RoundTripper that is tooled for use in the app
-func NewRoundTripper(newrelicApp newrelic.Application, original http.RoundTripper) http.RoundTripper {
+func NewRoundTripper(newrelicApp *newrelic.Application, original http.RoundTripper) http.RoundTripper {
 	if original == nil {
 		original = http.DefaultTransport
 	}
 
 	return roundTripperFunc(func(request *http.Request) (*http.Response, error) {
 		txn := newrelicApp.StartTransaction("http", nil, nil)
-		defer func() {
-			_ = txn.End()
-		}()
+		defer txn.End()
 		segment := newrelic.StartExternalSegment(txn, request)
-		defer func() {
-			_ = segment.End()
-		}()
+		defer segment.End()
 
 		response, err := original.RoundTrip(request)
 		segment.Response = response

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -98,7 +98,7 @@ func restoreMain() {
 		}
 		if resp.StatusCode != 200 {
 			var body []byte
-			body, err = ioutil.ReadAll(resp.Body)
+			body, err = io.ReadAll(resp.Body)
 			if err != nil {
 				return err
 			}
