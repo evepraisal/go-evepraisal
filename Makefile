@@ -21,7 +21,6 @@ default: build
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
 setup:
-	go install github.com/go-bindata/go-bindata/go-bindata@v1.0.0
 	go install github.com/jstemmer/go-junit-report@master
 	# brew install golangci-lint
 

@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/NYTimes/gziphandler"
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/go-zoo/bone"
 	"github.com/gorilla/context"
 	accesslog "github.com/mash/go-accesslog"
@@ -185,8 +184,7 @@ func (ctx *Context) HTTPHandler() http.Handler {
 	}
 
 	// Route our bundled static files
-	var fs = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "/static/"}
-	mux.Handle("/static/", setStaticHeaders(http.StripPrefix("/static/", http.FileServer(fs))))
+	mux.Handle("/static/", setStaticHeaders(http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS)))))
 
 	// Mount our web app router to root
 	mux.Handle("/", router)

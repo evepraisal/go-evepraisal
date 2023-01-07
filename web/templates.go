@@ -3,9 +3,10 @@ package web
 import (
 	"fmt"
 	"html/template"
+	"io"
+	"io/fs"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -153,22 +154,42 @@ func (ctx *Context) Reload() error {
 	templates := make(map[string]*template.Template)
 	root := template.New("root").Funcs(templateFuncs)
 
-	for _, path := range AssetNames() {
-		if strings.HasPrefix(path, "templates/") && strings.HasPrefix(filepath.Base(path), "_") {
-			log.Println("load partial:", path)
-			tmplPartial := root.New(strings.TrimPrefix(path, "templates/"))
-			fileContents, err := Asset(path)
-			if err != nil {
-				return err
-			}
-			_, err = tmplPartial.Parse(string(fileContents))
-			if err != nil {
-				return err
-			}
+	var err error
+
+	err = fs.WalkDir(Resources, "templates", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
+		if !strings.HasPrefix(d.Name(), "_") || !strings.HasPrefix(path, "templates/") {
+			return nil
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		log.Println("partial:", path)
+		tmplPartial := root.New(strings.TrimPrefix(path, "templates/"))
+
+		f, err := Resources.Open(path)
+		if err != nil {
+			return err
+		}
+
+		data, err := io.ReadAll(f)
+		if err != nil {
+			return err
+		}
+
+		_, err = tmplPartial.Parse(string(data))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
-	var err error
 	_, err = root.New("extra-html-header").Parse(ctx.ExtraHTMLHeader)
 	if err != nil {
 		return err
@@ -182,26 +203,44 @@ func (ctx *Context) Reload() error {
 		return err
 	}
 
-	for _, path := range AssetNames() {
-		baseName := filepath.Base(path)
-		if strings.HasPrefix(path, "templates/") && !strings.HasPrefix(baseName, "_") {
-			log.Println("load:", baseName)
-			r, err := root.Clone()
-			if err != nil {
-				return err
-			}
-			tmpl := r.New(strings.TrimPrefix(path, "templates/"))
-			fileContents, err := Asset(path)
-			if err != nil {
-				return err
-			}
-
-			_, err = tmpl.Parse(string(fileContents))
-			if err != nil {
-				return err
-			}
-			templates[baseName] = tmpl
+	err = fs.WalkDir(Resources, "templates", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
+		if strings.HasPrefix(d.Name(), "_") || !strings.HasPrefix(path, "templates/") {
+			return nil
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		r, err := root.Clone()
+		if err != nil {
+			return err
+		}
+
+		log.Println("load:", path)
+		tmpl := r.New(strings.TrimPrefix(path, "templates/"))
+
+		f, err := Resources.Open(path)
+		if err != nil {
+			return err
+		}
+
+		data, err := io.ReadAll(f)
+		if err != nil {
+			return err
+		}
+
+		_, err = tmpl.Parse(string(data))
+		if err != nil {
+			return err
+		}
+		templates[d.Name()] = tmpl
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
 	ctx.templates = templates

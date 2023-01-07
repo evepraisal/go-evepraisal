@@ -1,4 +1,17 @@
+//go:build dev
 // +build dev
-//go:generate go-bindata -ignore=\.DS_Store -debug -o bindata.go -pkg web -prefix resources/ resources/...
 
 package web
+
+import (
+	"io/fs"
+	"os"
+	"path/filepath"
+)
+
+var osPath, _ = filepath.Abs("web/resources")
+
+var Resources = os.DirFS(osPath)
+
+var StaticFS, _ = fs.Sub(Resources, "static")
+var TemplateFS, _ = fs.Sub(Resources, "templates")

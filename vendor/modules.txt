@@ -106,9 +106,6 @@ github.com/davecgh/go-spew/spew
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/elazarl/go-bindata-assetfs v1.0.1
-## explicit
-github.com/elazarl/go-bindata-assetfs
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify

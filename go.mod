@@ -6,7 +6,6 @@ require (
 	github.com/boltdb/bolt v0.0.0-20171120010307-9da317453632
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dustin/go-humanize v1.0.0
-	github.com/elazarl/go-bindata-assetfs v1.0.1
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-zoo/bone v1.3.0
 	github.com/golang/snappy v0.0.4
