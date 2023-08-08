@@ -1,8 +1,8 @@
 FROM golang:1.11-alpine
-LABEL maintainer="sudorandom <https://github.com/evepraisal/go-evepraisal>"
-WORKDIR $GOPATH/src/github.com/evepraisal/go-evepraisal
+LABEL maintainer="REPUB Utilities <https://github.com/repub-utilities/appraisal-tool>"
+WORKDIR $GOPATH/src/github.com/repub-utilities/appraisal-tool
 RUN apk --update add --no-cache --virtual build-dependencies git gcc musl-dev make bash && \
-    git clone https://github.com/evepraisal/go-evepraisal.git . && \
+    git clone https://github.com/repub-utilities/appraisal-tool.git . && \
     export GO111MODULE=on ENV=prod && \
     make setup && \
     make build && \
