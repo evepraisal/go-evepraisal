@@ -21,7 +21,7 @@ default: build
 .PHONY: setup build install generate clean test test-reload run run-reload dist deploy
 
 setup:
-	go install github.com/jstemmer/go-junit-report@master
+	go install github.com/jstemmer/go-junit-report/v2@latest
 	# brew install golangci-lint
 
 build: generate
