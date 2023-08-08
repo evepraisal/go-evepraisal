@@ -29,50 +29,67 @@
   </head>
 
   <body>
+
+    <nav class="py-2 bg-body-tertiary border-bottom">
+        <div class="container d-flex flex-wrap">
+            <ul class="nav me-auto">
+                <li class="nav-item ">
+                    <a class="nav-link" href="/latest">Latest</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/api-docs">API</a>
+                  </li>
+                  {{if .UI.LoginEnabled}}
+                  {{if .UI.User}}
+                  <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{.UI.User.CharacterName}} <span class="caret"></span></a>
+                    <div class="dropdown-menu" role="menu">
+                      <a class="dropdown-item" href="/user/history">History</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="/logout">Logout</a>
+                  </li>
+                  {{else}}
+                    <li class="nav-item">
+                      <a class="nav-link" href="/login">Login</a>
+                    </li>
+                  {{end}}
+                {{end}}
+            </ul>
+
+            <ul class="nav">
+                <li class="nav-item">
+                  <a href="/new-appraisal" class="btn btn-primary" role="button"><span class="fas fa-plus"></span></a>
+                </li>
+              </ul>
+        </div>
+    </nav>
+
+    <header class="py-3 mb-4 border-bottom">
+        <div class="container d-flex flex-wrap justify-content-center">
+            <a class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto link-body-emphasis text-decoration-none" href="/">
+                <span class="fs-4">REPUB Appraisal</span>
+            </a>
+
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0" action="/search" method="GET" role="search">
+                <input class="form-control mr-sm-2 typeahead" id="search" name="q" type="text" placeholder="Search...">
+              </form>
+        </div>
+    </header>
+
+    
+
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="/">Evepraisal</a>
+
+        <a class="navbar-brand" href="/">REPUB Appraisal</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarColor02">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item ">
-              <a class="nav-link" href="/latest">Latest</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/about">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/api-docs">API</a>
-            </li>
-
-            {{if .UI.LoginEnabled}}
-              {{if .UI.User}}
-              <li class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{.UI.User.CharacterName}} <span class="caret"></span></a>
-                <div class="dropdown-menu" role="menu">
-                  <a class="dropdown-item" href="/user/history">History</a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="/logout">Logout</a>
-              </li>
-              {{else}}
-                <li class="nav-item">
-                  <a class="nav-link" href="/login">Login</a>
-                </li>
-              {{end}}
-            {{end}}
-          </ul>
-          <form class="form-inline my-2 my-lg-0" action="/search" method="GET" role="search">
-            <input class="form-control mr-sm-2 typeahead" id="search" name="q" type="text" placeholder="Item Name...">
-            <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
-          </form>
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a href="/new-appraisal" class="btn btn-primary" role="button"><span class="fas fa-plus"></span></a>
-            </li>
-          </ul>
         </div>
       </nav>
 
