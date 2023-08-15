@@ -94,7 +94,7 @@ func NewPriceFetcher(ctx context.Context, priceDB evepraisal.PriceDB, baseURL st
 			start := time.Now()
 			p.runOnce()
 			select {
-			case <-time.After((6 * time.Minute) - time.Since(start)):
+			case <-time.After((30 * time.Minute) - time.Since(start)):
 			case <-p.stop:
 				return
 			}
