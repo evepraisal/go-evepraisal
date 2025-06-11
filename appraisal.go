@@ -412,6 +412,11 @@ func (app *App) PopulateItems(appraisal *Appraisal) {
 		if appraisal.PricePercentage > 0 {
 			prices = prices.Mul(appraisal.PricePercentage / 100)
 		}
+		if prices.Sell.Min == 0 && prices.Sell.Percentile > 0 {
+			log.Printf("⚠️ [PATCH] Fallback: using percentile for %s (%d): %.0f ISK", appraisal.Items[i].TypeName, appraisal.Items[i].TypeID, prices.Sell.Percentile)
+			prices.Sell.Min = prices.Sell.Percentile
+		}
+
 		appraisal.Items[i].Prices = prices
 		appraisal.Totals.Buy += prices.Buy.Max * float64(appraisal.Items[i].Quantity)
 		appraisal.Totals.Sell += prices.Sell.Min * float64(appraisal.Items[i].Quantity)
